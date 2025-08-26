@@ -9,7 +9,14 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', MapController::class)->name('dashboard');
+    Route::get('map', function(){
+        return Inertia::render('PerthMap');
+    })->name('map');
+
+    Route::get('dashboard', function(){
+        return Inertia::render('dashboard');
+    })->name('map');
+
     Route::get('test', function() {
         return Inertia::render('test');
     })->name('test');

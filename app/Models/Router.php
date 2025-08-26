@@ -2,21 +2,16 @@
 
 namespace App\Models;
 
-use Clickbar\Magellan\Data\Geometries\Point;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class Sensor extends Model
+class Router extends Model
 {
     use HasFactory;
 
-    protected $casts = [
-        'coordinates' => Point::class,
-    ];
-
     public function networks(): BelongsToMany
     {
-        return $this->belongsToMany(Network::class, 'sensor_network', 'sensor_id', 'network_id');
+        return $this->belongsToMany(Network::class, 'router_network', 'router_id', 'network_id');
     }
 }
