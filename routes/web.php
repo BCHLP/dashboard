@@ -15,7 +15,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('dashboard', function(){
         return Inertia::render('dashboard');
-    })->name('map');
+    })->name('dashboard');
 
     Route::get('test', function() {
         return Inertia::render('test');
