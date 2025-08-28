@@ -2,8 +2,10 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 import React from 'react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import '@patternfly/react-core/dist/styles/base-no-reset.css';
+import { useEchoModel } from "@laravel/echo-react";
+
 
 // // eslint-disable-next-line patternfly-react/import-tokens-icons
 // import { RegionsIcon as Icon1 } from '@patternfly/react-icons';
@@ -11,39 +13,35 @@ import '@patternfly/react-core/dist/styles/base-no-reset.css';
 // import { FolderOpenIcon as Icon2 } from '@patternfly/react-icons';
 
 import { TbAntenna } from "react-icons/tb";
-import { CiServer, CiRouter } from "react-icons/ci";
-
-
+import { CiServer, CiRouter, CiSettings } from "react-icons/ci";
+import { RiLineChartLine } from "react-icons/ri";
+import { ChartArea, ChartContainer, ChartGroup, ChartLabel, ChartVoronoiContainer } from '@patternfly/react-charts/victory';
+import { Tabs, Tab, TabTitleText, TabTitleIcon } from '@patternfly/react-core';
 
 import {
     ColaLayout,
-    ComponentFactory,
     DefaultEdge,
     DefaultGroup,
     DefaultNode,
     EdgeStyle,
-    Graph,
     GraphComponent,
-    Layout,
-    LayoutFactory,
-    Model,
     ModelKind,
-    Node,
     NodeModel,
     NodeShape,
-    NodeStatus,
     SELECTION_EVENT,
+    TopologySideBar,
+    TopologyView,
     Visualization,
     VisualizationProvider,
-    VisualizationSurface
+    VisualizationSurface,
+    withSelection,
+    WithSelectionProps
 } from '@patternfly/react-topology';
-import { AntennaIcon } from 'lucide-react';
-import { RouterModal } from '@/components/modals/router-modal';
+import { ComponentFactory, Graph, Layout, LayoutFactory, Model, Node, NodeStatus } from '@patternfly/react-topology';
 
 interface CustomNodeProps {
     element: Node;
 }
-
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -51,9 +49,6 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/dashboard',
     },
 ];
-
-
-
 
 const BadgeColors = [
     {
@@ -70,7 +65,7 @@ const BadgeColors = [
     }
 ];
 
-const CustomNode: React.FC<CustomNodeProps> = ({ element }) => {
+const CustomNode: React.FC<CustomNodeProps & WithSelectionProps> = ({ element, onSelect, selected }) => {
     const data = element.getData();
     const Icon = data.icon;
     const badgeColors = BadgeColors.find((badgeColor) => badgeColor.name === data.badge);
@@ -83,9 +78,11 @@ const CustomNode: React.FC<CustomNodeProps> = ({ element }) => {
             badgeColor={badgeColors?.badgeColor}
             badgeTextColor={badgeColors?.badgeTextColor}
             badgeBorderColor={badgeColors?.badgeBorderColor}
+            onSelect={onSelect}
+            selected={selected}
         >
             <g transform={`translate(25, 25)`}>
-                <Icon size={25} />
+                <Icon style={{ color: '#393F44' }} size={25} />
             </g>
         </DefaultNode>
     );
@@ -109,9 +106,9 @@ const customComponentFactory: ComponentFactory = (kind: ModelKind, type: string)
                 case ModelKind.graph:
                     return GraphComponent;
                 case ModelKind.node:
-                    return CustomNode;
+                    return withSelection()(CustomNode);
                 case ModelKind.edge:
-                    return DefaultEdge;
+                    return withSelection()(DefaultEdge);
                 default:
                     return undefined;
             }
@@ -120,121 +117,110 @@ const customComponentFactory: ComponentFactory = (kind: ModelKind, type: string)
 
 const NODE_DIAMETER = 75;
 
-const NODES: NodeModel[] = [
-    {
-        id: 'node-0',
-        type: 'node',
-        label: 'MQTT Proxy',
-        width: NODE_DIAMETER,
-        height: NODE_DIAMETER,
-        shape: NodeShape.ellipse,
-        status: NodeStatus.danger,
-        data: {
-            badge: 'B',
-            icon: CiServer
-        }
-    },
-    {
-        id: 'node-1',
-        type: 'node',
-        label: 'Router',
-        width: NODE_DIAMETER,
-        height: NODE_DIAMETER,
-        shape: NodeShape.hexagon,
-        status: NodeStatus.warning,
-        data: {
-            badge: 'B',
-            icon: CiRouter
-        }
-    },
-    {
-        id: 'node-2',
-        type: 'node',
-        label: 'SCADA',
-        width: NODE_DIAMETER,
-        height: NODE_DIAMETER,
-        shape: NodeShape.octagon,
-        status: NodeStatus.success,
-        data: {
-            badge: 'A',
-            icon: CiServer
-        }
-    },
-    {
-        id: 'node-3',
-        type: 'node',
-        label: 'Sensor 1',
-        width: NODE_DIAMETER,
-        height: NODE_DIAMETER,
-        shape: NodeShape.rhombus,
-        status: NodeStatus.info,
-        data: {
-            badge: 'A',
-            icon: AntennaIcon
-        }
-    },
-    {
-        id: 'node-4',
-        type: 'node',
-        label: 'Sensor 2',
-        width: NODE_DIAMETER,
-        height: NODE_DIAMETER,
-        shape: NodeShape.hexagon,
-        status: NodeStatus.default,
-        data: {
-            badge: 'C',
-            icon: AntennaIcon
-        }
-    },
-    {
-        id: 'node-5',
-        type: 'node',
-        label: 'Sensor 3',
-        width: NODE_DIAMETER,
-        height: NODE_DIAMETER,
-        shape: NodeShape.rect,
-        data: {
-            badge: 'C',
-            icon: AntennaIcon
-        }
-    },
-    {
-        id: 'Group-1',
-        children: ['node-0', 'node-1', 'node-2'],
-        type: 'group',
-        group: true,
-        label: 'Group-1',
-        style: {
-            padding: 40
-        }
-    }
-];
-
 const EDGES = [
     {
         id: 'edge-node-4-node-5',
         type: 'edge',
-        source: 'node-4',
-        target: 'node-5',
-        edgeStyle: EdgeStyle.solid
+        source: 'router-0',
+        target: 'server-0',
+        edgeStyle: EdgeStyle.default
     },
     {
         id: 'edge-node-0-node-2',
         type: 'edge',
-        source: 'node-0',
-        target: 'node-2',
-        edgeStyle: EdgeStyle.solid
-    },{
-        id: 'edge-node-1-node-0',
-        type: 'edge',
-        source: 'node-1',
-        target: 'node-0',
-        edgeStyle: EdgeStyle.solid
+        source: 'router-0',
+        target: 'server-1',
+        edgeStyle: EdgeStyle.default
     }
 ];
 
-const TopologyCustomNodeDemo: React.FC = () => {
+
+
+export default function Dashboard (props) {
+    console.log("props",props);
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
+    const [activeTabKey, setActiveTabKey] = useState<string | number>(0);
+    // Toggle currently active tab
+    const handleTabClick = (
+        event: React.MouseEvent<any> | React.KeyboardEvent | MouseEvent,
+        tabIndex: string | number
+    ) => {
+        setActiveTabKey(tabIndex);
+    };
+
+    useEchoModel("App.Models.Sensor", "1", ["App\\Events\\DatapointCreatedEvent"], (e) => {
+        console.log(e);
+    });
+
+    const NODES: NodeModel[] = useMemo(() => [
+        {
+            id: 'server-0',
+            type: 'node',
+            label: 'MQTT Proxy',
+            width: NODE_DIAMETER,
+            height: NODE_DIAMETER,
+            shape: NodeShape.ellipse,
+            status: NodeStatus.danger,
+            data: {
+                badge: 'B',
+                icon: CiServer,
+            }
+        },
+        {
+            id: 'router-0',
+            type: 'node',
+            label: 'Router',
+            width: NODE_DIAMETER,
+            height: NODE_DIAMETER,
+            shape: NodeShape.hexagon,
+            status: NodeStatus.warning,
+            data: {
+                badge: 'B',
+                icon: CiRouter
+            }
+        },
+        {
+            id: 'server-1',
+            type: 'node',
+            label: 'SCADA',
+            width: NODE_DIAMETER,
+            height: NODE_DIAMETER,
+            shape: NodeShape.octagon,
+            status: NodeStatus.success,
+            data: {
+                badge: 'A',
+                icon: CiServer,
+            }
+        },
+        {
+            id: 'Group-1',
+            children: ['server-0', 'router-0', 'server-1'],
+            type: 'group',
+            group: true,
+            label: 'Group-1',
+            style: {
+                padding: 40
+            }
+        },
+        ...props.sensors.data.map((sensor, index) => ({
+
+            id: 'sensor-'+index,
+            type: 'node',
+            label: sensor.name,
+            width: NODE_DIAMETER,
+            height: NODE_DIAMETER,
+            shape: NodeShape.rhombus,
+            status: NodeStatus.info,
+            data: {
+                badge: 'A',
+                icon: TbAntenna
+            }
+        }))
+
+    ], [props.sensors.data]);
+
+    console.log("NODES", NODES);
+
 
     const controller = useMemo(() => {
         const model: Model = {
@@ -256,19 +242,85 @@ const TopologyCustomNodeDemo: React.FC = () => {
         newController.fromModel(model, false);
 
         return newController;
-    }, []);
+    }, [NODES]);
 
-    return (
-        <VisualizationProvider controller={controller}>
-            <VisualizationSurface state={{ selectedIds }} />
-        </VisualizationProvider>
+    const topologySideBar = (
+        <TopologySideBar
+            className="topology-example-sidebar"
+            show={selectedIds.length > 0}
+            onClose={() => setSelectedIds([])}
+        >
+            <div style={{ marginTop: 27, marginLeft: 20, height: '800px' }}>
+                <h1>{selectedIds[0]}</h1>
+                <Tabs
+                    isFilled
+                    activeKey={activeTabKey}
+                    onSelect={handleTabClick}
+                    aria-label="Tabs in the filled with icons example"
+                    role="region"
+                >
+                    <Tab
+                        eventKey={0}
+                        title={
+                            <>
+                                <TabTitleIcon>
+                                    <RiLineChartLine />
+                                </TabTitleIcon>{' '}
+                                <TabTitleText>Usage</TabTitleText>{' '}
+                            </>
+                        }
+                        aria-label="filled tabs with icons content users"
+                    >
+                        <div style={{ marginLeft: '50px', marginTop: '50px', height: '135px' }}>
+                            <div style={{ height: '100px', width: '400px' }}>
+                                <ChartGroup
+                                    ariaDesc="Average number of pets"
+                                    ariaTitle="Sparkline chart example"
+                                    containerComponent={<ChartVoronoiContainer labels={({ datum }) => `${datum.name}: ${datum.y}`} constrainToVisibleArea />}
+                                    height={100}
+                                    maxDomain={{y: 9}}
+                                    name="chart1"
+                                    padding={0}
+                                    width={400}
+                                >
+                                    <ChartArea
+                                        data={[
+                                            { name: 'Cats', x: '2015', y: 3 },
+                                            { name: 'Cats', x: '2016', y: 4 },
+                                            { name: 'Cats', x: '2017', y: 8 },
+                                            { name: 'Cats', x: '2018', y: 6 }
+                                        ]}
+                                    />
+                                </ChartGroup>
+                            </div>
+                            <ChartContainer title="CPU utilization">
+                                <ChartLabel text="CPU utilization" dy={15}/>
+                            </ChartContainer>
+                        </div>
+                    </Tab>
+                    <Tab
+                        eventKey={1}
+                        title={
+                            <>
+                                <TabTitleIcon>
+                                    <CiSettings />
+                                </TabTitleIcon>{' '}
+                                <TabTitleText>Configuration</TabTitleText>{' '}
+                            </>
+                        }
+                    >
+                        <div style={{ marginLeft: '50px', marginTop: '50px', height: '135px' }}>
+                            The configuration layout will go here
+
+                        </div>
+                    </Tab>
+                </Tabs>
+
+
+
+            </div>
+        </TopologySideBar>
     );
-};
-
-
-
-
-export default function dashboard() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -276,10 +328,13 @@ export default function dashboard() {
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
                 <div
                     className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
-                    <TopologyCustomNodeDemo />
+                    <TopologyView sideBar={topologySideBar}>
+                        <VisualizationProvider controller={controller}>
+                            <VisualizationSurface state={{ selectedIds }} />
+                        </VisualizationProvider>
+                    </TopologyView>
                 </div>
             </div>
-            <RouterModal></RouterModal>
         </AppLayout>
     );
-}
+};

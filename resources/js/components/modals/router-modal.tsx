@@ -1,15 +1,14 @@
 import { Fragment, useState } from 'react';
 import { Button, Modal, ModalVariant, Wizard, WizardHeader, WizardStep } from '@patternfly/react-core';
 
-export const RouterModal: React.FunctionComponent = () => {
-    const [isModalOpen, setIsModalOpen] = useState(false);
+interface RouterModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+}
 
-    const handleModalToggle = (_event: KeyboardEvent | React.MouseEvent) => {
-        setIsModalOpen((prevIsModalOpen) => !prevIsModalOpen);
-    };
-
+export const RouterModal: React.FunctionComponent<RouterModalProps> = ({ isOpen, onClose }) => {
     const handleWizardToggle = () => {
-        setIsModalOpen((prevIsModalOpen) => !prevIsModalOpen);
+        onClose();
     };
 
     const numberedSteps = [1, 2, 3, 4].map((stepNumber) => (
@@ -19,16 +18,12 @@ export const RouterModal: React.FunctionComponent = () => {
     ));
 
     return (
-        <Fragment>
-            <Button variant="primary" onClick={handleModalToggle}>
-                Show wizard modal
-            </Button>
-            <Modal
-                variant={ModalVariant.large}
-                isOpen={isModalOpen}
-                aria-labelledby="modal-wizard-label"
-                aria-describedby="modal-wizard-description"
-            >
+        <Modal
+            variant={ModalVariant.large}
+            isOpen={isOpen}
+            aria-labelledby="modal-wizard-label"
+            aria-describedby="modal-wizard-description"
+        >
                 <Wizard
                     height={400}
                     header={
@@ -52,7 +47,6 @@ export const RouterModal: React.FunctionComponent = () => {
                         Review step
                     </WizardStep>
                 </Wizard>
-            </Modal>
-        </Fragment>
+        </Modal>
     );
 };

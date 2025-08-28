@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\DatapointCreatedEvent;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,6 +15,10 @@ class Datapoint extends Model
         'sensor_id',
         'metric_id',
         'value',
+    ];
+
+    protected $dispatchesEvents = [
+        'created' => DatapointCreatedEvent::class,
     ];
 
     public function metric(): BelongsTo
