@@ -12,7 +12,7 @@ class Datapoint extends Model
     use HasFactory;
 
     protected $fillable = [
-        'sensor_id',
+        'device_metric_id',
         'metric_id',
         'value',
     ];

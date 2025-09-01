@@ -2,24 +2,20 @@
 
 namespace Database\Factories;
 
-use App\Models\Datapoint;
-use App\Models\Metric;
-use App\Models\Sensor;
+use App\Models\Server;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
-class DatapointFactory extends Factory
+class ServerFactory extends Factory
 {
-    protected $model = Datapoint::class;
+    protected $model = Server::class;
 
     public function definition(): array
     {
-
         return [
-            'value' => $this->faker->randomFloat(),
+            'name' => $this->faker->name(),
             'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now()
-
+            'updated_at' => Carbon::now(),
         ];
     }
 }

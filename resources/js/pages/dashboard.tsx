@@ -293,8 +293,8 @@ export default function Dashboard (props) {
                                     />
                                 </ChartGroup>
                             </div>
-                            <ChartContainer title="CPU utilization">
-                                <ChartLabel text="CPU utilization" dy={15}/>
+                            <ChartContainer title="pH">
+                                <ChartLabel text="pH" dy={15}/>
                             </ChartContainer>
                         </div>
                     </Tab>

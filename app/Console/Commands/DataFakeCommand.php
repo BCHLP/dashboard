@@ -16,28 +16,23 @@ class DataFakeCommand extends Command
     public function handle(): void
     {
 
-        $sensors = Sensor::all();
-        $metrics = Metric::whereIn('name',[
-            'hydrogen_sulfide',
-            'dissolved_oxygen',
-            'potential_of_hydrogen',
-        ])->get();
+        $metrics = Metric::get();
 
-        $this->info("Starting loop with {$sensors->count()} sensors and {$metrics->count()} metrics");
+        $this->info("Starting loop with {$metrics->count()} metrics");
         while(true) {
 
-            foreach($sensors as $sensor) {
-                foreach($metrics as $metric) {
-
+            foreach($metrics as $metric) {
+                foreach($metric->devices as $device) {
                     $datapoint = Datapoint::create([
-                        'sensor_id' => $sensor->id,
+                        'device_metric_id' => $device->id,
                         'metric_id' => $metric->id,
                         'value' => $this->getRandomValue($metric)
                     ]);
-                    $this->line("Created datapoint for sensor {$sensor->name} for metric {$metric->name}");
+                    // $this->line("Created datapoint for sensor {$sensor->name} for metric {$metric->name}");
                     $this->line(print_r($datapoint, true));
                 }
             }
+
 
             sleep(1);
         }

@@ -2,23 +2,24 @@
 
 namespace Database\Factories;
 
+use App\Models\DeviceMetric;
 use App\Models\Metric;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
-class MetricFactory extends Factory
+class DeviceMetricFactory extends Factory
 {
-    protected $model = Metric::class;
+    protected $model = DeviceMetric::class;
 
     public function definition(): array
     {
         return [
-            'name' => $this->faker->name(),
-            'alias' => $this->faker->name(),
-            'baseline_minimum' => 0,
-            'baseline_maximum' => 100,
+            'device_metric_id' => $this->faker->randomNumber(),
+            'device_metric_type' => $this->faker->word(),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
+
+            'metric_id' => Metric::factory(),
         ];
     }
 }

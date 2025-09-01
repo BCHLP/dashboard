@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up()
     {
+        DB::statement("CREATE EXTENSION IF NOT EXISTS postgis");
+
         Schema::create('sensors', function (Blueprint $table) {
             $table->id();
             $table->string('name');
