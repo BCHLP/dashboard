@@ -6,21 +6,19 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-    public function up()
+    public function up(): void
     {
-        DB::statement("CREATE EXTENSION IF NOT EXISTS postgis");
-
-        Schema::create('sensors', function (Blueprint $table) {
+        Schema::create('nodes', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->magellanPoint('coordinates');
-            $table->integer('state')->default(0);
+            $table->magellanPoint('coordinates')->nullable();
+            $table->integer('node_type');
             $table->timestamps();
         });
     }
 
-    public function down()
+    public function down(): void
     {
-        Schema::dropIfExists('sensors');
+        Schema::dropIfExists('nodes');
     }
 };

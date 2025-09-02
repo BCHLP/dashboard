@@ -7,14 +7,14 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('router_network', function (Blueprint $table) {
-            $table->foreignId('router_id');
-            $table->foreignId('network_id');
+        Schema::create('node_metric', function (Blueprint $table) {
+            $table->foreignId('node_id');
+            $table->foreignId('metric_id');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('router_network');
+        Schema::dropIfExists('node_metric');
     }
 };

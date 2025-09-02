@@ -18,10 +18,10 @@ class DatapointResource extends JsonResource
             'updated_at' => $this->updated_at,
 
             'metric_id' => $this->metric_id,
-            'sensor_id' => $this->sensor_id,
+            'node_id' => $this->node_id,
 
             'metric' => new MetricResource($this->whenLoaded('metric')),
-            'sensor' => new SensorResource($this->whenLoaded('sensor')),
+            'node' => new NodeResource($this->whenLoaded('node')),
         ];
     }
 }

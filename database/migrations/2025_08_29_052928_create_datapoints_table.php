@@ -9,12 +9,12 @@ return new class extends Migration {
     {
         Schema::create('datapoints', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('node_id');
             $table->foreignId('metric_id');
-            $table->foreignId('device_metric_id');
             $table->float('value');
             $table->timestamps();
 
-            $table->index(['metric_id', 'device_metric_id']);
+            $table->index(['node_id', 'metric_id']);
             $table->index(['created_at']);
         });
     }

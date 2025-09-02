@@ -11,8 +11,6 @@ return new class extends Migration {
             $table->id();
             $table->string('name');
             $table->string('alias');
-            $table->float('baseline_minimum');
-            $table->float('baseline_maximum');
             $table->timestamps();
         });
     }

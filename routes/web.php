@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Controllers\MapController;
-use App\Http\Resources\SensorResource;
-use App\Models\Sensor;
+use App\Http\Controllers\DashboardController;
+use App\Http\Resources\NodeResource;
+use App\Models\Node;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -15,14 +15,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('PerthMap');
     })->name('map');
 
-    Route::get('dashboard', function(){
-        $sensors = Sensor::all();
-        return Inertia::render('dashboard', ['sensors' => SensorResource::collection($sensors)]);
-    })->name('dashboard');
-
-    Route::get('test', function() {
-        return Inertia::render('test');
-    })->name('test');
+    Route::get('dashboard', DashboardController::class)->name('dashboard');
 
 });
 

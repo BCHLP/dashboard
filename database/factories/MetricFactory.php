@@ -15,8 +15,6 @@ class MetricFactory extends Factory
         return [
             'name' => $this->faker->name(),
             'alias' => $this->faker->name(),
-            'baseline_minimum' => 0,
-            'baseline_maximum' => 100,
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ];

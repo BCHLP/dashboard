@@ -14,17 +14,10 @@ class MapController extends Controller
 {
     public function __invoke(float $north, float $east, float $south, float $west)
     {
-        // Use ST_MakeEnvelope for more reliable bounding box creation
-        // ST_MakeEnvelope(xmin, ymin, xmax, ymax, srid)
         $manholes = Manhole::whereRaw(
             "ST_Intersects(coordinates, ST_MakeEnvelope(?, ?, ?, ?, 4326))",
             [$west, $south, $east, $north]
         )->get();
-
-//        $sensors = Sensor::whereRaw(
-//            "ST_Intersects(coordinates, ST_MakeEnvelope(?, ?, ?, ?, 4326))",
-//            [$west, $south, $east, $north]
-//        )->get();
 
         $pipes = Pipe::whereRaw(
             "ST_Intersects(path, ST_MakeEnvelope(?, ?, ?, ?, 4326))",

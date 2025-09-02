@@ -2,20 +2,19 @@
 
 namespace Database\Factories;
 
-use App\Models\StateHistory;
+use App\Models\Node;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
-class StateHistoryFactory extends Factory
+class NodeFactory extends Factory
 {
-    protected $model = StateHistory::class;
+    protected $model = Node::class;
 
     public function definition(): array
     {
         return [
-            'device_class' => $this->faker->word(),
-            'device_id' => $this->faker->randomNumber(),
-            'state' => $this->faker->randomNumber(),
+            'name' => $this->faker->name(),
+            'node_type' => $this->faker->randomNumber(),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ];

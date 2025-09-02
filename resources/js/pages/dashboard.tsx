@@ -118,25 +118,57 @@ const customComponentFactory: ComponentFactory = (kind: ModelKind, type: string)
 const NODE_DIAMETER = 75;
 
 const EDGES = [
-    {
-        id: 'edge-node-4-node-5',
-        type: 'edge',
-        source: 'router-0',
-        target: 'server-0',
-        edgeStyle: EdgeStyle.default
-    },
-    {
-        id: 'edge-node-0-node-2',
-        type: 'edge',
-        source: 'router-0',
-        target: 'server-1',
-        edgeStyle: EdgeStyle.default
-    }
+    // {
+    //     id: 'edge-node-4-node-5',
+    //     type: 'edge',
+    //     source: 'router-0',
+    //     target: 'server-0',
+    //     edgeStyle: EdgeStyle.default
+    // },
+    // {
+    //     id: 'edge-node-0-node-2',
+    //     type: 'edge',
+    //     source: 'router-0',
+    //     target: 'server-1',
+    //     edgeStyle: EdgeStyle.default
+    // }
 ];
 
+type Sensor = {
+    id: number;
+    name: string;
+    metrics: Metric[];
+}
 
+type Server = {
+    id: number;
+    name: string;
+    metrics: Metric[];
+}
 
-export default function Dashboard (props) {
+type Router = {
+    id: number;
+    name: string;
+    metrics: Metric[];
+}
+
+type Metric = {
+    id: number;
+    name: string;
+}
+
+type Datapoint = {
+    when: number;
+    value:number;
+};
+
+type Props = {
+    sensors: Sensor[];
+    servers: Server[];
+    routers: Router[];
+}
+
+export default function Dashboard (props:Props) {
     console.log("props",props);
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [activeTabKey, setActiveTabKey] = useState<string | number>(0);
@@ -148,76 +180,77 @@ export default function Dashboard (props) {
         setActiveTabKey(tabIndex);
     };
 
-    useEchoModel("App.Models.Sensor", "1", ["App\\Events\\DatapointCreatedEvent"], (e) => {
+    useEchoModel("App.Models.Node", "1", ["App\\Events\\DatapointCreatedEvent"], (e) => {
         console.log(e);
     });
 
     const NODES: NodeModel[] = useMemo(() => [
-        {
-            id: 'server-0',
-            type: 'node',
-            label: 'MQTT Proxy',
-            width: NODE_DIAMETER,
-            height: NODE_DIAMETER,
-            shape: NodeShape.ellipse,
-            status: NodeStatus.danger,
-            data: {
-                badge: 'B',
-                icon: CiServer,
-            }
-        },
-        {
-            id: 'router-0',
-            type: 'node',
-            label: 'Router',
-            width: NODE_DIAMETER,
-            height: NODE_DIAMETER,
-            shape: NodeShape.hexagon,
-            status: NodeStatus.warning,
-            data: {
-                badge: 'B',
-                icon: CiRouter
-            }
-        },
-        {
-            id: 'server-1',
-            type: 'node',
-            label: 'SCADA',
-            width: NODE_DIAMETER,
-            height: NODE_DIAMETER,
-            shape: NodeShape.octagon,
-            status: NodeStatus.success,
-            data: {
-                badge: 'A',
-                icon: CiServer,
-            }
-        },
-        {
-            id: 'Group-1',
-            children: ['server-0', 'router-0', 'server-1'],
-            type: 'group',
-            group: true,
-            label: 'Group-1',
-            style: {
-                padding: 40
-            }
-        },
-        ...props.sensors.data.map((sensor, index) => ({
+        // {
+        //     id: 'server-0',
+        //     type: 'node',
+        //     label: 'MQTT Proxy',
+        //     width: NODE_DIAMETER,
+        //     height: NODE_DIAMETER,
+        //     shape: NodeShape.ellipse,
+        //     status: NodeStatus.danger,
+        //     data: {
+        //         badge: 'B',
+        //         icon: CiServer,
+        //     }
+        // },
+        // {
+        //     id: 'router-0',
+        //     type: 'node',
+        //     label: 'Router',
+        //     width: NODE_DIAMETER,
+        //     height: NODE_DIAMETER,
+        //     shape: NodeShape.hexagon,
+        //     status: NodeStatus.warning,
+        //     data: {
+        //         badge: 'B',
+        //         icon: CiRouter
+        //     }
+        // },
+        // {
+        //     id: 'server-1',
+        //     type: 'node',
+        //     label: 'SCADA',
+        //     width: NODE_DIAMETER,
+        //     height: NODE_DIAMETER,
+        //     shape: NodeShape.octagon,
+        //     status: NodeStatus.success,
+        //     data: {
+        //         badge: 'A',
+        //         icon: CiServer,
+        //     }
+        // },
+        // {
+        //     id: 'Group-1',
+        //     children: ['server-0', 'router-0', 'server-1'],
+        //     type: 'group',
+        //     group: true,
+        //     label: 'Group-1',
+        //     style: {
+        //         padding: 40
+        //     }
+        // },
+        ...props.servers.map((server, index) => ({
 
-            id: 'sensor-'+index,
+            id: 'server-'+index,
             type: 'node',
-            label: sensor.name,
+            label: server.name,
             width: NODE_DIAMETER,
             height: NODE_DIAMETER,
             shape: NodeShape.rhombus,
             status: NodeStatus.info,
             data: {
                 badge: 'A',
-                icon: TbAntenna
+                icon: CiServer,
+                metrics: server.metrics,
             }
         }))
 
-    ], [props.sensors.data]);
+    ], [props.servers]);
 
     console.log("NODES", NODES);
 
@@ -244,6 +277,10 @@ export default function Dashboard (props) {
         return newController;
     }, [NODES]);
 
+    if (selectedIds.length > 0) {
+        console.log("NODES", NODES, selectedIds, NODES.find((node) => node.id === selectedIds[0]));
+    }
+
     const topologySideBar = (
         <TopologySideBar
             className="topology-example-sidebar"
@@ -251,7 +288,7 @@ export default function Dashboard (props) {
             onClose={() => setSelectedIds([])}
         >
             <div style={{ marginTop: 27, marginLeft: 20, height: '800px' }}>
-                <h1>{selectedIds[0]}</h1>
+                <h1>{NODES.find((node) => node.id === selectedIds[0])?.label}</h1>
                 <Tabs
                     isFilled
                     activeKey={activeTabKey}
@@ -271,32 +308,33 @@ export default function Dashboard (props) {
                         }
                         aria-label="filled tabs with icons content users"
                     >
-                        <div style={{ marginLeft: '50px', marginTop: '50px', height: '135px' }}>
-                            <div style={{ height: '100px', width: '400px' }}>
-                                <ChartGroup
-                                    ariaDesc="Average number of pets"
-                                    ariaTitle="Sparkline chart example"
-                                    containerComponent={<ChartVoronoiContainer labels={({ datum }) => `${datum.name}: ${datum.y}`} constrainToVisibleArea />}
-                                    height={100}
-                                    maxDomain={{y: 9}}
-                                    name="chart1"
-                                    padding={0}
-                                    width={400}
-                                >
-                                    <ChartArea
-                                        data={[
-                                            { name: 'Cats', x: '2015', y: 3 },
-                                            { name: 'Cats', x: '2016', y: 4 },
-                                            { name: 'Cats', x: '2017', y: 8 },
-                                            { name: 'Cats', x: '2018', y: 6 }
-                                        ]}
-                                    />
-                                </ChartGroup>
+
+                        {NODES.find((node) => node.id === selectedIds[0])?.data.metrics.map((metric:Metric) => (
+                            <div>
+                                <div>
+                                    <ChartGroup
+                                        ariaDesc={metric.name}
+                                        containerComponent={<ChartVoronoiContainer labels={({ datum }) => `${datum.name}: ${datum.y}`} constrainToVisibleArea />}
+                                        height={100}
+                                        maxDomain={{y: 9}}
+                                        name={"chart"+metric.id}
+                                        padding={0}
+                                        width={400}
+                                    >
+                                        <ChartArea
+                                            data={[
+                                                { name: 'Cats', x: '2015', y: 3 },
+                                                { name: 'Cats', x: '2016', y: 4 },
+                                                { name: 'Cats', x: '2017', y: 8 },
+                                                { name: 'Cats', x: '2018', y: 6 }
+                                            ]}
+                                        />
+                                    </ChartGroup>
+                                </div>
                             </div>
-                            <ChartContainer title="pH">
-                                <ChartLabel text="pH" dy={15}/>
-                            </ChartContainer>
-                        </div>
+                            ))}
+
+
                     </Tab>
                     <Tab
                         eventKey={1}
