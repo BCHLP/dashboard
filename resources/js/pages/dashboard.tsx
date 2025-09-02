@@ -158,20 +158,24 @@ type Metric = {
 }
 
 type Datapoint = {
-    when: number;
-    value:number;
+    x: number;
+    y: number;
+    name: string;
+    node_id: number;
+    metric_id: number;
 };
 
 type Props = {
     sensors: Sensor[];
     servers: Server[];
     routers: Router[];
+    datapoints:Datapoint[];
 }
 
 export default function Dashboard (props:Props) {
-    console.log("props",props);
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [activeTabKey, setActiveTabKey] = useState<string | number>(0);
+    const [datapoints, setDatapoints] = useState<Datapoint[]>(props.datapoints);
     // Toggle currently active tab
     const handleTabClick = (
         event: React.MouseEvent<any> | React.KeyboardEvent | MouseEvent,
@@ -182,6 +186,11 @@ export default function Dashboard (props:Props) {
 
     useEchoModel("App.Models.Node", "1", ["App\\Events\\DatapointCreatedEvent"], (e) => {
         console.log(e);
+        setDatapoints(prev => {
+            const newArray = [...prev, e];
+            return newArray.length > 60 ? newArray.slice(1) : newArray;
+        });
+
     });
 
     const NODES: NodeModel[] = useMemo(() => [
@@ -236,7 +245,7 @@ export default function Dashboard (props:Props) {
         // },
         ...props.servers.map((server, index) => ({
 
-            id: 'server-'+index,
+            id: server.id,
             type: 'node',
             label: server.name,
             width: NODE_DIAMETER,
@@ -251,9 +260,6 @@ export default function Dashboard (props:Props) {
         }))
 
     ], [props.servers]);
-
-    console.log("NODES", NODES);
-
 
     const controller = useMemo(() => {
         const model: Model = {
@@ -276,10 +282,6 @@ export default function Dashboard (props:Props) {
 
         return newController;
     }, [NODES]);
-
-    if (selectedIds.length > 0) {
-        console.log("NODES", NODES, selectedIds, NODES.find((node) => node.id === selectedIds[0]));
-    }
 
     const topologySideBar = (
         <TopologySideBar
@@ -310,24 +312,19 @@ export default function Dashboard (props:Props) {
                     >
 
                         {NODES.find((node) => node.id === selectedIds[0])?.data.metrics.map((metric:Metric) => (
-                            <div>
+                            <div key={metric.id}>
                                 <div>
                                     <ChartGroup
                                         ariaDesc={metric.name}
                                         containerComponent={<ChartVoronoiContainer labels={({ datum }) => `${datum.name}: ${datum.y}`} constrainToVisibleArea />}
                                         height={100}
-                                        maxDomain={{y: 9}}
+                                        maxDomain={{y: 100}}
                                         name={"chart"+metric.id}
                                         padding={0}
                                         width={400}
                                     >
                                         <ChartArea
-                                            data={[
-                                                { name: 'Cats', x: '2015', y: 3 },
-                                                { name: 'Cats', x: '2016', y: 4 },
-                                                { name: 'Cats', x: '2017', y: 8 },
-                                                { name: 'Cats', x: '2018', y: 6 }
-                                            ]}
+                                            data={datapoints.filter((datapoint) => datapoint.node_id == selectedIds[0] && datapoint.metric_id == metric.id)}
                                         />
                                     </ChartGroup>
                                 </div>

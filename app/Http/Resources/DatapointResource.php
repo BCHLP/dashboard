@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Datapoint;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -12,16 +13,11 @@ class DatapointResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
-            'value' => $this->value,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
-
-            'metric_id' => $this->metric_id,
+            'name' => 'Name',
+            'x' => Carbon::parse($this->created_at)->timestamp,
+            'y' => (float) $this->value,
             'node_id' => $this->node_id,
-
-            'metric' => new MetricResource($this->whenLoaded('metric')),
-            'node' => new NodeResource($this->whenLoaded('node')),
+            'metric_id' => $this->metric_id,
         ];
     }
 }

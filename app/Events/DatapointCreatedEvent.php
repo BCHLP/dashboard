@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Http\Resources\DatapointResource;
 use App\Models\Datapoint;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
@@ -25,5 +26,9 @@ class DatapointCreatedEvent implements ShouldBroadcast
         return [
             new PrivateChannel("App.Models.Node.".$this->datapoint->node_id),
         ];
+    }
+
+    public function broadcastWith() {
+        return DatapointResource::make($this->datapoint)->resolve();
     }
 }

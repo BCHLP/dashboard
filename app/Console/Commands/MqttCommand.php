@@ -69,7 +69,6 @@ class MqttCommand extends Command
             }
 
 
-            $this->line("Creating CPU datapoint");
             Datapoint::create([
                 'metric_id' => $cpu->id,
                 'node_id' => $token->tokenable_id,
@@ -77,7 +76,6 @@ class MqttCommand extends Command
 
             ]);
 
-            $this->line("Creating RAM datapoint");
             Datapoint::create([
                 'metric_id' => $memory->id,
                 'node_id' => $token->tokenable_id,
