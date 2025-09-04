@@ -13,6 +13,7 @@
         "clickbar/laravel-magellan": "^2.0",
         "halaxa/json-machine": "^1.2",
         "inertiajs/inertia-laravel": "^2.0",
+        "kalnoy/nestedset": "^6.0",
         "laravel/framework": "^12.0",
         "laravel/reverb": "^1.0",
         "laravel/sanctum": "^4.0",

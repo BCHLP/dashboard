@@ -16,11 +16,14 @@ class BaselineService
         $end = Carbon::now()->subHours()->setMinutes(0)->setSeconds(0);
         $dow = $start->dayOfWeek();
         foreach ($metrics as $metric) {
-            foreach($metric->devices as $device) {
+            foreach($metric->nodes as $node) {
 
                 $datapoints = Datapoint::where('metric_id', $metric->id)
+                    ->where('node_id', $node->id)
                     ->whereBetween('created_at', [$start, $end])
                     ->pluck('value');
+
+
 
                 if ($datapoints->count() === 0) {
                     continue;
@@ -28,7 +31,7 @@ class BaselineService
 
                 MetricBaseline::updateOrCreate([
                     'metric_id' => $metric->id,
-                    'device_metric_id' => $device->id,
+                    'device_metric_id' => $node->id,
                     'dow' => $dow,
                     'hour' => $start->hour,
                 ],[

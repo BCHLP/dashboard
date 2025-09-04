@@ -1,0 +1,64 @@
+<?php
+declare(strict_types=1);
+
+namespace App\Services;
+
+use App\Models\Datapoint;
+use App\Models\Metric;
+use App\Models\Node;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
+
+class TankService
+{
+    private ?Node $tank;
+
+    private array $metrics = [];
+    public function __construct(Node|string $node) {
+        if (is_string($node)) {
+            $this->tank = Node::findByName($node);
+            return;
+        }
+        $this->tank = $node;
+
+        $this->metrics = MetricService::getMetricKeys();
+    }
+
+
+    private ?int $levelPercentage = null;
+    public function getLevelPercentage(): int {
+
+        if (!filled($this->levelPercentage)) {
+
+            $capacity = $this->tank->settings()->where('name', 'capacity')->first()->value() ?? 0;
+            $level = $this->getLevel();
+
+            if ($level > 0 && $capacity > 0) {
+                $this->levelPercentage = intval((($level / $capacity) * 100));
+            } else {
+                $this->levelPercentage = 0;
+            }
+        }
+
+        return $this->levelPercentage;
+
+    }
+
+    private ?int $level = null;
+    public function getLevel(): int {
+
+        if (!filled($this->level)) {
+
+            $this->level = intval(Datapoint::where('node_id', $this->tank->id)
+                ->where('metric_id', $this->metrics['wl'])
+                ->latest()
+                ->limit(1)
+                ->first()
+                ->value ?? 0);
+
+        }
+
+        return $this->level;
+
+    }
+}

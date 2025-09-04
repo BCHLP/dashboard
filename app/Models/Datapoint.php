@@ -21,6 +21,10 @@ class Datapoint extends Model
         'created' => DatapointCreatedEvent::class,
     ];
 
+    protected $casts = [
+        'value' => 'float',
+    ];
+
     public function metric(): BelongsTo
     {
         return $this->belongsTo(Metric::class);

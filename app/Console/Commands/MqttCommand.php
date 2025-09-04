@@ -7,6 +7,7 @@ use App\Models\Datapoint;
 use App\Models\DeviceMetric;
 use App\Models\Metric;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 use PhpMqtt\Client\Exceptions\ConfigurationInvalidException;
 use PhpMqtt\Client\Exceptions\ConnectingToBrokerFailedException;
 use PhpMqtt\Client\Exceptions\DataTransferException;
@@ -52,7 +53,9 @@ class MqttCommand extends Command
                 return;
             }
 
-            $token = PersonalAccessToken::findToken($payload['token']);
+            $token = Cache::remember('users', 3600, function () use ($payload) {
+                return PersonalAccessToken::findToken($payload['token']);
+            });
 
 
             if (blank($token)) {

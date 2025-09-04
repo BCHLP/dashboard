@@ -1,6 +1,6 @@
 <?php
 
-use Clickbar\Magellan\Data\Geometries\Point;
+use App\Models\Node;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -8,18 +8,18 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('nodes', function (Blueprint $table) {
+        Schema::create('node_settings', function (Blueprint $table) {
             $table->id();
+            $table->foreignIdFor(Node::class)->constrained('nodes');
             $table->string('name');
-            $table->magellanPoint('coordinates')->nullable();
-            $table->integer('node_type');
-            $table->nestedSet();
+            $table->string('value');
+            $table->string('cast')->default('string');
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('nodes');
+        Schema::dropIfExists('node_settings');
     }
 };
