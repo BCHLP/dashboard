@@ -18,6 +18,8 @@ class ValvePosition
             }
         }
 
+        ray("Setting valve {$node->name} to position {$position}");
+
         $setting = NodeSetting::where('node_id', $node->id)
             ->where('name', 'opened')
             ->update(['value' => $position]);

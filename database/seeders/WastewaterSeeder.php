@@ -29,7 +29,7 @@ class WastewaterSeeder extends Seeder
             $line = TreatmentLine::create([
                 'name' => $letter,
                 'maintenance_mode' => false,
-                'stage' => ($letter === 'A' ? TreatmentStageEnum::TANK1_FILLING : TreatmentStageEnum::AVAILABLE),
+                'stage_1' => ($letter === 'A' ? TreatmentStageEnum::FILLING : TreatmentStageEnum::AVAILABLE),
             ]);
 
             $valve0 = Node::create(['name' => "VAL-{$letter}0", 'node_type' => NodeTypeEnum::VALVE, 'treatment_line_id' => $line->id], $inlet);

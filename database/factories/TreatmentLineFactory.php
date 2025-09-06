@@ -16,7 +16,9 @@ class TreatmentLineFactory extends Factory
     {
         return [
             'name' => $this->faker->randomLetter(),
-            'stage' => TreatmentStageEnum::AVAILABLE,
+            'stage_1' => TreatmentStageEnum::AVAILABLE,
+            'stage_2' => TreatmentStageEnum::AVAILABLE,
+            'stage_3' => TreatmentStageEnum::AVAILABLE,
             'maintenance_mode' => false,
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),

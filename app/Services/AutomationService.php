@@ -4,203 +4,133 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Actions\ValvePosition;
+use App\Enums\NodeTypeEnum;
 use App\Enums\TreatmentStageEnum;
 use App\Models\Node;
 use App\Models\TreatmentLine;
-use Illuminate\Support\Collection;
 
 class AutomationService
 {
-
     public function run()
     {
 
-        $lines = TreatmentLine::all();
+        $lines = TreatmentLine::with('tanks')->get();
+        $valvePosition = app(ValvePosition::class);
         foreach ($lines as $line) {
-            switch ($line->stage) {
-                case TreatmentStageEnum::TANK1_FILLING:
-                    $this->tank1Filling($line);
-                    break;
-                case TreatmentStageEnum::TANK1_PROCESSING:
-                    $this->tank1Processing($line);
-                    break;
-                case TreatmentStageEnum::TANK1_TRANSFER_TANK2:
-                    $this->tank1Transferring($line);
-                    break;
-                case TreatmentStageEnum::TANK2_PROCESSING:
-                    $this->tank2Processing($line);
-                    break;
-                case TreatmentStageEnum::TANK2_TRANSFER_TANK3:
-                    $this->tank2Transferring($line);
-                    break;
-                case TreatmentStageEnum::TANK3_PROCESSING:
-                    $this->tank3Processing($line);
-                    break;
-                case TreatmentStageEnum::TANK3_EMPTYING:
-                    $this->tank3Emptying($line);
-                    break;
-                // case TreatmentStageEnum::AVAILABLE:
+            $tank1 = $line->tanks->where('name', "SED-{$line->name}1")->first();
+            $tank2 = $line->tanks->where('name', "AER-{$line->name}2")->first();
+            $tank3 = $line->tanks->where('name', "SED-{$line->name}3")->first();
+
+            /**
+             * Handling stage 1
+             */
+            $stage1 = $this->handleStage(1, $line, $line->stage_1, $tank1);
+            if ($stage1 !== $line->stage_1) {
+                $line->stage_1 = $stage1;
+                $line->save();
+            }
+
+            if ($stage1 === TreatmentStageEnum::TRANSFERRING && $line->stage_2 !== TreatmentStageEnum::FILLING) {
+                $line->stage_2 = TreatmentStageEnum::FILLING;
+                $line->save();
+                $valvePosition($tank2->children->first(), 0);
+            }
+
+            /**
+             * Handling stage 2
+             */
+            $stage2 = $this->handleStage(2, $line, $line->stage_2, $tank2);
+            if ($stage2 !== $line->stage_2) {
+                $line->stage_2 = $stage2;
+                $line->save();
+            }
+
+            if ($stage2 === TreatmentStageEnum::TRANSFERRING && $line->stage_3 !== TreatmentStageEnum::FILLING) {
+                $line->stage_3 = TreatmentStageEnum::FILLING;
+                $line->save();
+                $valvePosition($tank3->children->first(), 0);
+            }
+
+            /**
+             * Handling stage 3
+             */
+            $stage3 = $this->handleStage(3, $line, $line->stage_3, $tank3);
+            if ($stage3 !== $line->stage_3) {
+                $line->stage_3 = $stage3;
+                $line->save();
             }
         }
-        $this->lineCheck();
-    }
-
-
-
-
-    /**
-     * Check if we need to open a new line, and do so if required
-     * @return void
-     *
-     */
-    private function lineCheck()
-    {
-        if (TreatmentLine::where('stage', TreatmentStageEnum::TANK1_FILLING)->count() > 0) {
-            return;
-        }
-
-        $line = TreatmentLine::where('stage', TreatmentStageEnum::AVAILABLE)->first();
-        if (!$line) {
-            return;
-        }
-
-        $moveValve = app(ValvePosition::class);
-        $moveValve("VAL-{$line->name}0", 100);
-        $moveValve("VAL-{$line->name}1", 100);
-
-        $line->stage = TreatmentStageEnum::TANK1_FILLING;
-        $line->save();
-    }
-
-    private function tank1Filling(TreatmentLine $line): void
-    {
-        $node = Node::with('settings')->where('name', "SED-{$line->name}1")->first();
-        if (!$node) {
-            return;
-        }
-
-        $percent = (new TankService($node))->getLevelPercentage();
-        if ($percent > 95) {
-
-            $moveValve = app(ValvePosition::class);
-            $moveValve("VAL-{$line->name}0", 0);
-            $moveValve("VAL-{$line->name}1", 0);
-
-            $line->stage = TreatmentStageEnum::TANK1_PROCESSING;
-            $line->save();
-
-            $node->settings()->where('name', 'filled_time')->update(['value' => time()]);
-
-        }
-    }
-
-    private function tank1Processing(TreatmentLine $line): void
-    {
-
-
-        $node = Node::with('settings')->where('name', "SED-{$line->name}1")->first();
-        $filledTime = $node->settings()->where('name', 'filled_time')->first()->value() ?? 0;
-        if (time() - $filledTime > 10) {
-
-            $moveValve = app(ValvePosition::class);
-            $moveValve("VAL-{$line->name}2", 100);
-            $moveValve("VAL-{$line->name}3", 0);
-
-            $line->stage = TreatmentStageEnum::TANK1_TRANSFER_TANK2;
-            $line->save();
-
-            $node->settings()->where('name', 'filled_time')->update(['value' => 0]);
-        }
-
 
     }
 
-    private function tank1Transferring(TreatmentLine $line): void
-    {
-        $node = Node::with('settings')->where('name', "SED-{$line->name}1")->first();
-        if (!$node) {
-            $this->error("Can't find SED-{$line->name}1");
+    private function handleStage(int $stageNumber, TreatmentLine $line, TreatmentStageEnum $stage, Node $tank) : TreatmentStageEnum {
+
+        $tankService = new TankService($tank);
+        $valvePosition = app(ValvePosition::class);
+
+        switch ($stage) {
+            case TreatmentStageEnum::AVAILABLE:
+                if ($stageNumber !== 1) {
+                    break;
+                }
+                if (!TreatmentLine::where('stage_1',TreatmentStageEnum::FILLING)->exists()) {
+
+                    $valvePosition($tank->parent, 100);
+                    $valvePosition($tank->children->first(), 0);
+
+                    if ($tank->parent->parent->node_type === NodeTypeEnum::SCREEN) {
+                        $masterValve = $tank->parent->parent->parent;
+                        $valvePosition($masterValve, 100);
+                    }
+
+                    return TreatmentStageEnum::FILLING;
+                }
+                break;
+            case TreatmentStageEnum::FILLING:
+                if ($tankService->isFilled()) {
+
+                    $valvePosition($tank->parent, 0);
+                    $tank->settings()->where('name', 'filled_time')->update(['value' => time()]);
+
+                    return TreatmentStageEnum::PROCESSING;
+                }
+                break;
+            case TreatmentStageEnum::PROCESSING:
+                if ($tank->parent->parent->node_type === NodeTypeEnum::SCREEN) {
+                    $masterValve = $tank->parent->parent->parent;
+                    $masterValveService = new ValveService($masterValve);
+                    if ($masterValveService->isOpened()) {
+                        $valvePosition($masterValve, 0);
+                    }
+                }
+
+                $filledTime = $tank->settings()->where('name', 'filled_time')->first()->value() ?? 0;
+
+                $destinationIsAvailable = true;
+                $destination = $tank->children->first()->children->first();
+                if ($destination->isTank()) {
+                    $destinationTankService = new TankService($destination);
+                    $destinationIsAvailable = $destinationTankService->isEmpty();
+                }
+
+                if ($destinationIsAvailable && time() - $filledTime > 10) {
+
+                    $valvePosition($tank->children->first(), 100);
+                    $valvePosition($tank->parent, 0);
+
+                    $tank->settings()->where('name', 'filled_time')->update(['value' => 0]);
+                    return TreatmentStageEnum::TRANSFERRING;
+                }
+                break;
+            case TreatmentStageEnum::TRANSFERRING:
+                if ($tankService->isEmpty()) {
+
+                    $valvePosition($tank->children->first(), 0);
+                    return TreatmentStageEnum::AVAILABLE;
+                }
         }
-        $level = (new TankService($node))->getLevel();
-        if ($level === 0) {
 
-            $moveValve = app(ValvePosition::class);
-            $moveValve("VAL-{$line->name}2", 0);
-
-            $line->stage = TreatmentStageEnum::TANK2_PROCESSING;
-            $line->save();
-
-            $node->settings()->where('name', 'filled_time')->update(['value' => time()]);
-        }
-    }
-
-    private function tank2Processing(TreatmentLine $line): void
-    {
-        $node = Node::with('settings')->where('name', "AER-{$line->name}2")->first();
-        if (!$node) {
-            ray("Cannot find node SED-{$line->name}2");
-            return;
-        }
-        $filledTime = $node->settings()->where('name', 'filled_time')->first()->value() ?? 0;
-        if (time() - $filledTime > 60) {
-
-            $moveValve = app(ValvePosition::class);
-            $moveValve("VAL-{$line->name}2", 0);
-            $moveValve("VAL-{$line->name}3", 100);
-
-            $line->stage = TreatmentStageEnum::TANK2_TRANSFER_TANK3;
-            $line->save();
-
-            $node->settings()->where('name', 'filled_time')->update(['value' => 0]);
-        }
-    }
-
-    private function tank2Transferring(TreatmentLine $line): void
-    {
-        $node = Node::with('settings')->where('name', "AER-{$line->name}2")->first();
-        $level = (new TankService($node))->getLevel();
-        if ($level === 0) {
-
-            $moveValve = app(ValvePosition::class);
-            $moveValve("VAL-{$line->name}3", 0);
-
-            $line->stage = TreatmentStageEnum::TANK3_PROCESSING;
-            $line->save();
-
-            $node->settings()->where('name', 'filled_time')->update(['value' => time()]);
-        }
-    }
-
-    private function tank3Processing(TreatmentLine $line): void
-    {
-        $node = Node::with('settings')->where('name', "SED-{$line->name}3")->first();
-        $filledTime = $node->settings()->where('name', 'filled_time')->first()->value() ?? 0;
-        if (time() - $filledTime > 60) {
-
-            $moveValve = app(ValvePosition::class);
-            $moveValve("VAL-{$line->name}4", 100);
-
-            $line->stage = TreatmentStageEnum::TANK3_EMPTYING;
-            $line->save();
-
-            $node->settings()->where('name', 'filled_time')->update(['value' => 0]);
-        }
-    }
-
-    private function tank3Emptying(TreatmentLine $line): void
-    {
-        $node = Node::with('settings')->where('name', "SED-{$line->name}3")->first();
-        $level = (new TankService($node))->getLevel();
-        if ($level === 0) {
-
-            $moveValve = app(ValvePosition::class);
-            $moveValve("VAL-{$line->name}4", 0);
-
-            $line->stage = TreatmentStageEnum::AVAILABLE;
-            $line->save();
-
-            $node->settings()->where('name', 'filled_time')->update(['value' => time()]);
-        }
+        return $stage;
     }
 
 }

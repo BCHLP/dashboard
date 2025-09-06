@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\TreatmentStageEnum;
 use App\Models\Datapoint;
 use App\Models\Metric;
 use App\Models\Node;
@@ -15,13 +16,15 @@ class TankService
 
     private array $metrics = [];
     public function __construct(Node|string $node) {
+        $this->metrics = MetricService::getMetricKeys();
+
         if (is_string($node)) {
             $this->tank = Node::findByName($node);
             return;
         }
         $this->tank = $node;
 
-        $this->metrics = MetricService::getMetricKeys();
+
     }
 
     private ?int $capacity = null;
@@ -70,8 +73,12 @@ class TankService
 
     }
 
-    public function filled() : bool {
-        return ($this->getLevel() === $this->getCapacity());
+    public function isFilled() : bool {
+        return ($this->getLevel() >= $this->getCapacity());
+    }
+
+    public function isEmpty() : bool {
+        return ($this->getLevel() === 0);
     }
 
     public function reset() : self {
@@ -81,9 +88,24 @@ class TankService
     }
 
     public function setLevel(int $level) {
+        if ($level > $this->getCapacity()) {
+            return;
+        }
+
         Datapoint::create([
             'node_id'=>$this->tank->id,
             'metric_id'=> $this->metrics['wl'],
             'value'=>$level]);
+    }
+
+    public function getStage() : TreatmentStageEnum {
+        // get stage from name
+        $stageName = substr($this->tank->name, -1);
+        $var = "stage_{$stageName}";
+        return $this->tank->treatmentLine->{$var};
+    }
+
+    public function tank() : Node {
+        return $this->tank;
     }
 }

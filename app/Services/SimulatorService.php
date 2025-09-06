@@ -11,8 +11,6 @@ use Illuminate\Support\Collection;
 
 class SimulatorService
 {
-    private array $disabledPaths = [];
-
     private array $metrics = [];
 
     public function __construct() {
@@ -68,6 +66,7 @@ class SimulatorService
                 $tankService = new TankService($tank);
                 $level = $tankService->getLevel() + $split;
                 $tankService->setLevel($level);
+
             }
         }
 

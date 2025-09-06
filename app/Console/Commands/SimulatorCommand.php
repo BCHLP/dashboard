@@ -15,12 +15,18 @@ use Illuminate\Support\Facades\DB;
 
 class SimulatorCommand extends Command
 {
-    protected $signature = 'simulator';
+    protected $signature = 'simulator {--status} {--once}';
 
     protected $description = 'Command description';
 
     public function handle():void {
 
+        if ($this->option('status')) {
+            $nodes = Node::with(['settings', 'metrics'])->defaultOrder()->get();
+            $this->table(['TANK','WATER-LEVEL'], $this->tankTable($nodes));
+            $this->table(['VALVE','STATUS'], $this->valveTable($nodes));
+            return;
+        }
 
         $service = new SimulatorService();
 
@@ -32,6 +38,11 @@ class SimulatorCommand extends Command
             $this->output->write("\033[2J\033[H");
             $this->table(['TANK','WATER-LEVEL'], $this->tankTable($nodes));
             $this->table(['VALVE','STATUS'], $this->valveTable($nodes));
+
+            if ($this->option('once')) {
+                return;
+            }
+
             sleep(1);
         }
     }

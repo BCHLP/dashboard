@@ -11,7 +11,9 @@ return new class extends Migration {
         Schema::create('treatment_lines', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->integer('stage');
+            $table->integer('stage_1')->default(0);
+            $table->integer('stage_2')->default(0);
+            $table->integer('stage_3')->default(0);
             $table->boolean('maintenance_mode');
             $table->timestamps();
         });
