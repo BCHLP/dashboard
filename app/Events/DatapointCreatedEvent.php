@@ -17,7 +17,7 @@ class DatapointCreatedEvent implements ShouldBroadcast
 
     public function __construct(public Datapoint $datapoint)
     {
-        Log::debug("DatapointCreatedEvent");
+
     }
 
     public function broadcastOn(): array

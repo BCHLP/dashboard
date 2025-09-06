@@ -13,21 +13,9 @@ class TreatmentLine extends Model
 
     protected $fillable = [
         'name',
-        'start_node_id',
-        'end_node_id',
         'stage',
         'maintenance_mode',
     ];
-
-    public function startNode(): BelongsTo
-    {
-        return $this->belongsTo(Node::class, 'start_node_id');
-    }
-
-    public function endNode(): BelongsTo
-    {
-        return $this->belongsTo(Node::class, 'end_node_id');
-    }
 
     protected function casts(): array
     {

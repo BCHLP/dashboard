@@ -1,10 +1,10 @@
 <?php
 
 use App\Models\Datapoint;
-use App\Models\DeviceMetric;
 use App\Models\MetricBaseline;
-use App\Models\Server;
+use App\Models\Node;
 use App\Models\Metric;
+use App\Models\NodeMetric;
 use App\Services\BaselineService;
 use Carbon\Carbon;
 
@@ -13,13 +13,8 @@ it('can generate baseline data', function () {
     \Illuminate\Support\Facades\Event::fake();
 
     $metric = Metric::factory()->create();
-    $server = Server::factory()->create();
-    $device = DeviceMetric::factory()->create([
-        'metric_id' => $metric->id,
-        'device_metric_id' => $server->id,
-        'device_metric_type' => Server::class,
-    ]);
-
+    $server = Node::factory()->create();
+    $server->metrics()->sync([$metric->id]);
     $startHour = Carbon::now()->subHours(2)->hour;
 
 
@@ -28,7 +23,7 @@ it('can generate baseline data', function () {
         $this->travelTo(now()->setHour($startHour)->setMinute($minute)->setSecond(0));
         Datapoint::factory([
             'metric_id' => $metric->id,
-            'device_metric_id' => $device->id,
+            'node_id' => $server->id,
             'value' => $minute,
         ])->create();
     }

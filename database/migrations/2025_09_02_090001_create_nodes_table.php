@@ -13,6 +13,7 @@ return new class extends Migration {
             $table->string('name');
             $table->magellanPoint('coordinates')->nullable();
             $table->integer('node_type');
+            $table->foreignId('treatment_line_id')->nullable();
             $table->nestedSet();
             $table->timestamps();
         });

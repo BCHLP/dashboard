@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\TreatmentStageEnum;
 use App\Models\Node;
 use App\Models\TreatmentLine;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -14,13 +15,11 @@ class TreatmentLineFactory extends Factory
     public function definition(): array
     {
         return [
-            'stage' => $this->faker->randomNumber(),
-            'maintenance_mode' => $this->faker->boolean(),
+            'name' => $this->faker->randomLetter(),
+            'stage' => TreatmentStageEnum::AVAILABLE,
+            'maintenance_mode' => false,
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
-
-            'start_node_id' => Node::factory(),
-            'end_node_id' => Node::factory(),
         ];
     }
 }

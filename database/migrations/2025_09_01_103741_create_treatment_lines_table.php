@@ -11,8 +11,6 @@ return new class extends Migration {
         Schema::create('treatment_lines', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->foreignIdFor(Node::class, 'start_node_id')->constrained('nodes');
-            $table->foreignIdFor(Node::class, 'end_node_id')->constrained('nodes');
             $table->integer('stage');
             $table->boolean('maintenance_mode');
             $table->timestamps();

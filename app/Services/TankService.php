@@ -51,7 +51,7 @@ class TankService
 
             $this->level = intval(Datapoint::where('node_id', $this->tank->id)
                 ->where('metric_id', $this->metrics['wl'])
-                ->latest()
+                ->orderBy('id', 'desc')
                 ->limit(1)
                 ->first()
                 ->value ?? 0);
@@ -60,5 +60,11 @@ class TankService
 
         return $this->level;
 
+    }
+
+    public function clearCache() : self {
+        $this->level = null;
+        $this->levelPercentage = null;
+        return $this;
     }
 }

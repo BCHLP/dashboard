@@ -7,8 +7,11 @@ use App\Models\Datapoint;
 use App\Models\Metric;
 use App\Models\Node;
 use App\Services\MetricService;
+use App\Services\SimulatorService;
+use App\Services\TankService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class SimulatorCommand extends Command
 {
@@ -16,105 +19,47 @@ class SimulatorCommand extends Command
 
     protected $description = 'Command description';
 
-    private array $disabledPaths = [];
+    public function handle():void {
 
-    private array $metrics = [];
 
-    public function handle(): void
-    {
+        $service = new SimulatorService();
 
-        $this->metrics = MetricService::getMetricKeys();
-
-        $nodes = Node::with(['settings', 'metrics'])->defaultOrder()->get();
         while(true) {
-            $this->line('---------------------------------');
-            $activeOutlets = [];
-            foreach ($nodes as $node) {
 
-                if (in_array($node->_lft, $this->disabledPaths) && in_array($node->_rgt, $this->disabledPaths)) {
-                    $this->info("NO FLOW:" . $node->_lft . ',' . $node->_rgt . ', ' . $node->name);
-                    continue;
-                }
+            DB::purge();
+            DB::reconnect();
 
-                switch ($node->node_type) {
-                    case NodeTypeEnum::VALVE;
-                    case NodeTypeEnum::PUMP;
-                        if (!$this->handleValve($node)) {
-                            $this->warn("Flow stopped at valve " . $node->name);
-                            continue 2;
-                        }
-                        break;
-                    case NodeTypeEnum::AERATION_TANK:
-                    case NodeTypeEnum::SEDIMENTATION_TANK:
-                        if (!$this->handleTank($node)) {
-                            $this->warn("Flow stopped at tank {$node->name}");
-                            continue 2;
-                        } else {
-                            $this->info("Tank {$node->name} at capacity");
-                        }
-                        break;
+            $service->run();
 
-                    case NodeTypeEnum::OUTLET:
-                        $activeOutlets[] = $node->name;
-                        break;
-
-                }
-
-                $this->line($node->name);
-            }
-
-            if (count($activeOutlets) === 0) {
-                $this->error("No flow received to any outlets");
-            }
-
-            foreach($activeOutlets as $activeOutlet) {
-                $this->info("{$activeOutlet} received flow");
-            }
-
+            $nodes = Node::with(['settings', 'metrics'])->defaultOrder()->get();
+            $this->output->write("\033[2J\033[H");
+            $this->table(['TANK','WATER-LEVEL'], $this->tankTable($nodes));
+            $this->table(['VALVE','STATUS'], $this->valveTable($nodes));
             sleep(1);
-            $this->disabledPaths = [];
         }
     }
 
-    private function handleValve(Node $node) : bool {
-        if ($node->settings->where('name','opened')->first()?->value() === 0) {
-            $this->warn($node->name . " valve is closed");
-            $this->disablePath($node->_lft, $node->_rgt);
-            return false;
-        }
-        return true;
+    private function tankTable(Collection $nodes) : array {
+        $table = [];
+        $nodes->filter(function ($node) {
+            return in_array($node->node_type, [NodeTypeEnum::DIGESTION_TANK, NodeTypeEnum::SEDIMENTATION_TANK, NodeTypeEnum::AERATION_TANK]);
+        })->each(function ($node) use (&$table) {
+            $waterLevel = (new TankService($node))->getLevelPercentage();
+            $table[] = [$node->name, $waterLevel];
+        });
+
+        return $table;
     }
 
-    private function handleTank(Node $node) : bool {
-        $capacity = $node->settings()->where('name','capacity')->first();
+    private function valveTable(Collection $nodes) : array {
+        $table = [];
+        $nodes->filter(function ($node) {
+            return in_array($node->node_type, [NodeTypeEnum::VALVE]);
+        })->each(function ($node) use (&$table) {
+            $status = ($node->settings()->where('name','opened')->first()?->value ?? 0) > 0;
+            $table[] = [$node->name, ($status ? "OPEN" : "CLOSED")];
+        });
 
-        $level = Datapoint::where('node_id',$node->id)
-            ->where('metric_id',$this->metrics['wl'])
-            ->latest()
-            ->limit(1)
-            ->first()
-            ->value ?? 0;
-
-        if ($level < $capacity->value()) {
-            $level +=10;
-            $this->disablePath($node->_lft, $node->_rgt);
-            if ($level > $capacity->value()) {
-                $level = $capacity->value();
-            }
-        }
-
-        $point = Datapoint::create([
-            'node_id'=>$node->id,
-            'metric_id'=>$this->metrics['wl'],
-            'value'=>$level]);
-
-        $this->info("{$node->name} level at {$level}%");
-
-
-        return $capacity->value() === $level;
-    }
-
-    private function disablePath(int $lft, int $rgt) : void {
-        $this->disabledPaths = array_merge($this->disabledPaths, range($lft, $rgt));
+        return $table;
     }
 }

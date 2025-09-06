@@ -11,7 +11,15 @@
 |
 */
 
-pest()->extend(Tests\TestCase::class)
+use App\Enums\NodeTypeEnum;
+use App\Models\Metric;
+use App\Models\Node;
+use App\Models\TreatmentLine;
+
+pest()->extend(Tests\TestCase::class)->beforeEach(function () {
+    Metric::create(['name' => 'Flow Rate', 'alias' => 'fr']);
+    Metric::create(['name' => 'Water Level', 'alias' => 'wl']);
+})
  // ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
     ->in('Feature');
 
@@ -30,6 +38,7 @@ expect()->extend('toBeOne', function () {
     return $this->toBe(1);
 });
 
+
 /*
 |--------------------------------------------------------------------------
 | Functions
@@ -41,7 +50,34 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
-{
-    // ..
+function createTank(TreatmentLine $line, string $name='TANK', ?Node $parent=null) : Node  {
+
+    if ($parent) {
+        $node = $parent->children()->create([
+            'name' => $name,
+            'node_type' => NodeTypeEnum::SEDIMENTATION_TANK,
+            'treatment_line_id' => $line->id,
+        ]);
+    } else {
+        $node = Node::factory(['name' => $name, 'node_type' => NodeTypeEnum::SEDIMENTATION_TANK])->create();
+    }
+    return $node;
+}
+
+function createValve(TreatmentLine $line, string $name='VALVE', ?Node $parent=null) : Node  {
+
+    if ($parent) {
+        $node = $parent->children()->create([
+            'name' => 'VALVE ',
+            'node_type' => NodeTypeEnum::VALVE,
+            'treatment_line_id' => $line->id,
+        ]);
+    } else {
+        $node = Node::factory(['name' => $name, 'node_type' => NodeTypeEnum::VALVE])->create();
+    }
+    return $node;
+}
+
+function createLine(array $attributes = []) {
+    return TreatmentLine::factory($attributes)->create();
 }

@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\NodeTypeEnum;
 use App\Models\Node;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
@@ -14,7 +15,7 @@ class NodeFactory extends Factory
     {
         return [
             'name' => $this->faker->name(),
-            'node_type' => $this->faker->randomNumber(),
+            'node_type' => $this->faker->randomElement(NodeTypeEnum::cases())->value,
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ];
