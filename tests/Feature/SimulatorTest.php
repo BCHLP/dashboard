@@ -1,7 +1,6 @@
 <?php
 
 
-use App\Actions\CreateTank;
 use App\Actions\ValvePosition;
 use App\Enums\NodeTypeEnum;
 use App\Enums\TreatmentStageEnum;
@@ -17,7 +16,8 @@ test('tank 1 will fill up with water if valve 1 is open', function () {
     Event::fake([DatapointCreatedEvent::class]);
     $line = createLine();
 
-    $valve1 = createValve($line, 'valve1');
+    $screen = createScreen($line, "screen1");
+    $valve1 = createValve($line, 'valve1', $screen);
     $tank1 = createTank($line, 'tank1', $valve1);
     $valve2 = createValve($line, 'valve2', $tank1);
 
@@ -99,7 +99,7 @@ $line = createLine();
 
     (new SimulatorService())->run();
 
-    expect($tankService2->clearCache()->getLevel())->toBeGreaterThan(0);
+    expect($tankService2->reset()->getLevel())->toBeGreaterThan(0);
 
 });
 
@@ -222,25 +222,26 @@ test('tank 2 WL will increase and tank 1 WL will reduce if tank 1 has water, val
 
     (new SimulatorService())->run();
 
-    expect($tankService1->clearCache()->getLevel())->toBe(40)
-        ->and($tankService2->clearCache()->getLevel())->toBe(10);
+    expect($tankService1->reset()->getLevel())->toBe(40)
+        ->and($tankService2->reset()->getLevel())->toBe(10);
 
 });
 
 
 test("line B tank 1 will receive water if line A valve 0 is closed and line B valve 0 is open", function() {
     Event::fake([DatapointCreatedEvent::class]);
-    $lineA = createLine(['name' => 'A', 'stage' => TreatmentStageEnum::TANK1_PROCESSING]);
-    $lineB = createLine(['name' => 'B', 'stage' => TreatmentStageEnum::TANK1_FILLING]);
-
+    $lineA = createLine(['name' => 'A']);
+    $lineB = createLine(['name' => 'B']);
 
     $metrics = MetricService::getMetricKeys();
 
-    $valveA1 = createValve($lineA, "VAL-A1");
+    $screenA1 = createScreen($lineA, 'SCR-A1');
+    $valveA1 = createValve($lineA, "VAL-A1", $screenA1);
     $tankA1 = createTank($lineA, "SED-A1", $valveA1);
     $valveA2 = createValve($lineA, "VAL-A2", $tankA1);
 
-    $valveB1 = createValve($lineB, "VAL-B1");
+    $screenB1 = createScreen($lineA, 'SCR-B1');
+    $valveB1 = createValve($lineB, "VAL-B1", $screenB1);
     $tankB1 = createTank($lineB,  "SED-B1", $valveB1);
     $valveB2 = createValve($lineB, "VAL-B2", $tankB1);
 
@@ -253,6 +254,6 @@ test("line B tank 1 will receive water if line A valve 0 is closed and line B va
 
     (new SimulatorService())->run();
 
-    $tankServiceB1->clearCache();
+    $tankServiceB1->reset();
     expect($tankServiceB1->getLevel())->toBeGreaterThan(0);
 });

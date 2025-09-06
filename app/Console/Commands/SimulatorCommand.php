@@ -26,9 +26,6 @@ class SimulatorCommand extends Command
 
         while(true) {
 
-            DB::purge();
-            DB::reconnect();
-
             $service->run();
 
             $nodes = Node::with(['settings', 'metrics'])->defaultOrder()->get();

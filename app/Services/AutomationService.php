@@ -100,7 +100,7 @@ class AutomationService
 
         $node = Node::with('settings')->where('name', "SED-{$line->name}1")->first();
         $filledTime = $node->settings()->where('name', 'filled_time')->first()->value() ?? 0;
-        if (time() - $filledTime > 15) {
+        if (time() - $filledTime > 10) {
 
             $moveValve = app(ValvePosition::class);
             $moveValve("VAL-{$line->name}2", 100);
@@ -136,7 +136,7 @@ class AutomationService
 
     private function tank2Processing(TreatmentLine $line): void
     {
-        $node = Node::with('settings')->where('name', "SED-{$line->name}2")->first();
+        $node = Node::with('settings')->where('name', "AER-{$line->name}2")->first();
         if (!$node) {
             ray("Cannot find node SED-{$line->name}2");
             return;
@@ -145,8 +145,8 @@ class AutomationService
         if (time() - $filledTime > 60) {
 
             $moveValve = app(ValvePosition::class);
-            $moveValve("VAL-{$line->name}2", 100);
-            $moveValve("VAL-{$line->name}3", 0);
+            $moveValve("VAL-{$line->name}2", 0);
+            $moveValve("VAL-{$line->name}3", 100);
 
             $line->stage = TreatmentStageEnum::TANK2_TRANSFER_TANK3;
             $line->save();
@@ -157,7 +157,7 @@ class AutomationService
 
     private function tank2Transferring(TreatmentLine $line): void
     {
-        $node = Node::with('settings')->where('name', "SED-{$line->name}2")->first();
+        $node = Node::with('settings')->where('name', "AER-{$line->name}2")->first();
         $level = (new TankService($node))->getLevel();
         if ($level === 0) {
 

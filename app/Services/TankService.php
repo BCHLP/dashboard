@@ -24,15 +24,23 @@ class TankService
         $this->metrics = MetricService::getMetricKeys();
     }
 
+    private ?int $capacity = null;
+    public function getCapacity(): int {
+        if (blank($this->capacity)){
+            $this->capacity = $this->tank->settings()->where('name', 'capacity')->first()->value() ?? 0;
+        }
+        return $this->capacity;
+    }
+
 
     private ?int $levelPercentage = null;
     public function getLevelPercentage(): int {
 
         if (!filled($this->levelPercentage)) {
 
-            $capacity = $this->tank->settings()->where('name', 'capacity')->first()->value() ?? 0;
-            $level = $this->getLevel();
 
+            $level = $this->getLevel();
+            $capacity = $this->getCapacity();
             if ($level > 0 && $capacity > 0) {
                 $this->levelPercentage = intval((($level / $capacity) * 100));
             } else {
@@ -62,9 +70,20 @@ class TankService
 
     }
 
-    public function clearCache() : self {
+    public function filled() : bool {
+        return ($this->getLevel() === $this->getCapacity());
+    }
+
+    public function reset() : self {
         $this->level = null;
         $this->levelPercentage = null;
         return $this;
+    }
+
+    public function setLevel(int $level) {
+        Datapoint::create([
+            'node_id'=>$this->tank->id,
+            'metric_id'=> $this->metrics['wl'],
+            'value'=>$level]);
     }
 }

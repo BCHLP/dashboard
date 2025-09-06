@@ -55,7 +55,7 @@ test('a new line will open up when the current line changes to processing stage'
     $lineA->refresh();
     $lineB->refresh();
 
-    expect($tankServiceA1->clearCache()->getLevel())->toBe(90)
+    expect($tankServiceA1->reset()->getLevel())->toBe(90)
         ->and($lineA->stage)->toBe(TreatmentStageEnum::TANK1_PROCESSING)
         ->and($lineB->stage)->toBe(TreatmentStageEnum::TANK1_FILLING)
         ->and(NodeSetting::where('node_id', $valveA1->id)->where('name', 'opened')->first()->value())->toBe(0)

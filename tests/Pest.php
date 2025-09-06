@@ -68,12 +68,26 @@ function createValve(TreatmentLine $line, string $name='VALVE', ?Node $parent=nu
 
     if ($parent) {
         $node = $parent->children()->create([
-            'name' => 'VALVE ',
+            'name' => $name,
             'node_type' => NodeTypeEnum::VALVE,
             'treatment_line_id' => $line->id,
         ]);
     } else {
         $node = Node::factory(['name' => $name, 'node_type' => NodeTypeEnum::VALVE])->create();
+    }
+    return $node;
+}
+
+function createScreen(TreatmentLine $line, string $name='SCREEN', ?Node $parent=null) : Node  {
+
+    if ($parent) {
+        $node = $parent->children()->create([
+            'name' => $name,
+            'node_type' => NodeTypeEnum::SCREEN,
+            'treatment_line_id' => $line->id,
+        ]);
+    } else {
+        $node = Node::factory(['name' => $name, 'node_type' => NodeTypeEnum::SCREEN])->create();
     }
     return $node;
 }

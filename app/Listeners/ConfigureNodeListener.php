@@ -28,7 +28,7 @@ class ConfigureNodeListener
             case NodeTypeEnum::SEDIMENTATION_TANK:
             case NodeTypeEnum::AERATION_TANK:
             case NodeTypeEnum::DIGESTION_TANK:
-                NodeSetting::create(['node_id' => $event->node->id, 'name' => 'capacity', 'value' => '100.0', 'cast' => 'float']);
+                NodeSetting::create(['node_id' => $event->node->id, 'name' => 'capacity', 'value' => '100', 'cast' => 'int']);
                 NodeSetting::create(['node_id' => $event->node->id, 'name' => 'filled_time', 'value' => '0', 'cast' => 'int']);
                 $event->node->metrics()->sync([$metrics['wl']]);
                 Datapoint::create(['node_id' => $event->node->id, 'metric_id' => $metrics['wl'], 'value' => 0]);
