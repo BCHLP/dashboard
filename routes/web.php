@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Middleware\CheckUserVoiceMiddleware;
 use App\Http\Resources\NodeResource;
 use App\Models\Node;
 use Illuminate\Support\Facades\Route;
@@ -16,6 +17,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('map');
 
     Route::get('dashboard', DashboardController::class)->name('dashboard');
+
+    Route::get('/voice/register', function(){
+        return Inertia::render('RegisterVoice');
+    })->name('voice.register')->withoutMiddleware([CheckUserVoiceMiddleware::class]);
 
 });
 
