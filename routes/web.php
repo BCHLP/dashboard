@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\VoiceRecognitionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Middleware\CheckUserVoiceMiddleware;
 use App\Http\Resources\NodeResource;
@@ -18,9 +19,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('dashboard', DashboardController::class)->name('dashboard');
 
-    Route::get('/voice/register', function(){
-        return Inertia::render('RegisterVoice');
-    })->name('voice.register')->withoutMiddleware([CheckUserVoiceMiddleware::class]);
+    Route::get('/voice/register', [VoiceRecognitionController::class, 'index'])
+        ->name('voice.register')
+        ->withoutMiddleware([CheckUserVoiceMiddleware::class]);
 
 });
 

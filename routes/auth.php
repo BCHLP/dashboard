@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Middleware\CheckUserVoiceMiddleware;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -35,6 +36,10 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+
+    Route::get('voice', [AuthenticatedSessionController::class, 'voice'])
+        ->name('voice')->withoutMiddleware(CheckUserVoiceMiddleware::class);
+
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');
 

@@ -24,6 +24,14 @@ class AuthenticatedSessionController extends Controller
         ]);
     }
 
+    public function voice(Request $request): Response|RedirectResponse
+    {
+        if (!auth()->check()) {
+            return response()->redirectToRoute('login');
+        }
+        return Inertia::render('auth/VerifyVoice', []);
+    }
+
     /**
      * Handle an incoming authentication request.
      */
