@@ -3,9 +3,7 @@ import { Head, router } from '@inertiajs/react'
 import { FaMicrophone } from 'react-icons/fa';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-
 export default function VerifyVoice() {
-
     const [isRecording, setIsRecording] = useState(false)
     const [status, setStatus] = useState('Click the microphone to begin')
 
@@ -16,163 +14,138 @@ export default function VerifyVoice() {
     const microphoneRef = useRef(null)
     const animationRef = useRef(null)
     const visualizerRef = useRef(null)
+    const streamRef = useRef(null)
+    const isRecordingRef = useRef(false) // This tracks recording state for animation
 
     const audioFormat = 'audio/webm';
 
     const createVisualizer = useCallback(() => {
         if (!visualizerRef.current) return
 
-        console.log("create visualizer");
-
-        // Clear existing waves
+        console.log("Creating visualizer");
         visualizerRef.current.innerHTML = ''
 
-        // Create 20 wave bars
         for (let i = 0; i < 20; i++) {
             const wave = document.createElement('div')
-            wave.className = 'w-1 bg-green-500 mx-0.5 rounded-sm transition-all duration-100'
+            wave.className = 'w-1 bg-green-500 mx-0.5 rounded-sm transition-all duration-75'
             wave.style.height = '10px'
+            wave.style.minHeight = '10px'
             visualizerRef.current.appendChild(wave)
         }
     }, [])
 
-    const visualize = useCallback(() => {
-        if (!isRecording || !analyserRef.current) return
+    const animate = useCallback(() => {
+        console.log('ANIMATE CALLED - analyser exists:', !!analyserRef.current)
+        console.log('ANIMATE CALLED - isRecordingRef.current:', isRecordingRef.current)
 
-        if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
-            console.log('AudioContext is closed, stopping visualization')
+        if (!analyserRef.current) {
+            console.log('No analyser, stopping animation')
             return
         }
 
         const bufferLength = analyserRef.current.frequencyBinCount
         const dataArray = new Uint8Array(bufferLength)
+        analyserRef.current.getByteFrequencyData(dataArray)
 
-        // Try time domain data first (raw audio waveform)
-        analyserRef.current.getByteTimeDomainData(dataArray)
-
-        // Check if we're getting any audio data at all
-        const hasAudioData = dataArray.some(value => value !== 128) // 128 is silence in time domain
-
-        if (!hasAudioData) {
-            // If no time domain data, try frequency data
-            analyserRef.current.getByteFrequencyData(dataArray)
-        }
-
-        // Debug: Log some values to see what we're getting
         const maxValue = Math.max(...dataArray)
-        const minValue = Math.min(...dataArray)
         const avgValue = dataArray.reduce((a, b) => a + b, 0) / dataArray.length
-
-        if (Math.random() < 0.02) { // Log occasionally to avoid spam
-            console.log('Audio data - Max:', maxValue, 'Min:', minValue, 'Avg:', avgValue.toFixed(1), 'HasData:', hasAudioData)
-            console.log('AudioContext state:', audioContextRef.current?.state)
-            console.log('Sample values:', dataArray.slice(0, 10))
-        }
+        console.log('AUDIO DATA - Max:', maxValue, 'Avg:', avgValue.toFixed(1))
 
         const waves = visualizerRef.current?.querySelectorAll('div')
-        if (waves) {
-            console.log(dataArray);
-            console.log("height");
+        if (waves && waves.length > 0) {
+            console.log('Updating', waves.length, 'wave elements')
             waves.forEach((wave, index) => {
-
-                const dataIndex = Math.floor(index * bufferLength / waves.length)
-                console.log("dataIndex", dataArray[dataIndex]);
-
-                let value = dataArray[dataIndex] || 0
-                // For time domain data, convert to a useful range
-                if (hasAudioData) {
-                    value = Math.abs(value - 128) * 2 // Convert from center-around-128 to 0-255
-                }
-
-                const height = (value / 255) * 80 + 10
+                const dataIndex = Math.floor((index / waves.length) * bufferLength)
+                const value = dataArray[dataIndex] || 0
+                const height = Math.max(10, (value / 255) * 70 + 10)
                 wave.style.height = `${height}px`
             })
+        } else {
+            console.log('No waves found to update')
         }
 
-        animationRef.current = requestAnimationFrame(visualize)
-    }, [isRecording])
+        // USE THE REF INSTEAD OF STATE
+        if (isRecordingRef.current) {
+            console.log('Continuing animation - isRecordingRef is true')
+            animationRef.current = requestAnimationFrame(animate)
+        } else {
+            console.log('Stopping animation - isRecordingRef is false')
+        }
+    }, [])
+
+    const startVisualization = useCallback(() => {
+        console.log('START VISUALIZATION CALLED')
+        console.log('- isRecording state:', isRecording)
+        console.log('- isRecordingRef:', isRecordingRef.current)
+        console.log('- analyser exists:', !!analyserRef.current)
+        console.log('- audioContext exists:', !!audioContextRef.current)
+        console.log('- visualizer div exists:', !!visualizerRef.current)
+
+        if (analyserRef.current && audioContextRef.current) {
+            console.log('Starting animation loop')
+            animate()
+        } else {
+            console.log('Cannot start visualization - missing requirements')
+        }
+    }, [animate])
 
     const sendToBackend = useCallback(async (audioBlob) => {
         try {
-
-            return;
-            
-            const formData = new FormData()
-            const filename = `recording_${Date.now()}.webm`
-            formData.append('audio', audioBlob, filename)
-
-            router.post('/api/voice/compare', formData, {
-                onSuccess: (page) => {
-
-                    console.log(`Upload successful: ${JSON.stringify(page.props)}`)
-                    setStatus('Upload successful!')
-                    router.visit('/dashboard')
-                },
-                onError: (errors) => {
-                    console.error('Upload failed:', errors)
-                    setStatus('Upload failed!')
-                }
-            })
-
+            return; // Early return for testing
         } catch (error) {
             console.log(`Upload failed: ${error.message}`)
             setStatus('Upload failed - Check console')
         }
-    })
+    }, [])
 
     const processRecording = useCallback(async () => {
         try {
             console.log('Processing audio data...')
-
-            const audioBlob = new Blob(audioChunksRef.current, {
-                type: 'audio/webm'
-            })
-
+            const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
             const fileSizeMB = (audioBlob.size / (1024 * 1024)).toFixed(2)
             console.log(`Audio recorded: ${fileSizeMB} MB`)
-
             await sendToBackend(audioBlob)
-
         } catch (error) {
             console.log(`Error processing recording: ${error.message}`)
-            console.error('Error processing recording:', error)
         }
     }, [sendToBackend])
 
-
-
     const startRecording = useCallback(async () => {
         try {
-            console.log('Requesting microphone access...')
+            console.log('=== STARTING RECORDING ===')
 
             const stream = await navigator.mediaDevices.getUserMedia({
                 audio: {
-                    echoCancellation: true,
-                    noiseSuppression: true,
+                    echoCancellation: false,
+                    noiseSuppression: false,
+                    autoGainControl: false,
                     sampleRate: 44100
                 }
             })
 
-            console.log('Microphone access granted')
+            console.log('Got microphone stream')
+            streamRef.current = stream
 
-            // Set up audio context for visualization
+            // Audio context setup
             audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)()
+            console.log('AudioContext created, state:', audioContextRef.current.state)
 
-            // if (audioContextRef.current.state === 'suspended') {
-            //     await audioContextRef.current.resume()
-            //     console.log('AudioContext resumed')
-            // }
-
-            analyserRef.current = audioContextRef.current.createAnalyser()
-            microphoneRef.current = audioContextRef.current.createMediaStreamSource(stream)
-            microphoneRef.current.connect(analyserRef.current)
-            analyserRef.current.fftSize = 64
-
-            // Set up MediaRecorder
-            if (!MediaRecorder.isTypeSupported(audioFormat)) {
-                throw new Error(`MIME type ${audioFormat} is not supported`)
+            if (audioContextRef.current.state === 'suspended') {
+                await audioContextRef.current.resume()
+                console.log('AudioContext resumed, new state:', audioContextRef.current.state)
             }
 
+            // Analyser setup
+            analyserRef.current = audioContextRef.current.createAnalyser()
+            analyserRef.current.fftSize = 256
+            analyserRef.current.smoothingTimeConstant = 0.8
+            console.log('Analyser created, bufferLength:', analyserRef.current.frequencyBinCount)
+
+            microphoneRef.current = audioContextRef.current.createMediaStreamSource(stream)
+            microphoneRef.current.connect(analyserRef.current)
+            console.log('Microphone connected to analyser')
+
+            // MediaRecorder setup
             mediaRecorderRef.current = new MediaRecorder(stream, {
                 mimeType: audioFormat,
                 bitsPerSecond: 128000
@@ -186,89 +159,89 @@ export default function VerifyVoice() {
                 }
             }
 
-            mediaRecorderRef.current.onstop = () => {
-                processRecording()
-            }
+            mediaRecorderRef.current.onstop = processRecording
 
             mediaRecorderRef.current.start(1000)
+
+            console.log('Setting both isRecording state and ref to true')
             setIsRecording(true)
-            setStatus('Recording...')
-            console.log('Recording started')
+            isRecordingRef.current = true  // THIS IS THE KEY CHANGE
+            setStatus('Recording... Speak now!')
+
+            console.log('About to start visualization')
+            // Start visualization with a slight delay
+            setTimeout(() => {
+                console.log('Timeout fired - starting visualization')
+                console.log('isRecordingRef.current at timeout:', isRecordingRef.current)
+                startVisualization()
+            }, 200)
 
         } catch (error) {
-            console.log(`Error starting recording: ${error.message}`)
             console.error('Error starting recording:', error)
+            setStatus('Error: Could not access microphone')
         }
-    }, [processRecording])
+    }, [processRecording, startVisualization])
 
     const stopRecording = useCallback(() => {
+        console.log('=== STOPPING RECORDING ===')
+
+        // STOP THE ANIMATION FIRST
+        isRecordingRef.current = false
+        console.log('Set isRecordingRef.current to false')
+
+        if (animationRef.current) {
+            cancelAnimationFrame(animationRef.current)
+            animationRef.current = null
+            console.log('Animation cancelled')
+        }
+
         if (mediaRecorderRef.current && isRecording) {
             mediaRecorderRef.current.stop()
-            setIsRecording(false)
-
-            // Cancel animation
-            if (animationRef.current) {
-                cancelAnimationFrame(animationRef.current)
-            }
-
-            // Stop all tracks
-            if (mediaRecorderRef.current.stream) {
-                mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop())
-            }
-
-            // Close audio context
-            if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-                audioContextRef.current.close()
-            }
-
-
-
-            setStatus('Processing...')
-            console.log('Recording stopped')
         }
+
+        setIsRecording(false)
+
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => {
+                track.stop()
+                console.log('Stopped track:', track.kind)
+            })
+            streamRef.current = null
+        }
+
+        if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+            audioContextRef.current.close()
+            console.log('AudioContext closed')
+        }
+
+        // Reset visualizer
+        const waves = visualizerRef.current?.querySelectorAll('div')
+        if (waves) {
+            waves.forEach(wave => wave.style.height = '10px')
+        }
+
+        setStatus('Processing...')
+        console.log('Recording stopped')
     }, [isRecording])
 
     const toggleRecording = useCallback(async () => {
+        console.log('TOGGLE RECORDING - current state:', isRecording)
         if (isRecording) {
-            stopRecording();
-            return;
+            stopRecording()
+        } else {
+            await startRecording()
         }
+    }, [isRecording, startRecording, stopRecording])
 
-        startRecording();
-    }, [isRecording, startRecording, stopRecording]);
-
-    // Initialize visualizer on mount
+    // Effects
     useEffect(() => {
         createVisualizer()
     }, [createVisualizer])
 
-    // Start visualization when recording starts
+    // Monitor isRecording changes
     useEffect(() => {
-        if (isRecording) {
-            visualize()
-        }
-        return () => {
-            if (animationRef.current) {
-                cancelAnimationFrame(animationRef.current)
-            }
-        }
-    }, [isRecording, visualize])
-
-    // Cleanup on unmount
-    useEffect(() => {
-        return () => {
-            if (mediaRecorderRef.current && isRecording) {
-                mediaRecorderRef.current.stop()
-            }
-            if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-                audioContextRef.current.close()
-            }
-            if (animationRef.current) {
-                cancelAnimationFrame(animationRef.current)
-            }
-        }
+        console.log('useEffect: isRecording changed to:', isRecording)
     }, [isRecording])
-
 
     return (
         <Layout title={"Voice Authentication Required"} description={"Please click the microphone button and speak the following sentence."}>
@@ -280,12 +253,10 @@ export default function VerifyVoice() {
                     className="w-24 h-24 rounded-full border-4 border-gray-400 bg-white hover:bg-gray-50 flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-105"
                     onClick={toggleRecording}
                 >
-                    <FaMicrophone className={"text-5xl " + (isRecording ? "text-red-800" : "text-gray-700")} />
+                    <FaMicrophone className={"text-5xl " + (isRecording ? "text-red-500 animate-pulse" : "text-gray-700")} />
                 </button>
-
             </div>
 
-            {/* Status */}
             <div className={`text-center mb-6 text-lg font-medium ${
                 status.includes('Recording') ? 'text-red-400' :
                     status.includes('successful') ? 'text-green-400' : 'text-white'
@@ -293,13 +264,11 @@ export default function VerifyVoice() {
                 {status}
             </div>
 
-            {/* Visualizer */}
             <div className="p-4 mb-6 h-24 flex items-center justify-center overflow-hidden">
                 <div ref={visualizerRef} className="flex items-center justify-center h-full">
                     {/* Waves will be created here */}
                 </div>
             </div>
-
         </Layout>
     )
 }
