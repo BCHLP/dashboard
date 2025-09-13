@@ -29,9 +29,4 @@ class Datapoint extends Model
     {
         return $this->belongsTo(Metric::class);
     }
-
-    public function sensor(): BelongsTo
-    {
-        return $this->belongsTo(Sensor::class);
-    }
 }
