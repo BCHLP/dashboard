@@ -16,6 +16,10 @@ configureEcho({
     forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'http') === 'https',
     enabledTransports: ['ws', 'wss'],
     disableStats: true, // Optional: disable stats for local development
+
+    activityTimeout: 3000,
+    pongTimeout: 3000,
+    unavailableTimeout: 1000,
 });
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';

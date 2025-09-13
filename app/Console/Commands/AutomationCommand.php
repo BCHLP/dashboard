@@ -36,7 +36,7 @@ class AutomationCommand extends Command
                 return;
             }
 
-            sleep(1);
+            sleep(2);
         }
     }
 

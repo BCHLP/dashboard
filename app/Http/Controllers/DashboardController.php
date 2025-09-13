@@ -16,17 +16,17 @@ class DashboardController extends Controller
         $servers = $nodes->where('node_type', NodeTypeEnum::SERVER);
         $sensors = $nodes->where('node_type', NodeTypeEnum::SENSOR);
         $routers = $nodes->where('node_type', NodeTypeEnum::ROUTER);
-        $datapoints = Datapoint::whereIn('node_id', $nodes->pluck('id'))
-            ->where('created_at','>', now()->subMinute())
-            ->get();
-
+        $tanks = $nodes->whereIn('node_type',[
+            NodeTypeEnum::SEDIMENTATION_TANK,
+            NodeTypeEnum::AERATION_TANK,
+            NodeTypeEnum::DIGESTION_TANK]);
 
 
         return Inertia::render('dashboard', [
             'servers' => NodeResource::collection($servers),
             'sensors' => NodeResource::collection($sensors),
             'routers' => NodeResource::collection($routers),
-            'datapoints' => DatapointResource::collection($datapoints),
+            'tanks' => NodeResource::collection($tanks),
         ]);
     }
 }
