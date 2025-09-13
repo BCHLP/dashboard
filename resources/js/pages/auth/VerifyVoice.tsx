@@ -91,7 +91,22 @@ export default function VerifyVoice() {
 
     const sendToBackend = useCallback(async (audioBlob) => {
         try {
-            return; // Early return for testing
+            const formData = new FormData()
+            const filename = `recording_${Date.now()}.webm`
+            formData.append('audio', audioBlob, filename)
+
+            router.post('/api/voice/compare', formData, {
+                onSuccess: (page) => {
+
+                    console.log(`Upload successful: ${JSON.stringify(page.props)}`)
+                    setStatus('Upload successful!')
+                    router.visit('/dashboard')
+                },
+                onError: (errors) => {
+                    console.error('Upload failed:', errors)
+                    setStatus('Upload failed!')
+                }
+            })
         } catch (error) {
             console.log(`Upload failed: ${error.message}`)
             setStatus('Upload failed - Check console')

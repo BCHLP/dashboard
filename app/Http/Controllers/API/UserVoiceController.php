@@ -13,7 +13,7 @@ class UserVoiceController extends Controller
         $data = $request->validate([
             'audio' => ['required', 'file', 'mimes:webm'],
         ]);
-
+        
         $base64 = base64_encode($request->file('audio')->get());
 
         $service = new VoiceRecognitionService();
