@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\MetricAliasEnum;
 use App\Enums\NodeTypeEnum;
 use App\Enums\TreatmentStageEnum;
 use App\Models\Datapoint;
@@ -20,8 +21,15 @@ class WastewaterSeeder extends Seeder
     {
 
         $inlet = Node::create(['name' => "Inlet", 'node_type' => NodeTypeEnum::INLET]);
-        $flowRate = Metric::create(['name' => 'Flow Rate', 'alias' => 'fr']);
-        $waterLevel = Metric::create(['name' => 'Water Level', 'alias' => 'wl']);
+        $flowRate = Metric::create(['name' => 'Flow Rate', 'alias' => MetricAliasEnum::FLOW_RATE]);
+        $waterLevel = Metric::create(['name' => 'Water Level', 'alias' => MetricAliasEnum::WATER_LEVEL]);
+
+        Metric::create(['name' => 'CPU', 'alias' => MetricAliasEnum::CPU]);
+        Metric::create(['name' => 'Network Packets In', 'alias' => MetricAliasEnum::NETWORK_PACKETS_IN]);
+        Metric::create(['name' => 'Network Packets Out', 'alias' => MetricAliasEnum::NETWORK_PACKETS_OUT]);
+        Metric::create(['name' => 'Network Bytes In', 'alias' => MetricAliasEnum::NETWORK_BYTES_IN]);
+        Metric::create(['name' => 'Network Bytes Out', 'alias' => MetricAliasEnum::NETWORK_BYTES_OUT]);
+
         Cache::clear();
 
         foreach(['A','B','C'] as $letter) {

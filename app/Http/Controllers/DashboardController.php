@@ -21,12 +21,24 @@ class DashboardController extends Controller
             NodeTypeEnum::AERATION_TANK,
             NodeTypeEnum::DIGESTION_TANK]);
 
+        $nodeMetrics = [];
+        foreach($nodes as $node) {
+            if ($node->metrics->count() === 0) {
+                continue;
+            }
+
+            $nodeMetrics[$node->id] = [];
+            foreach($node->metrics as $metric) {
+                $nodeMetrics[$node->id][$metric->alias] = 0;
+            }
+        }
 
         return Inertia::render('dashboard', [
             'servers' => NodeResource::collection($servers),
             'sensors' => NodeResource::collection($sensors),
             'routers' => NodeResource::collection($routers),
             'tanks' => NodeResource::collection($tanks),
+            'nodeMetrics' => $nodeMetrics,
         ]);
     }
 }

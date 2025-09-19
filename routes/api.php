@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\DatapointController;
 use App\Http\Controllers\API\MapController;
 use App\Http\Controllers\API\UserVoiceController;
 use App\Http\Middleware\CheckUserVoiceMiddleware;
@@ -15,4 +16,8 @@ Route::middleware(['web','auth'])->group(function () {
         ->name('voice.compare')
         ->withoutMiddleware([CheckUserVoiceMiddleware::class]);
 
+});
+
+Route::name('api.')->middleware(['auth:sanctum'])->group(function () {
+   Route::resource('datapoints', DatapointController::class);
 });

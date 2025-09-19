@@ -4,10 +4,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\NodeTypeEnum;
-use App\Enums\TreatmentStageEnum;
-use App\Models\Datapoint;
 use App\Models\Node;
-use Illuminate\Support\Collection;
 
 class SimulatorService
 {

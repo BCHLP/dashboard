@@ -13,7 +13,7 @@ class DatapointResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'name' => 'Name',
+            'alias' => $this->metric->alias,
             'x' => Carbon::parse($this->created_at)->timestamp,
             'y' => (float) $this->value,
             'node_id' => $this->node_id,

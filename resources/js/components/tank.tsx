@@ -1,7 +1,7 @@
 import React from 'react';
 
 type Props = {
-    id:string;
+    id:string|number;
     x_offset:number;
     y_offset:number;
     water_level:number;

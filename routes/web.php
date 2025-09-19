@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\VoiceRecognitionController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ServerController;
 use App\Http\Middleware\CheckUserVoiceMiddleware;
 use App\Http\Resources\NodeResource;
 use App\Models\Node;
@@ -18,6 +19,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('map');
 
     Route::get('dashboard', DashboardController::class)->name('dashboard');
+    Route::resource('servers', ServerController::class);
 
     Route::get('/voice/register', [VoiceRecognitionController::class, 'index'])
         ->name('voice.register')

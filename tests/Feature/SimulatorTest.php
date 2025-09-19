@@ -85,6 +85,7 @@ $line = createLine();
 
     // fill the tank
     Datapoint::create([
+        'time' => time(),
         'node_id'=>$tank1->id,
         'metric_id'=> $metrics['wl'],
         'value'=> 100]);
@@ -122,6 +123,7 @@ $line = createLine();
 
     // fill the tank
     Datapoint::create([
+        'time' => time(),
         'node_id'=>$tank1->id,
         'metric_id'=> $metrics['wl'],
         'value'=> 100]);
@@ -211,6 +213,7 @@ test('tank 2 WL will increase and tank 1 WL will reduce if tank 1 has water, val
 
     // fill the tank
     Datapoint::create([
+        'time' => time(),
         'node_id'=>$tank1->id,
         'metric_id'=> $metrics['wl'],
         'value'=> 50]);

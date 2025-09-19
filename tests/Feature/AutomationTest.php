@@ -44,6 +44,7 @@ test('a new line will open up when the current line changes to processing stage'
 
     // fill the tank
     Datapoint::create([
+        'time' => time(),
         'node_id'=>$tankA1->id,
         'metric_id'=> $metrics['wl'],
         'value'=> 100]);
@@ -93,6 +94,7 @@ it("will set the next tank to FILLING if it is ready", function() {
 
     // fill the tank
     Datapoint::create([
+        'time' => time(),
         'node_id'=>$tankA1->id,
         'metric_id'=> $metrics['wl'],
         'value'=> 100]);
@@ -142,11 +144,13 @@ it("will not set the next tank to FILLING if it is not ready", function() {
 
     // fill the tank
     Datapoint::create([
+        'time' => time(),
         'node_id'=>$tankA1->id,
         'metric_id'=> $metrics['wl'],
         'value'=> 100]);
 
     Datapoint::create([
+        'time' => time(),
         'node_id'=>$tankA2->id,
         'metric_id'=> $metrics['wl'],
         'value'=> 50]);

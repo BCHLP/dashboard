@@ -22,9 +22,8 @@ class DatapointCreatedEvent implements ShouldBroadcast
 
     public function broadcastOn(): array
     {
-        Log::debug("Broadcast on " . "App.Models.Sensor.".$this->datapoint->node_id);
         return [
-            new PrivateChannel("App.Models.Node.".$this->datapoint->node_id),
+            new PrivateChannel("NewDatapointEvent"),
         ];
     }
 

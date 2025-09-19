@@ -15,6 +15,7 @@ class Datapoint extends Model
         'node_id',
         'metric_id',
         'value',
+        'time'
     ];
 
     protected $dispatchesEvents = [

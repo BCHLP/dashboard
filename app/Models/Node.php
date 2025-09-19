@@ -6,15 +6,15 @@ use App\Enums\NodeTypeEnum;
 use App\Events\NodeCreatedEvent;
 use Clickbar\Magellan\Data\Geometries\Point;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Log;
 use Laravel\Sanctum\HasApiTokens;
 use Kalnoy\Nestedset\NodeTrait;
 
-class Node extends Model
+class Node extends Authenticatable
 {
     use HasFactory,HasApiTokens,NodeTrait;
 
@@ -48,7 +48,6 @@ class Node extends Model
     }
 
     public static function findByName(string $name): ?Node {
-        ray("Find '$name' node'");
         $node = Node::where('name', $name)->first();
         if (!$node) {
             Log::error("Tried to set position for valve $name but it doesn't exist");

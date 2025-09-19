@@ -93,6 +93,7 @@ class TankService
         }
 
         Datapoint::create([
+            'time' => time(),
             'node_id'=>$this->tank->id,
             'metric_id'=> $this->metrics['wl'],
             'value'=>$level]);

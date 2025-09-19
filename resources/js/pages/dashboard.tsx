@@ -5,6 +5,8 @@ import React, { useState } from 'react';
 import Tank from '../components/tank';
 import '@patternfly/react-core/dist/styles/base-no-reset.css';
 import { useEchoModel } from "@laravel/echo-react";
+import { useEcho } from "@laravel/echo-react";
+
 import { flushSync } from 'react-dom';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -19,45 +21,62 @@ type Node = {
     name: string;
     treatment_line_id: number;
 }
-
 type Props = {
     sensors: Node[],
     tanks: Node[],
+    nodeMetrics: object[]
 };
 
 
-export default function Dashboard ({sensors, tanks} : Props ) {
 
-    const [tank1Wl, setTank1Wl] = useState<number>(0);
+export default function Dashboard ({sensors, tanks, nodeMetrics} : Props ) {
+
+    const [metrics, setMetrics] = useState(nodeMetrics);
     const uniqueLineIds = [...new Set(tanks.map(tank => tank.treatment_line_id))];
 
-    console.log("uniqueLineIds",uniqueLineIds);
-
-    useEchoModel('App.Models.Node', '5', ['App\\Events\\DatapointCreatedEvent'], (e) => {
-        flushSync(() => {
-            console.log(e);
-            setTank1Wl(e.y);
-        });
+    useEcho(`NewDatapointEvent`, ['DatapointCreatedEvent'], (e) => {
+        setMetrics(prev => ({
+            ...prev,
+            [e.node_id]: {
+                ...prev[e.node_id],
+                [e.alias]: e.y
+            }
+        }));
     });
 
+    const y_spacing = 200;
+    const x_spacing = 300;
 
+    // @ts-ignore
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
-            <svg viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg">
-                { /* A - Tanks*/}
-                {uniqueLineIds.map((id: number) => (
-                    tanks.find( tank => tank.treatment_line_id === id )
-                        .map(tank:Node => (
-                            <Tank id={tank.id} water_level={tank1Wl} x_offset={150} y_offset={210} label={tank.name}  />
-                    ))
+                <svg viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg">
+                    {uniqueLineIds.map((id: number) => (
+                        <React.Fragment key={"treatmentline"+id}>
+                        <rect x={20} y={175+(id-1)*y_spacing} width="85" height="10" fill="#718096" stroke="#4a5568" strokeWidth="1"/>
+                            <rect x={15} y={173+(id-1)*y_spacing} width="8" height="14" fill="#718096" stroke="#4a5568" strokeWidth="1"/>
+                        {tanks.filter( (tank) => tank.treatment_line_id === id )
+                            .map((tank, tankIndex) => (
+                                <React.Fragment key={"tank"+tankIndex}>
+                                    {tankIndex < tanks.filter( (tank) => tank.treatment_line_id === id).length-1 ?
+                                        <rect x={195+((tankIndex)*x_spacing)} y={175+(id-1)*y_spacing} width="210" height="10" fill="#718096" stroke="#4a5568" strokeWidth="1"/>
+                                    : null}
+
+                                    <Tank id={tank.id}
+                                          water_level={metrics[tank.id]['wl']}
+                                          x_offset={150+((id-1)*x_spacing)}
+                                          y_offset={210+((tankIndex)*y_spacing)}
+                                          label={tank.name}  />
+                                </React.Fragment>
+                        ))}
+                        <rect x="795" y={175+(id-1)*y_spacing} width="85" height="10" fill="#718096" stroke="#4a5568" strokeWidth="1"/>
+                        <rect x="877" y={173+(id-1)*y_spacing} width="8" height="14" fill="#718096" stroke="#4a5568" strokeWidth="1"/>
+                    </React.Fragment>
                 ))}
 
-                <Tank id={"tank2"} water_level={50} x_offset={450} y_offset={210} label={"Aeration"} />
-                <Tank id={"tank3"} water_level={50} x_offset={750} y_offset={210} label={"Second Sedimentation"} />
 
-                <rect x="20" y="175" width="85" height="10" fill="#718096" stroke="#4a5568" strokeWidth="1"/>
-                <rect x="15" y="173" width="8" height="14" fill="#718096" stroke="#4a5568" strokeWidth="1"/>
+
 
                 {/*<Tank id={"tank4"} water_level={100} x_offset={150} y_offset={410} label={"Primary Sedimentation"}  />*/}
                 {/*<Tank id={"tank5"} water_level={50} x_offset={450} y_offset={410} label={"Aeration"} />*/}

@@ -11,6 +11,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('node_id');
             $table->foreignId('metric_id');
+            $table->bigInteger('time');
             $table->float('value');
             $table->timestamps();
 

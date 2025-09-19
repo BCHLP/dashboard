@@ -16,10 +16,10 @@ class DatapointFactory extends Factory
     {
 
         return [
+            'time' => time(),
             'value' => $this->faker->randomFloat(),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now()
-
         ];
     }
 }
