@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\VoiceRecognitionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ServerController;
+use App\Http\Controllers\UserController;
 use App\Http\Middleware\CheckUserVoiceMiddleware;
 use App\Http\Resources\NodeResource;
 use App\Models\Node;
@@ -24,6 +25,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/voice/register', [VoiceRecognitionController::class, 'index'])
         ->name('voice.register')
         ->withoutMiddleware([CheckUserVoiceMiddleware::class]);
+
+    Route::resource('users', UserController::class);
 
 });
 

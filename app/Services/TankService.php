@@ -5,10 +5,7 @@ namespace App\Services;
 
 use App\Enums\TreatmentStageEnum;
 use App\Models\Datapoint;
-use App\Models\Metric;
 use App\Models\Node;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
 
 class TankService
 {
