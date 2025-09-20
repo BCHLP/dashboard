@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import InputError from '@/components/input-error'
 import { Button } from '@/components/ui/button'
 import { Transition } from '@headlessui/react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -24,6 +25,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 type UserForm = {
     name: string
     email: string
+    role: string
 }
 
 type Props = {
@@ -33,8 +35,11 @@ type Props = {
 export default function Create({roles}:Props) {
     const { data, setData, post, errors, processing, recentlySuccessful } = useForm<Required<UserForm>>({
         name: '',
-        email: ''
+        email: '',
+        role: ''
     })
+
+    console.log("roles", roles);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault()
@@ -89,6 +94,23 @@ export default function Create({roles}:Props) {
                                         placeholder="user@example.com"
                                     />
                                     <InputError className="mt-2" message={errors.email} />
+                                </div>
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="role">Role</Label>
+                                    <Select value={data.role} onValueChange={(value) => setData('role', value)}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a role" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {roles.map((role) => (
+                                                <SelectItem key={role.id} value={role.name}>
+                                                    {role.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <InputError className="mt-2" message={errors.role} />
                                 </div>
 
                                 <div className="flex items-center gap-4">

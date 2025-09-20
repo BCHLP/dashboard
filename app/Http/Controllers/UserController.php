@@ -6,7 +6,7 @@ use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 
 class UserController extends Controller
 {
@@ -17,20 +17,34 @@ class UserController extends Controller
         $users = $users->toArray($request);
 
 
-        return Inertia::render('Users/Index', ['users' => $users, 'roles' => $roles]);
+        return Inertia::render('Users/Index', ['users' => $users]);
     }
 
     public function create()
     {
-        $roles = Role::query()->pluck('name', 'id')->toArray();
+        $roles = Role::all();
         return Inertia::render('Users/Create', ['roles' => $roles]);
     }
 
     public function store(Request $request)
     {
-        $data = $request->validate(['name' => 'required', 'email' => 'required|unique:users']);
+        $data = $request->validate([
+            'name' => 'required',
+            'email' => 'required|unique:users',
+            'role' => 'string|nullable',
+        ]);
         $data['password'] = '';
-        User::create($data);
+        $role = $data['role'];
+        unset($data['role_id']);
+        $user = User::create($data);
+
+        if ($role) {
+
+            try {
+                $user->assignRole($role);
+            } catch (\Throwable $th) {}
+        }
+
         return redirect()->route('users.index')->with('success', 'User created successfully.');
     }
 
