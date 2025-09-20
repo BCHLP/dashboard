@@ -5,21 +5,23 @@ namespace App\Actions;
 
 use App\Models\Role;
 use App\Models\User;
+use App\Notifications\VerifyEmailNotification;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class CreateUser
 {
-    public function __invoke(string $name, string $email, string $role) : bool|User {
+    public function __invoke(string $name, string $email, string $role) : User {
 
-        try {
-            $user = User::create(['name' => $name, 'email' => $email]);
+        $user = User::create(['name' => $name, 'email' => $email, 'uuid' => Str::uuid()]);
 
-            if ($role && Role::where('name', $role)->exists()) {
-                $user->assignRole($role);
-            }
-
-            return $user;
-        } catch (\Throwable $th) {
-            return false;
+        if ($role && Role::where('name', $role)->exists()) {
+            $user->assignRole($role);
         }
+
+        $user->notify(new VerifyEmailNotification);
+
+        return $user;
+
     }
 }

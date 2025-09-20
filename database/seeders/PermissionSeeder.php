@@ -23,5 +23,7 @@ class PermissionSeeder extends Seeder
         $usersRole = Role::create(['name' => 'User Management']);
         $usersRole->syncPermissions([$userPermission]);
 
+        Role::create(['name' => 'None']);
+
     }
 }

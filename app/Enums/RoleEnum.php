@@ -9,5 +9,5 @@ enum RoleEnum : string
     case USER_MANAGEMENT = 'User Management';
     case SERVER_MANAGEMENT = 'Server Management';
 
-    case NONE = '';
+    case NONE = 'NONE';
 }

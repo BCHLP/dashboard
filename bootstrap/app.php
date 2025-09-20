@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Middleware\CheckUserVoiceMiddleware;
+use App\Http\Middleware\MfaMiddleware;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\VerifyVoiceAuthenticatedMiddleware;
@@ -27,7 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->appendToGroup('auth', [
-            CheckUserVoiceMiddleware::class,
+            MfaMiddleware::class,
         ]);
 
     })

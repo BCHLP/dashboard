@@ -6,14 +6,20 @@ use App\Services\VoiceRecognitionService;
 use Closure;
 use Illuminate\Http\Request;
 
-class CheckUserVoiceMiddleware
+class MfaMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
-        if (auth()->check() && blank($request->user()->voice)) {
-            return redirect()->route('voice.register');
+        if (!auth()->check()) {
+            abort(401);
+        }
+        if (is_null($request->user()->password)) {
+            return redirect()->route('password.set.show');
         }
 
+        if (blank($request->user()->voice)) {
+            return redirect()->route('voice.register');
+        }
 
         if (!VoiceRecognitionService::isVoiceAuthenticated()){
             return redirect()->route('voice');
