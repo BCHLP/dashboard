@@ -3,12 +3,24 @@
 namespace App\Http\Controllers;
 
 use Inertia\Inertia;
-
+use PragmaRX\Google2FAQRCode\Exceptions\MissingQrCodeServiceException;
+use PragmaRX\Google2FAQRCode\Google2FA;
 class SetupController extends Controller
 {
+    /**
+     * @throws MissingQrCodeServiceException
+     */
     public function totp()
     {
-        return Inertia::render('auth/totp');
+        $google2fa = new Google2FA();
+        $secretKey = $google2fa->generateSecretKey();
+        $qrCode = $google2fa->getQRCodeInline(
+            auth()->user()->name,
+            auth()->user()->email,
+            $secretKey
+        );
+
+        return Inertia::render('auth/totp', ['qrCode' => $qrCode]);
     }
 
     public function password() {

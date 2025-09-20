@@ -19,6 +19,6 @@ class VerifyEmailController extends Controller
             $request->fulfill();
         }
 
-        return redirect()->route('password.set.show');
+        return redirect()->route('password.set');
     }
 }

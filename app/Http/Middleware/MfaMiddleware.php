@@ -14,7 +14,7 @@ class MfaMiddleware
             abort(401);
         }
         if (is_null($request->user()->password)) {
-            return redirect()->route('password.set.show');
+            return redirect()->route('password.set');
         }
 
         if (blank($request->user()->voice)) {

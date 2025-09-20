@@ -6,9 +6,9 @@ use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
-use App\Http\Controllers\Auth\RegisteredUserController;
-use App\Http\Controllers\Auth\SetPasswordController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\Settings\PasswordController;
+use App\Http\Controllers\SetupController;
 use App\Http\Middleware\MfaMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -44,8 +44,6 @@ Route::middleware('auth')->withoutMiddleware(MfaMiddleware::class)->group(functi
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');
 
-
-
     Route::post('email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
         ->middleware('throttle:6,1')
         ->name('verification.send');
@@ -59,6 +57,6 @@ Route::middleware('auth')->withoutMiddleware(MfaMiddleware::class)->group(functi
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 
-    Route::get('/set-password', [SetPasswordController::class, 'show'])->name('password.set.show');
-    Route::post('/set-password', [SetPasswordController::class, 'submit'])->name('password.set.submit');
+    Route::get('/set-password', [SetupController::class, 'password'])->name('password.set');
+    Route::get('/totp', [SetupController::class, 'totp'])->name('totp.register');
 });

@@ -43,7 +43,7 @@ class PasswordController extends Controller
         {
             return redirect($redirect);
         }
-        
+
         return back();
     }
 }

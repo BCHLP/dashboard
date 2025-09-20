@@ -18,7 +18,7 @@ export default function SetPassword() {
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
 
-        post(route('password.set.submit'), {
+        post(route('password.update'), {
             onFinish: () => reset('password'),
         });
     };
