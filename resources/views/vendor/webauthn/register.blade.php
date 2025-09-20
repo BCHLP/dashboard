@@ -76,6 +76,8 @@
 
   <script>
     var publicKey = {!! json_encode($publicKey) !!};
+    const capabilities = await PublicKeyCredential.getClientCapabilities();
+    console.log("capabilities", capabilities);
 
     var errors = {
       key_already_used: "{{ trans('webauthn::errors.key_already_used') }}",

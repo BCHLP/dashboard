@@ -70,6 +70,19 @@
   <script>
     var publicKey = {!! json_encode($publicKey) !!};
 
+    async function checkIsUserVerifyingPlatformAuthenticatorAvailable() {
+        const capabilities = await PublicKeyCredential.getClientCapabilities();
+        console.log("capabilities", capabilities);
+        // Check the capability: userVerifyingPlatformAuthenticator
+        if (capabilities.userVerifyingPlatformAuthenticator) {
+            // Perform actions if biometric support is available
+        } else {
+            // Perform actions if biometric support is not available.
+        }
+    }
+
+    checkIsUserVerifyingPlatformAuthenticatorAvailable();
+
     var errors = {
       key_already_used: "{{ trans('webauthn::errors.key_already_used') }}",
       key_not_allowed: "{{ trans('webauthn::errors.key_not_allowed') }}",

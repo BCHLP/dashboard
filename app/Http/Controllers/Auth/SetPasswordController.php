@@ -12,10 +12,19 @@ class SetPasswordController extends Controller
 {
     public function show()
     {
+        if (filled(auth()->user()->password)) {
+            return response()->redirectToRoute('password.edit');
+        }
+
         return Inertia::render('auth/SetPassword');
     }
 
     public function submit(Request $request) {
+
+        if (filled(auth()->user()->password)) {
+            return response()->redirectToRoute('password.edit');
+        }
+
         $validated = $request->validate([
             'password' => ['required', Password::defaults(), 'confirmed'],
         ]);

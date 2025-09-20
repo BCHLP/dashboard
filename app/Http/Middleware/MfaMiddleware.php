@@ -21,6 +21,10 @@ class MfaMiddleware
             return redirect()->route('voice.register');
         }
 
+        if (blank($request->user()->totp_secret)) {
+            return redirect()->route('totp.register');
+        }
+
         if (!VoiceRecognitionService::isVoiceAuthenticated()){
             return redirect()->route('voice');
         }
