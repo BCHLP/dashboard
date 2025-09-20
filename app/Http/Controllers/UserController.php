@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\CreateUser;
 use App\Actions\DeleteUser;
+use App\Actions\UpdateUser;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -47,10 +48,26 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
+        $user->load('roles');
+        $userResource = new UserResource($user);
+        $roles = Role::all();
+
+        return Inertia::render('Users/Edit', [
+            'user' => $userResource->toArray(request()),
+            'roles' => $roles
+        ]);
     }
 
-    public function update(Request $request, User $user)
+    public function update(Request $request, User $user, UpdateUser $updateUser)
     {
+        $data = $request->validate([
+            'name' => 'required',
+            'role' => 'string|nullable',
+        ]);
+
+        $updateUser($user, $data['name'], $data['role']);
+
+        return redirect()->route('users.index')->with('success', 'User updated successfully.');
     }
 
     public function destroy(User $user, DeleteUser $deleteUser)

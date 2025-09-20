@@ -2,9 +2,9 @@
 declare(strict_types=1);
 
 namespace App\Models;
-use Spatie\Permission\Models\Role as SpatieRole;
+use Spatie\Permission\Models\Permission as SpatiePermission;
 
-class Role extends SpatieRole
+class Permission extends SpatiePermission
 {
     protected $hidden = [
         'created_at',

@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\PermissionEnum;
 use App\Http\Controllers\Auth\VoiceRecognitionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ServerController;
@@ -26,7 +27,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('voice.register')
         ->withoutMiddleware([CheckUserVoiceMiddleware::class]);
 
-    Route::resource('users', UserController::class);
+    Route::resource('users', UserController::class)->middleware('can:'. PermissionEnum::USERS->value);
 
 });
 

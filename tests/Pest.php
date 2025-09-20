@@ -12,11 +12,15 @@
 */
 
 use App\Enums\NodeTypeEnum;
+use App\Enums\RoleEnum;
 use App\Models\Metric;
 use App\Models\Node;
 use App\Models\TreatmentLine;
+use App\Models\User;
+use App\Models\UserVoice;
 
 pest()->extend(Tests\TestCase::class)->beforeEach(function () {
+    $this->seed(\Database\Seeders\TestingSeeder::class);
     Metric::create(['name' => 'Flow Rate', 'alias' => 'fr']);
     Metric::create(['name' => 'Water Level', 'alias' => 'wl']);
 })
@@ -94,4 +98,18 @@ function createScreen(TreatmentLine $line, string $name='SCREEN', ?Node $parent=
 
 function createLine(array $attributes = []) {
     return TreatmentLine::factory($attributes)->create();
+}
+
+function createUser(RoleEnum $role = RoleEnum::NONE) : User {
+    $user = User::factory()->create();
+    if ($role !== RoleEnum::NONE) {
+        $user->assignRole($role);
+    }
+    UserVoice::create(['user_id' => $user->id, 'embeddings' => 'embedded']);
+
+    return $user;
+}
+
+function disableMfaAuthentication() : void {
+    session(['voice' => time()]);
 }
