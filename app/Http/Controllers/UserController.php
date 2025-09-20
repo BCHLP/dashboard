@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\CreateUser;
+use App\Actions\DeleteUser;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -26,24 +28,15 @@ class UserController extends Controller
         return Inertia::render('Users/Create', ['roles' => $roles]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, CreateUser $createUser)
     {
         $data = $request->validate([
             'name' => 'required',
             'email' => 'required|unique:users',
             'role' => 'string|nullable',
         ]);
-        $data['password'] = '';
-        $role = $data['role'];
-        unset($data['role_id']);
-        $user = User::create($data);
 
-        if ($role) {
-
-            try {
-                $user->assignRole($role);
-            } catch (\Throwable $th) {}
-        }
+        $createUser($data['name'], $data['email'], $data['role']);
 
         return redirect()->route('users.index')->with('success', 'User created successfully.');
     }
@@ -60,7 +53,8 @@ class UserController extends Controller
     {
     }
 
-    public function destroy(User $user)
+    public function destroy(User $user, DeleteUser $deleteUser)
     {
+        $deleteUser($user);
     }
 }

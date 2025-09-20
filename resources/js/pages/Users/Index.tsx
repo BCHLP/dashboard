@@ -1,8 +1,10 @@
 import AppLayout from '@/layouts/app-layout'
-import { Head, Link, router } from '@inertiajs/react'
+import { Head, Link, router, useForm } from '@inertiajs/react'
 import type { BreadcrumbItem, User } from '@/types';
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Transition } from '@headlessui/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -16,14 +18,33 @@ type Props = {
 }
 
 export default function Index({users}:Props) {
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [userToDelete, setUserToDelete] = useState<User | null>(null);
+    const { delete: destroy, processing, recentlySuccessful } = useForm();
+
     const handleEdit = (userId: number) => {
         router.visit(`/users/${userId}/edit`);
     };
 
-    const handleDelete = (userId: number) => {
-        if (confirm('Are you sure you want to delete this user?')) {
-            router.delete(`/users/${userId}`);
-        }
+    const openDeleteModal = (user: User) => {
+        setUserToDelete(user);
+        setDeleteModalOpen(true);
+    };
+
+    const closeDeleteModal = () => {
+        setDeleteModalOpen(false);
+        setUserToDelete(null);
+    };
+
+    const handleDelete = () => {
+        if (!userToDelete) return;
+
+        destroy(`/users/${userToDelete.id}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                closeDeleteModal();
+            },
+        });
     };
 
     const rightContent = (
@@ -78,7 +99,7 @@ export default function Index({users}:Props) {
                                     <Button
                                         variant="destructive"
                                         size="sm"
-                                        onClick={() => handleDelete(user.id)}
+                                        onClick={() => openDeleteModal(user)}
                                     >
                                         Delete
                                     </Button>
@@ -101,6 +122,45 @@ export default function Index({users}:Props) {
                     </Button>
                 </div>
             )}
+
+            {/* Success Message */}
+            <Transition
+                show={recentlySuccessful}
+                enter="transition ease-in-out"
+                enterFrom="opacity-0"
+                leave="transition ease-in-out"
+                leaveTo="opacity-0"
+            >
+                <div className="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg z-50">
+                    User deleted successfully!
+                </div>
+            </Transition>
+
+            {/* Delete Confirmation Modal */}
+            <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Delete User</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to delete "{userToDelete?.name}"? This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <DialogClose asChild>
+                            <Button variant="secondary" onClick={closeDeleteModal}>
+                                Cancel
+                            </Button>
+                        </DialogClose>
+                        <Button
+                            variant="destructive"
+                            onClick={handleDelete}
+                            disabled={processing}
+                        >
+                            {processing ? 'Deleting...' : 'Delete'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AppLayout>
     )
 }
