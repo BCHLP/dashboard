@@ -15,10 +15,12 @@ class SetupController extends Controller
         $google2fa = new Google2FA();
         $secretKey = $google2fa->generateSecretKey();
         $qrCode = $google2fa->getQRCodeInline(
-            auth()->user()->name,
+            config('app.name'),
             auth()->user()->email,
             $secretKey
         );
+
+        auth()->user()->update(['totp_secret' => $secretKey]);
 
         return Inertia::render('auth/totp', ['qrCode' => $qrCode]);
     }

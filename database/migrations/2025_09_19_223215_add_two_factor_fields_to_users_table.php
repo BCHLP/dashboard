@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->string('totp_secret')->nullable();
+            $table->dateTime('totp_activated_at')->nullable();
         });
     }
 

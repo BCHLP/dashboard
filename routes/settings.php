@@ -20,6 +20,7 @@ Route::middleware('auth')->group(function () {
         ->name('password.update');
 
     Route::get('settings/totp', [TotpController::class, 'edit'])->name('totp.edit');
+    Route::post('settings/totp', [TotpController::class, 'update'])->name('totp.update');
 
     Route::get('settings/appearance', function () {
         return Inertia::render('settings/appearance');

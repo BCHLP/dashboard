@@ -139,3 +139,10 @@
         @apply bg-background text-foreground;
     }
 }
+
+.app-logo-icon {
+    stroke:rgb(0, 255, 255);
+    fill:rgb(0, 255, 255);
+    height: 30px;
+    width: 30px;
+}

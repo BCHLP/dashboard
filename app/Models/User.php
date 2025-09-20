@@ -27,6 +27,8 @@ class User extends Authenticatable
         'email',
         'password',
         'uuid',
+        'totp_secret',
+        'totp_activated_at'
     ];
 
     /**

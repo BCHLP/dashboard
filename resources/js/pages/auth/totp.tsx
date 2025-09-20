@@ -27,7 +27,7 @@ export default function Totp({ qrCode, secret }: Props) {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post(route('totp.verify'), {
+        post(route('totp.update'), {
             onSuccess: () => {
                 setStep(3);
                 reset('token');
@@ -49,14 +49,14 @@ export default function Totp({ qrCode, secret }: Props) {
                         <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${step >= 1 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-300'}`}>
                             1
                         </div>
-                        <span className="text-sm font-medium">Scan QR Code</span>
+                        <span className="text-sm font-medium">Scan</span>
                     </div>
                     <div className="w-12 h-px bg-gray-300"></div>
                     <div className={`flex items-center space-x-2 ${step >= 2 ? 'text-blue-600' : 'text-gray-400'}`}>
                         <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${step >= 2 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-300'}`}>
                             2
                         </div>
-                        <span className="text-sm font-medium">Verify Code</span>
+                        <span className="text-sm font-medium">Verify</span>
                     </div>
                     <div className="w-12 h-px bg-gray-300"></div>
                     <div className={`flex items-center space-x-2 ${step >= 3 ? 'text-green-600' : 'text-gray-400'}`}>
