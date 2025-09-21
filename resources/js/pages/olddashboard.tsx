@@ -46,7 +46,7 @@ interface CustomNodeProps {
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dashboard',
-        href: '/dashboard',
+        href: '/',
     },
 ];
 

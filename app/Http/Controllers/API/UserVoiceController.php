@@ -13,7 +13,7 @@ class UserVoiceController extends Controller
         $data = $request->validate([
             'audio' => ['required', 'file', 'mimes:webm'],
         ]);
-        
+
         $base64 = base64_encode($request->file('audio')->get());
 
         $service = new VoiceRecognitionService();
@@ -21,7 +21,7 @@ class UserVoiceController extends Controller
 
         if ($success) {
             // Redirect to dashboard on success
-            return redirect('/dashboard')->with('message', 'Voice registration successful!');
+            return redirect('/')->with('message', 'Voice registration successful!');
         } else {
             // Return back with error
             return back()->withErrors(['audio' => 'Voice registration failed']);

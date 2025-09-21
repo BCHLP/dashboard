@@ -18,13 +18,20 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
         return userPermissions.includes(item.permission);
     });
 
+    const isDashboard = (page.url === '/');
+
+    console.log("page.url", page.url, isDashboard);
+
     return (
         <SidebarGroup className="px-2 py-0">
             <SidebarGroupLabel>Platform</SidebarGroupLabel>
             <SidebarMenu>
                 {visibleItems.map((item) => (
                     <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton asChild isActive={page.url.startsWith(item.href)} tooltip={{ children: item.title }}>
+                        <SidebarMenuButton asChild
+                                           isActive={(isDashboard && item.href == "/") ||
+                                               (!isDashboard && item.href !== '/' && page.url.startsWith(item.href))}
+                                           tooltip={{ children: item.title }}>
                             <Link href={item.href} prefetch>
                                 {item.icon && <item.icon />}
                                 <span>{item.title}</span>

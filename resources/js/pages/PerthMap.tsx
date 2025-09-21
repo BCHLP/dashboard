@@ -22,7 +22,7 @@ import type {Feature, GeoJSON} from 'geojson';
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dashboard',
-        href: '/dashboard',
+        href: '/',
     },
 ];
 

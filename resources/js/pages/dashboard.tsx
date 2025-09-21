@@ -12,7 +12,7 @@ import { flushSync } from 'react-dom';
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dashboard',
-        href: '/dashboard',
+        href: '/',
     },
 ];
 
@@ -47,6 +47,10 @@ export default function Dashboard ({sensors, tanks, nodeMetrics} : Props ) {
     const y_spacing = 200;
     const x_spacing = 300;
 
+    const pipeClicked = () => {
+        alert('Rectangle clicked!');
+    };
+
     // @ts-ignore
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -60,7 +64,7 @@ export default function Dashboard ({sensors, tanks, nodeMetrics} : Props ) {
                             .map((tank, tankIndex) => (
                                 <React.Fragment key={"tank"+tankIndex}>
                                     {tankIndex < tanks.filter( (tank) => tank.treatment_line_id === id).length-1 ?
-                                        <rect x={195+((tankIndex)*x_spacing)} y={175+(id-1)*y_spacing} width="210" height="10" fill="#718096" stroke="#4a5568" strokeWidth="1"/>
+                                        <rect onClick={pipeClicked} className={"pipe"} x={195+((tankIndex)*x_spacing)} y={175+(id-1)*y_spacing} width="210" height="10" fill="#718096" stroke="#4a5568" strokeWidth="1"/>
                                     : null}
 
                                     <Tank id={tank.id}

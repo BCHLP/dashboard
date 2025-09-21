@@ -2,14 +2,13 @@
 
 namespace App\Models;
 
-use App\Notifications\VerifyEmailNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Collection;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
-use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 
 class User extends Authenticatable
 {
@@ -60,5 +59,32 @@ class User extends Authenticatable
 
     public function voice(): HasOne {
         return $this->hasOne(UserVoice::class);
+    }
+
+    public function webAuthnCredentials()
+    {
+        return $this->hasMany(WebauthnCredential::class);
+    }
+
+    public function webAuthnAuthLogs()
+    {
+        return $this->hasMany(WebauthnAuthLog::class);
+    }
+
+    public function hasWebAuthnCredentials(): bool
+    {
+        return $this->webAuthnCredentials()->exists();
+    }
+
+    public function getWebAuthnCredentialsByType(string $type = null): Collection
+    {
+        $query = $this->webAuthnCredentials();
+
+        if ($type) {
+            // Filter by authenticator type if needed
+            $query->where('aaguid', $type);
+        }
+
+        return $query->get();
     }
 }

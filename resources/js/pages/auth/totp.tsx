@@ -192,7 +192,7 @@ export default function Totp({ qrCode, secret }: Props) {
                             </Alert>
 
                             <Button
-                                onClick={() => window.location.href = route('dashboard')}
+                                onClick={() => window.location.href = route('home')}
                                 className="w-full mt-6"
                             >
                                 Continue to Dashboard

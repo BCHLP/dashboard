@@ -104,7 +104,7 @@ const Voice = (props:Props) => {
 
                     console.log(`Upload successful: ${JSON.stringify(page.props)}`)
                     setStatus('Upload successful!')
-                    router.visit('/dashboard')
+                    router.visit('/')
                 },
                 onError: (errors) => {
                     console.error('Upload failed:', errors)

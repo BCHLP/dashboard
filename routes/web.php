@@ -1,27 +1,24 @@
 <?php
 
 use App\Enums\PermissionEnum;
-use App\Http\Controllers\Auth\SetPasswordController;
 use App\Http\Controllers\Auth\VoiceRecognitionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ServerController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\MfaMiddleware;
-use App\Http\Resources\NodeResource;
-use App\Models\Node;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('welcome');
-})->name('home');
+//Route::get('/', function () {
+//    return Inertia::render('welcome');
+//})->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('map', function(){
         return Inertia::render('PerthMap');
     })->name('map');
 
-    Route::get('dashboard', DashboardController::class)->name('dashboard');
+    Route::get('/', DashboardController::class)->name('home');
     Route::resource('servers', ServerController::class);
 
     Route::get('/voice/register', [VoiceRecognitionController::class, 'index'])
