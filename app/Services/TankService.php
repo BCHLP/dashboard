@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\TreatmentStageEnum;
+use App\Events\DatapointCreatedEvent;
 use App\Models\Datapoint;
 use App\Models\Node;
 
@@ -89,11 +90,13 @@ class TankService
             return;
         }
 
-        Datapoint::create([
+        $datapoint = Datapoint::create([
             'time' => time(),
             'node_id'=>$this->tank->id,
             'metric_id'=> $this->metrics['wl'],
             'value'=>$level]);
+
+        DatapointCreatedEvent::broadcast($datapoint);
     }
 
     public function getStage() : TreatmentStageEnum {

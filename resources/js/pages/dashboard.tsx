@@ -69,9 +69,9 @@ export default function Dashboard ({sensors, tanks, nodeMetrics} : Props ) {
 
                                     <Tank id={tank.id}
                                           water_level={metrics[tank.id]['wl']}
-                                          x_offset={150+((id-1)*x_spacing)}
-                                          y_offset={210+((tankIndex)*y_spacing)}
-                                          label={tank.name}  />
+                                          x_offset={150+((tankIndex)*x_spacing)}
+                                          y_offset={210+((id-1)*y_spacing)}
+                                          label={tank.name + ' ' + tank.treatment_line_id}  />
                                 </React.Fragment>
                         ))}
                         <rect x="795" y={175+(id-1)*y_spacing} width="85" height="10" fill="#718096" stroke="#4a5568" strokeWidth="1"/>

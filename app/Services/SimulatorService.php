@@ -10,12 +10,14 @@ class SimulatorService
 {
     private array $metrics = [];
 
-    public function __construct() {
+    public function __construct(private int $treatmentLineId) {
         $this->metrics = MetricService::getMetricKeys();
     }
 
     public function run() {
-        $nodes = Node::with(['settings', 'metrics','parent', 'children','treatmentLine'])->defaultOrder()->get();
+        $nodes = Node::with(['settings', 'metrics','parent', 'children','treatmentLine'])
+            ->where('treatment_line_id', $this->treatmentLineId)
+            ->defaultOrder()->get();
         foreach ($nodes as $node) {
 
             switch ($node->node_type) {
@@ -66,6 +68,5 @@ class SimulatorService
 
             }
         }
-
     }
 }

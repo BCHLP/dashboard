@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 
 class SimulatorCommand extends Command
 {
-    protected $signature = 'simulator {--status} {--once}';
+    protected $signature = 'simulator {treatment_line_id} {--status} {--once}';
 
     protected $description = 'Command description';
 
@@ -28,13 +28,15 @@ class SimulatorCommand extends Command
             return;
         }
 
-        $service = new SimulatorService();
+        $service = new SimulatorService($this->argument('treatment_line_id'));
 
         while(true) {
 
             $service->run();
 
-            $nodes = Node::with(['settings', 'metrics'])->defaultOrder()->get();
+            $nodes = Node::with(['settings', 'metrics'])
+                ->where('treatment_line_id', $this->argument('treatment_line_id'))
+                ->defaultOrder()->get();
             $this->output->write("\033[2J\033[H");
             $this->table(['TANK','WATER-LEVEL'], $this->tankTable($nodes));
             $this->table(['VALVE','STATUS'], $this->valveTable($nodes));

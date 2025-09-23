@@ -18,10 +18,6 @@ class Datapoint extends Model
         'time'
     ];
 
-    protected $dispatchesEvents = [
-        'created' => DatapointCreatedEvent::class,
-    ];
-
     protected $casts = [
         'value' => 'float',
     ];

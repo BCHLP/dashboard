@@ -59,4 +59,5 @@ Route::middleware('auth')->withoutMiddleware(MfaMiddleware::class)->group(functi
 
     Route::get('/set-password', [SetupController::class, 'password'])->name('password.set');
     Route::get('/totp', [SetupController::class, 'totp'])->name('totp.register');
+    Route::post('/totp', [AuthenticatedSessionController::class, 'totp'])->name('auth.totp');
 });

@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client';
 import { initializeTheme } from './hooks/use-appearance';
 import {APIProvider} from '@vis.gl/react-google-maps';
 import { configureEcho } from '@laravel/echo-react';
+import { MfaProvider} from '@/MfaProvider';
 
 configureEcho({
     broadcaster: "reverb",
@@ -31,9 +32,11 @@ createInertiaApp({
         const root = createRoot(el);
 
         root.render(
-            <APIProvider apiKey={'AIzaSyDX0I9nlNK5SfmzWLDU0vnqr83Aj8HTqnY'} onLoad={() => console.log('Maps API has loaded.')}>
-                <App {...props} />
-            </APIProvider>
+            <MfaProvider>
+                <APIProvider apiKey={'AIzaSyDX0I9nlNK5SfmzWLDU0vnqr83Aj8HTqnY'} onLoad={() => console.log('Maps API has loaded.')}>
+                    <App {...props} />
+                </APIProvider>
+            </MfaProvider>
         );
     },
     progress: {

@@ -1,6 +1,7 @@
 import { Head, useForm } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 import { FormEventHandler } from 'react';
+import { useMfa } from '@/MfaProvider';
 
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
@@ -22,6 +23,7 @@ interface LoginProps {
 }
 
 export default function Login({ status, canResetPassword }: LoginProps) {
+    const { requireMfa } = useMfa();
     const { data, setData, post, processing, errors, reset } = useForm<Required<LoginForm>>({
         email: '',
         password: '',
@@ -31,6 +33,26 @@ export default function Login({ status, canResetPassword }: LoginProps) {
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         post(route('login'), {
+            onSuccess: (response) => {
+                if (true) {
+                    requireMfa({
+                        action: 'complete-login',
+                        message: 'Please verify your identity to complete login',
+                        endpoint: 'auth.totp',
+                        email: data.email,
+                        password: data.password,
+                        onSuccess: () => {
+                            // Redirect to dashboard or intended page
+                            console.log("redirect to home");
+                            // window.location.href = route('home');
+                        },
+                        onCancel: () => {
+                            // Maybe redirect back to login or show a message
+                            console.log('MFA cancelled during login');
+                        }
+                    });
+                }
+            },
             onFinish: () => reset('password'),
         });
     };

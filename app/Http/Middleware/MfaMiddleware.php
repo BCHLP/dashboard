@@ -25,9 +25,9 @@ class MfaMiddleware
             return redirect()->route('totp.register');
         }
 
-        if (!VoiceRecognitionService::isVoiceAuthenticated()){
-            return redirect()->route('voice');
-        }
+//        if (!VoiceRecognitionService::isVoiceAuthenticated()){
+//            return redirect()->route('voice');
+//        }
 
         return $next($request);
     }

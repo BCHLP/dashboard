@@ -40,7 +40,7 @@ class UserVoiceController extends Controller
 
         if ($success) {
             // Redirect to dashboard on success
-            return redirect('/dashboard')->with('message', 'Voice registration successful!');
+            return redirect('/')->with('message', 'Voice registration successful!');
         } else {
             // Return back with error
             return back()->withErrors(['audio' => 'Voice did not match']);
