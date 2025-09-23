@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
-import { useForm } from '@inertiajs/react';
+import { useForm, router } from '@inertiajs/react';
 import { FormEventHandler, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle } from '@/components/ui/dialog';
@@ -98,12 +98,15 @@ const MfaModal: React.FC<MfaModalProps> = ({ open, challenge, onSuccess, onCance
 
         if (!challenge) return;
 
-        const formdata = {token:data.token, action:challenge.action, email: challenge.email, password:challenge.password};
-
-        console.log("formdata", formdata);
         // Post to a dedicated MFA verification endpoint
-        post(route(challenge.endpoint), {
-            data: formdata,
+        router.post(route(challenge.endpoint),
+            {
+                token: data.token,
+                action: challenge.action,
+                ...(challenge.email && { email: challenge.email }),
+                ...(challenge.password && { password: challenge.password })
+            },
+            {
             preserveScroll: true,
             onSuccess: () => {
                 reset();
@@ -111,6 +114,7 @@ const MfaModal: React.FC<MfaModalProps> = ({ open, challenge, onSuccess, onCance
                 onSuccess();
             },
             onError: () => {
+                console.log("an error occurred");
                 tokenInput.current?.focus();
             },
             onFinish: () => reset(),

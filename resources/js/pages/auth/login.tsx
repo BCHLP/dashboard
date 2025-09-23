@@ -51,6 +51,8 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             console.log('MFA cancelled during login');
                         }
                     });
+                } else {
+                    window.location.href = route('home');
                 }
             },
             onFinish: () => reset('password'),

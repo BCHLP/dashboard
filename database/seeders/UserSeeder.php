@@ -14,6 +14,8 @@ class UserSeeder extends Seeder
         $admin = User::factory([
             'email' => 'admin@example.com',
             'password' => 'password',
+            'totp_secret' => 'MN6O75VRYRZ4OBV7',
+            'totp_activated' => date('Y-m-d H:i:s')
         ])->create();
 
         $admin->assignRole(RoleEnum::ADMIN);
@@ -21,6 +23,8 @@ class UserSeeder extends Seeder
         $itEngineer = User::factory([
             'email' => 'it@example.com',
             'password' => 'password',
+            'totp_secret' => 'MN6O75VRYRZ4OBV7',
+            'totp_activated' => date('Y-m-d H:i:s')
         ])->create();
 
         $itEngineer->assignRole(RoleEnum::SERVER_MANAGEMENT);
@@ -28,6 +32,8 @@ class UserSeeder extends Seeder
         $userManager = User::factory([
             'email' => 'hr@example.com',
             'password' => 'password',
+            'totp_secret' => 'MN6O75VRYRZ4OBV7',
+            'totp_activated' => date('Y-m-d H:i:s')
         ])->create();
 
         $userManager->assignRole(RoleEnum::USER_MANAGEMENT);

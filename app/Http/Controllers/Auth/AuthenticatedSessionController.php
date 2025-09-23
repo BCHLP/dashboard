@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\LoginWithMfaRequest;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -37,18 +38,24 @@ class AuthenticatedSessionController extends Controller
 
     public function totp(LoginWithMfaRequest $request): Response|RedirectResponse
     {
-
-        dd($request->all());
         $validCredentials = Auth::validate($request->only(['email', 'password']));
         if (!$validCredentials) {
             return back()->withErrors(["Invalid credentials"]);
         }
 
+        $user = User::where('email', $request->email)->first();
+        abort_if(blank($user), 404);
+
+        // Temporarily authenticate to match TotpController behavior
+        Auth::login($user);
+
         $google2fa = new Google2FA();
-        $valid = $google2fa->verifyKey(Auth::user()->totp_secret, $request->token);
+        $valid = $google2fa->verifyKey(auth()->user()->totp_secret, $request->token);
+
+
         if (!$valid) {
-            auth()->user()->update(['totp_activated_at' => Carbon::now()]);
-            return back()->withErrors(['token' => 'Invalid token']);
+            Auth::logout();
+            return redirect()->back()->withErrors(['token' => 'Invalid token']);
         }
 
         return redirect()->intended(route('home', absolute: false));
@@ -63,7 +70,12 @@ class AuthenticatedSessionController extends Controller
 
         $validCredentials = Auth::validate($request->only(['email', 'password']));
         if (!$validCredentials) {
-            return back()->withErrors(["Invalid credentials"]);
+            return back()->withErrors(["password" => "Invalid credentials"]);
+        }
+
+        $user = User::where('email', $request->email)->first();
+        if (!$user) {
+            return back()->withErrors(["password" => "Invalid credentials!"]);
         }
 
         $request->session()->regenerate();

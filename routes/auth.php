@@ -34,6 +34,8 @@ Route::middleware('guest')->group(function () {
     Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
         ->middleware(['signed', 'throttle:6,1'])
         ->name('verification.verify');
+
+    Route::post('/totp', [AuthenticatedSessionController::class, 'totp'])->name('auth.totp');
 });
 
 Route::middleware('auth')->withoutMiddleware(MfaMiddleware::class)->group(function () {
@@ -59,5 +61,6 @@ Route::middleware('auth')->withoutMiddleware(MfaMiddleware::class)->group(functi
 
     Route::get('/set-password', [SetupController::class, 'password'])->name('password.set');
     Route::get('/totp', [SetupController::class, 'totp'])->name('totp.register');
-    Route::post('/totp', [AuthenticatedSessionController::class, 'totp'])->name('auth.totp');
+
 });
+

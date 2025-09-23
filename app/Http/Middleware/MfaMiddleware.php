@@ -10,6 +10,7 @@ class MfaMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
+
         if (!auth()->check()) {
             abort(401);
         }
