@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\LoginWithMfaRequest;
 use App\Models\User;
+use App\Services\AdaptiveMFAService;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,6 +27,7 @@ class AuthenticatedSessionController extends Controller
         return Inertia::render('auth/login', [
             'canResetPassword' => Route::has('password.request'),
             'status' => $request->session()->get('status'),
+            'auditAction' => $request->session()->get('auditAction'),
         ]);
     }
 
@@ -46,12 +49,11 @@ class AuthenticatedSessionController extends Controller
         $user = User::where('email', $request->email)->first();
         abort_if(blank($user), 404);
 
-        // Temporarily authenticate to match TotpController behavior
+        // Temporarily authenticate
         Auth::login($user);
 
         $google2fa = new Google2FA();
         $valid = $google2fa->verifyKey(auth()->user()->totp_secret, $request->token);
-
 
         if (!$valid) {
             Auth::logout();
@@ -64,10 +66,8 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(LoginRequest $request): RedirectResponse|Response
     {
-        // $request->authenticate();
-
         $validCredentials = Auth::validate($request->only(['email', 'password']));
         if (!$validCredentials) {
             return back()->withErrors(["password" => "Invalid credentials"]);
@@ -78,9 +78,21 @@ class AuthenticatedSessionController extends Controller
             return back()->withErrors(["password" => "Invalid credentials!"]);
         }
 
+        $amfaService = new AdaptiveMFAService;
+        $auditAction = $amfaService->getFactors("Login", $user);
+
         $request->session()->regenerate();
 
-        return back();
+        if (blank($auditAction)) {
+            Auth::login($user);
+            return redirect()->intended(route('home', absolute: false));
+        }
+
+        return Inertia::render('auth/login', [
+            'canResetPassword' => Route::has('password.request'),
+            'status' => $request->session()->get('status'),
+            'auditAction' => $auditAction,
+        ]);
 
         // return redirect()->intended(route('home', absolute: false));
     }

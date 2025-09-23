@@ -1,4 +1,4 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 import { FormEventHandler } from 'react';
 import { useMfa } from '@/MfaProvider';
@@ -24,8 +24,9 @@ interface LoginProps {
 
 export default function Login({ status, canResetPassword }: LoginProps) {
     const { requireMfa } = useMfa();
+    const { props } = usePage();
     const { data, setData, post, processing, errors, reset } = useForm<Required<LoginForm>>({
-        email: '',
+        email: 'admin@example.com',
         password: '',
         remember: false,
     });
@@ -33,8 +34,17 @@ export default function Login({ status, canResetPassword }: LoginProps) {
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         post(route('login'), {
-            onSuccess: (response) => {
-                if (true) {
+            onSuccess: (page) => {
+                const auditAction = page.props.auditAction;
+
+                console.log("auditAction", page, auditAction);
+
+                if (auditAction === null) {
+                    window.location.href = route('home');
+                    return;
+                }
+
+                if (auditAction.totp) {
                     requireMfa({
                         action: 'complete-login',
                         message: 'Please verify your identity to complete login',
