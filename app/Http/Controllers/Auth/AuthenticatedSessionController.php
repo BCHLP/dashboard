@@ -31,7 +31,7 @@ class AuthenticatedSessionController extends Controller
         ]);
     }
 
-    public function voice(Request $request): Response|RedirectResponse
+    public function voice(Request $request): JsonResponse|Response|RedirectResponse
     {
         if (!auth()->check()) {
             return response()->redirectToRoute('login');
@@ -39,35 +39,32 @@ class AuthenticatedSessionController extends Controller
         return Inertia::render('auth/VerifyVoice', []);
     }
 
-    public function totp(ActionAudit $audit, LoginWithMfaRequest $request): Response|RedirectResponse
+    public function totp(ActionAudit $audit, LoginWithMfaRequest $request) : JsonResponse
     {
 
         abort_if($audit->action !== 'Login', 404);
 
-        $validCredentials = Auth::validate($request->only(['email', 'password']));
-        if (!$validCredentials) {
-            return back()->withErrors(["Invalid credentials"]);
-        }
-
-        $user = User::where('email', $request->email)->first();
+        $user = $audit->user;
         abort_if(blank($user), 404);
-
-        abort_if($audit->user_id !== $user->id, 404);
 
         // Temporarily authenticate
         Auth::login($user);
-
         $google2fa = new Google2FA();
         $valid = $google2fa->verifyKey(auth()->user()->totp_secret, $request->token);
 
         if (!$valid) {
             Auth::logout();
-            return redirect()->back()->withErrors(['token' => 'Invalid token']);
+            return response()->json(['success' => false, 'audit' => $audit, 'error' => 'Invalid token']);
         }
 
         $audit->update(['totp_completed_at' => Carbon::now(), 'totp' => null]);
-        $adaptiveService = new AdaptiveMFAService();
-        return $adaptiveService->getNextRoute($audit, null, fn() => Auth::logout());
+        if ($audit->voice) {
+            Auth::logout();
+        }
+        // $adaptiveService = new AdaptiveMFAService();
+
+        return response()->json(['success' => true, 'audit' => $audit]);
+        // return $adaptiveService->getNextRoute($audit, null, fn() => Auth::logout());
 
         // return redirect()->intended(route($nextRoute, absolute: false));
     }

@@ -45,3 +45,11 @@ export interface User {
     role: string;
     // [key: string]: unknown; // This allows for additional properties...
 }
+
+export type AuditAction = {
+    id: string;
+    voice:boolean;
+    voice_completed_at:string;
+    totp:boolean;
+    totp_completed_at:string;
+}

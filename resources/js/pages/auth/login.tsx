@@ -2,6 +2,7 @@ import { Head, useForm, usePage } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 import { FormEventHandler } from 'react';
 import { useMfa } from '@/MfaProvider';
+import {AuditAction} from '@/types';
 
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
@@ -16,14 +17,6 @@ type LoginForm = {
     password: string;
     remember: boolean;
 };
-
-type AuditAction = {
-    id: string;
-    voice:boolean;
-    voice_completed_at:string;
-    totp:boolean;
-    totp_completed_at:string;
-}
 
 interface LoginProps {
     status?: string;
@@ -54,7 +47,7 @@ export default function Login({ status, auditAction }: LoginProps) {
                 // return;
 
                 if (pageAuditAction === null || pageAuditAction === undefined) {
-                    window.location.href = route('home');
+                    // window.location.href = route('home');
                     return;
                 }
 
@@ -66,10 +59,17 @@ export default function Login({ status, auditAction }: LoginProps) {
                         endpoint: 'auth.totp',
                         email: data.email,
                         password: data.password,
-                        onSuccess: () => {
+                        onSuccess: (updatedAudit:AuditAction) => {
                             // Redirect to dashboard or intended page
-                            console.log("redirect to home");
+                            console.log("redirect to home", updatedAudit);
                             // window.location.href = route('home');
+
+                            if (updatedAudit.voice) {
+                                console.log("display voice modal");
+                            } else {
+                                window.location.href = route('home');
+                            }
+
                         },
                         onCancel: () => {
                             // Maybe redirect back to login or show a message

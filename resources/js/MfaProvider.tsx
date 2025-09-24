@@ -1,16 +1,18 @@
 import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
 import { useForm, router } from '@inertiajs/react';
 import { FormEventHandler, useRef } from 'react';
+import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/input-error';
+import {AuditAction} from '@/types';
 
 interface MfaChallenge {
     action: string; // The route or action that triggered MFA
     audit_id:string;
-    onSuccess?: () => void; // Callback for successful MFA
+    onSuccess?: (audit:AuditAction) => void; // Callback for successful MFA
     onCancel?: () => void; // Callback for cancelled MFA
     message?: string; // Custom message for the modal
     endpoint?: string;
@@ -58,9 +60,9 @@ export const MfaProvider: React.FC<MfaProviderProps> = ({ children }) => {
         setIsOpen(false);
     }, [challenge]);
 
-    const handleMfaSuccess = useCallback(() => {
+    const handleMfaSuccess = useCallback((audit:AuditAction) => {
         if (challenge?.onSuccess) {
-            challenge.onSuccess();
+            challenge.onSuccess(audit);
         }
         setChallenge(null);
         setIsOpen(false);
@@ -83,7 +85,7 @@ export const MfaProvider: React.FC<MfaProviderProps> = ({ children }) => {
 interface MfaModalProps {
     open: boolean;
     challenge: MfaChallenge | null;
-    onSuccess: () => void;
+    onSuccess: (audit:AuditAction) => void;
     onCancel: () => void;
     endpoint?: string;
     email?:string;
@@ -95,35 +97,38 @@ const MfaModal: React.FC<MfaModalProps> = ({ open, challenge, onSuccess, onCance
     const { data, setData, post, processing, reset, errors, clearErrors } = useForm<{ token: string }>({
         token: ''
     });
+    const [tokenError, setTokenError] = useState<string>('');
 
-    const sendToken: FormEventHandler = (e) => {
+    const sendToken: FormEventHandler = async (e) => {
         e.preventDefault();
 
         if (!challenge) return;
 
         console.log("audit", {audit:challenge.audit_id});
 
-        // Post to a dedicated MFA verification endpoint
-        router.post(route(challenge.endpoint, {audit:challenge.audit_id}),
-            {
+        try {
+            // Post to a dedicated MFA verification endpoint
+            const response = await axios.post(route(challenge.endpoint, {audit:challenge.audit_id}), {
                 token: data.token,
                 action: challenge.action,
-                ...(challenge.email && { email: challenge.email }),
-                ...(challenge.password && { password: challenge.password })
-            },
-            {
-            preserveScroll: true,
-            onSuccess: () => {
-                reset();
-                clearErrors();
-                onSuccess();
-            },
-            onError: () => {
-                console.log("an error occurred");
-                tokenInput.current?.focus();
-            },
-            onFinish: () => reset(),
-        });
+            });
+
+            console.log("send token successful", response.data);
+
+            if (!response.data.success) {
+                setTokenError(response.data.error);
+
+                return;
+            }
+
+            setTokenError('');
+            reset();
+            clearErrors();
+            onSuccess(response.data.audit);
+        } catch (error) {
+            console.log("an error occurred", error);
+            tokenInput.current?.focus();
+        }
     };
 
     const closeModal = () => {
@@ -157,6 +162,7 @@ const MfaModal: React.FC<MfaModalProps> = ({ open, challenge, onSuccess, onCance
                         />
 
                         <InputError message={errors.token} />
+                        <InputError message={tokenError} />
                     </div>
 
                     <DialogFooter className="gap-2">
