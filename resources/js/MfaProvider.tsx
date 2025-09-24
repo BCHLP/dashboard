@@ -9,12 +9,14 @@ import InputError from '@/components/input-error';
 
 interface MfaChallenge {
     action: string; // The route or action that triggered MFA
+    audit_id:string;
     onSuccess?: () => void; // Callback for successful MFA
     onCancel?: () => void; // Callback for cancelled MFA
     message?: string; // Custom message for the modal
     endpoint?: string;
     email?:string;
     password?:string;
+
 }
 
 interface MfaContextType {
@@ -22,6 +24,7 @@ interface MfaContextType {
     dismissMfa: () => void;
     isActive: boolean;
     endpoint?: string;
+    audit_id: string;
 }
 
 const MfaContext = createContext<MfaContextType | undefined>(undefined);
@@ -98,8 +101,10 @@ const MfaModal: React.FC<MfaModalProps> = ({ open, challenge, onSuccess, onCance
 
         if (!challenge) return;
 
+        console.log("audit", {audit:challenge.audit_id});
+
         // Post to a dedicated MFA verification endpoint
-        router.post(route(challenge.endpoint),
+        router.post(route(challenge.endpoint, {audit:challenge.audit_id}),
             {
                 token: data.token,
                 action: challenge.action,

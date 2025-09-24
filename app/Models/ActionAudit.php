@@ -10,7 +10,11 @@ class ActionAudit extends Model
 {
     use HasFactory;
 
+    protected $keyType = 'string';
+    public $incrementing = false;
+
     protected $fillable = [
+        'id',
         'user_id',
         'action',
         'voice',
@@ -34,8 +38,9 @@ class ActionAudit extends Model
         ];
     }
 
-    protected $visible = [
-        'voice',
-        'totp',
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+        'action',
     ];
 }

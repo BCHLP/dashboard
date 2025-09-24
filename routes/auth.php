@@ -14,10 +14,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
 
-    Route::get('login', [AuthenticatedSessionController::class, 'create'])
+    Route::get('login/{audit?}', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 
-    Route::post('login', [AuthenticatedSessionController::class, 'store']);
+    Route::post('login/{audit?}', [AuthenticatedSessionController::class, 'store'])
+        ->name('login.store');
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
@@ -35,7 +36,7 @@ Route::middleware('guest')->group(function () {
         ->middleware(['signed', 'throttle:6,1'])
         ->name('verification.verify');
 
-    Route::post('/totp', [AuthenticatedSessionController::class, 'totp'])->name('auth.totp');
+    Route::post('/totp/{audit}', [AuthenticatedSessionController::class, 'totp'])->name('auth.totp');
 });
 
 Route::middleware('auth')->withoutMiddleware(MfaMiddleware::class)->group(function () {

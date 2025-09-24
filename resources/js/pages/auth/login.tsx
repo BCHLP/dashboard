@@ -17,12 +17,20 @@ type LoginForm = {
     remember: boolean;
 };
 
-interface LoginProps {
-    status?: string;
-    canResetPassword: boolean;
+type AuditAction = {
+    id: string;
+    voice:boolean;
+    voice_completed_at:string;
+    totp:boolean;
+    totp_completed_at:string;
 }
 
-export default function Login({ status, canResetPassword }: LoginProps) {
+interface LoginProps {
+    status?: string;
+    auditAction?: AuditAction;
+}
+
+export default function Login({ status, auditAction }: LoginProps) {
     const { requireMfa } = useMfa();
     const { props } = usePage();
     const { data, setData, post, processing, errors, reset } = useForm<Required<LoginForm>>({
@@ -31,22 +39,29 @@ export default function Login({ status, canResetPassword }: LoginProps) {
         remember: false,
     });
 
+    console.log("auditAction", auditAction);
+
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post(route('login'), {
+        post(route('login.store', {audit:auditAction?.id??''}), {
             onSuccess: (page) => {
-                const auditAction = page.props.auditAction;
+                const pageAuditAction = page.props.auditAction;
 
-                console.log("auditAction", page, auditAction);
+                console.log("on success:",  page);
 
-                if (auditAction === null) {
+                console.log("auditAction", pageAuditAction);
+
+                // return;
+
+                if (pageAuditAction === null || pageAuditAction === undefined) {
                     window.location.href = route('home');
                     return;
                 }
 
-                if (auditAction.totp) {
+                if (pageAuditAction.totp === true) {
                     requireMfa({
                         action: 'complete-login',
+                        audit_id:pageAuditAction.id,
                         message: 'Please verify your identity to complete login',
                         endpoint: 'auth.totp',
                         email: data.email,
@@ -61,8 +76,12 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             console.log('MFA cancelled during login');
                         }
                     });
+
+                } else if (pageAuditAction.voice) {
+                    console.log("request voice");
                 } else {
-                    window.location.href = route('home');
+                    console.log("ok what now?");
+                   // window.location.href = route('home');
                 }
             },
             onFinish: () => reset('password'),
@@ -94,11 +113,11 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                     <div className="grid gap-2">
                         <div className="flex items-center">
                             <Label htmlFor="password">Password</Label>
-                            {canResetPassword && (
+
                                 <TextLink href={route('password.request')} className="ml-auto text-sm" tabIndex={5}>
                                     Forgot password?
                                 </TextLink>
-                            )}
+
                         </div>
                         <Input
                             id="password"

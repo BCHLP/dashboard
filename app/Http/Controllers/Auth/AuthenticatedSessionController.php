@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\LoginWithMfaRequest;
+use App\Models\ActionAudit;
 use App\Models\User;
 use App\Services\AdaptiveMFAService;
 use Carbon\Carbon;
@@ -22,12 +23,11 @@ class AuthenticatedSessionController extends Controller
     /**
      * Show the login page.
      */
-    public function create(Request $request): Response
+    public function create(Request $request, ?ActionAudit $audit): Response
     {
         return Inertia::render('auth/login', [
-            'canResetPassword' => Route::has('password.request'),
             'status' => $request->session()->get('status'),
-            'auditAction' => $request->session()->get('auditAction'),
+            'auditAction' => $audit,
         ]);
     }
 
@@ -39,8 +39,11 @@ class AuthenticatedSessionController extends Controller
         return Inertia::render('auth/VerifyVoice', []);
     }
 
-    public function totp(LoginWithMfaRequest $request): Response|RedirectResponse
+    public function totp(ActionAudit $audit, LoginWithMfaRequest $request): Response|RedirectResponse
     {
+
+        abort_if($audit->action !== 'Login', 404);
+
         $validCredentials = Auth::validate($request->only(['email', 'password']));
         if (!$validCredentials) {
             return back()->withErrors(["Invalid credentials"]);
@@ -48,6 +51,8 @@ class AuthenticatedSessionController extends Controller
 
         $user = User::where('email', $request->email)->first();
         abort_if(blank($user), 404);
+
+        abort_if($audit->user_id !== $user->id, 404);
 
         // Temporarily authenticate
         Auth::login($user);
@@ -60,13 +65,17 @@ class AuthenticatedSessionController extends Controller
             return redirect()->back()->withErrors(['token' => 'Invalid token']);
         }
 
-        return redirect()->intended(route('home', absolute: false));
+        $audit->update(['totp_completed_at' => Carbon::now(), 'totp' => null]);
+        $adaptiveService = new AdaptiveMFAService();
+        return $adaptiveService->getNextRoute($audit, null, fn() => Auth::logout());
+
+        // return redirect()->intended(route($nextRoute, absolute: false));
     }
 
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse|Response
+    public function store(LoginRequest $request, ?ActionAudit $auditAction): RedirectResponse|Response
     {
         $validCredentials = Auth::validate($request->only(['email', 'password']));
         if (!$validCredentials) {
@@ -79,20 +88,17 @@ class AuthenticatedSessionController extends Controller
         }
 
         $amfaService = new AdaptiveMFAService;
-        $auditAction = $amfaService->getFactors("Login", $user);
+        if (blank($auditAction->id)) {
+            $auditAction = $amfaService->getFactors("Login", $user);
 
-        $request->session()->regenerate();
+        }
 
         if (blank($auditAction)) {
             Auth::login($user);
             return redirect()->intended(route('home', absolute: false));
         }
 
-        return Inertia::render('auth/login', [
-            'canResetPassword' => Route::has('password.request'),
-            'status' => $request->session()->get('status'),
-            'auditAction' => $auditAction,
-        ]);
+        return $amfaService->getNextRoute($auditAction, fn() => $request->session()->regenerate());
 
         // return redirect()->intended(route('home', absolute: false));
     }
