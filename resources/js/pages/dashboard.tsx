@@ -1,13 +1,14 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Tank from '../components/tank';
 import '@patternfly/react-core/dist/styles/base-no-reset.css';
 import { useEchoModel } from "@laravel/echo-react";
 import { useEcho } from "@laravel/echo-react";
 
 import { flushSync } from 'react-dom';
+import { useContextFingerprint } from '@/components/FingerprintProvider';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -33,6 +34,23 @@ export default function Dashboard ({sensors, tanks, nodeMetrics} : Props ) {
 
     const [metrics, setMetrics] = useState(nodeMetrics);
     const uniqueLineIds = [...new Set(tanks.map(tank => tank.treatment_line_id))];
+
+    const { isCollecting, sendFingerprint, error } = useContextFingerprint();
+
+    // Run once on component mount
+    useEffect(() => {
+        const sendInitialFingerprint = async () => {
+            try {
+                const result = await sendFingerprint();
+                console.log('Initial fingerprint sent:', result);
+            } catch (error) {
+                console.error('Failed to send initial fingerprint:', error);
+            }
+        };
+
+        sendInitialFingerprint();
+    }, []); // Empty dependency array = runs once on mount
+
 
     useEcho(`NewDatapointEvent`, ['DatapointCreatedEvent'], (e) => {
         setMetrics(prev => ({

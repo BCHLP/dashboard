@@ -74,27 +74,21 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request, ?ActionAudit $auditAction): RedirectResponse|Response
     {
-        $validCredentials = Auth::validate($request->only(['email', 'password']));
+        $validCredentials = Auth::attempt($request->only(['email', 'password']));
         if (!$validCredentials) {
             return back()->withErrors(["password" => "Invalid credentials"]);
         }
 
-        $user = User::where('email', $request->email)->first();
-        if (!$user) {
-            return back()->withErrors(["password" => "Invalid credentials!"]);
-        }
-
         $amfaService = new AdaptiveMFAService;
         if (blank($auditAction->id)) {
-            $auditAction = $amfaService->getFactors("Login", $user);
-
+            $auditAction = $amfaService->getFactors("Login", auth()->user());
         }
 
         if (blank($auditAction)) {
-            Auth::login($user);
             return redirect()->intended(route('home', absolute: false));
         }
 
+        Auth::logout();
         return $amfaService->getNextRoute($auditAction, fn() => $request->session()->regenerate());
 
         // return redirect()->intended(route('home', absolute: false));

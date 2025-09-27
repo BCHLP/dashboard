@@ -2,9 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Events\MqttHardwareEvent;
 use App\Models\Datapoint;
-use App\Models\DeviceMetric;
 use App\Models\Metric;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
@@ -31,15 +29,31 @@ class MqttCommand extends Command
      */
     public function handle(): void
     {
-        $server   = '0.0.0.0';
-        $port     = 1883;
-        $clientId = 'test-publisher';
+        $server   = 'localhost';
+        $port     = 8883;
+        $clientId = 'laravel';
 
         $metrics = Metric::all();
 
+        $certPath = '';
+
+        $connectionSettings = (new \PhpMqtt\Client\ConnectionSettings)
+            ->setUseTls(true)
+            ->setTlsVerifyPeer(true)
+            // ->setTlsVerifyPeerName(false)  // May need this for localhost
+            ->setTlsCertificateAuthorityFile($certPath . "ca-chain.crt")
+            ->setTlsClientCertificateFile($certPath . "laravel.crt")  // PEM format
+            ->setTlsClientCertificateKeyFile($certPath . "laravel.key");  // PEM format
+
         $mqtt = new MqttClient($server, $port, $clientId);
-        $mqtt->connect();
+        $mqtt->connect($connectionSettings);
         // $mqtt->publish('php-mqtt/client/test', 'Hello World!', 0);
+
+        $mqtt->subscribe("test/topic", function($topic, $message) {
+            $this->info("Topic: $topic");
+            $this->info("Message: $message");
+        });
+
         $mqtt->subscribe('hardware-metrics', function ($topic, $message, $retained, $matchedWildcards) use ($metrics) {
             $this->info("Topic: $topic");
             $payload = json_decode($message, true);

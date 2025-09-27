@@ -7,6 +7,7 @@ import { initializeTheme } from './hooks/use-appearance';
 import {APIProvider} from '@vis.gl/react-google-maps';
 import { configureEcho } from '@laravel/echo-react';
 import { MfaProvider} from '@/MfaProvider';
+import { FingerprintProvider } from './components/FingerprintProvider';
 
 configureEcho({
     broadcaster: "reverb",
@@ -25,6 +26,17 @@ configureEcho({
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
+const getCsrfToken = (): string | null => {
+    // From meta tag (if using Laravel-style CSRF)
+    const metaTag = document.querySelector('meta[name="csrf-token"]');
+    if (metaTag) {
+        return metaTag.getAttribute('content');
+    }
+
+    // Or from your React app's config/context
+    return null;
+};
+
 createInertiaApp({
     title: (title) => title ? `${title} - ${appName}` : appName,
     resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')),
@@ -33,9 +45,15 @@ createInertiaApp({
 
         root.render(
             <MfaProvider>
-                <APIProvider apiKey={'AIzaSyDX0I9nlNK5SfmzWLDU0vnqr83Aj8HTqnY'} onLoad={() => console.log('Maps API has loaded.')}>
-                    <App {...props} />
-                </APIProvider>
+                <FingerprintProvider
+                    endpoint="/api/fingerprint"
+                    csrfToken={getCsrfToken()}
+                    autoCollectOnMount={true}
+                >
+                    <APIProvider apiKey={'AIzaSyDX0I9nlNK5SfmzWLDU0vnqr83Aj8HTqnY'} onLoad={() => console.log('Maps API has loaded.')}>
+                        <App {...props} />
+                    </APIProvider>
+                </FingerprintProvider>
             </MfaProvider>
         );
     },
