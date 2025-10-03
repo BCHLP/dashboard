@@ -3,15 +3,11 @@
 namespace App\Console\Commands;
 
 use App\Enums\NodeTypeEnum;
-use App\Models\Datapoint;
-use App\Models\Metric;
 use App\Models\Node;
-use App\Services\MetricService;
 use App\Services\SimulatorService;
 use App\Services\TankService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 class SimulatorCommand extends Command
 {

@@ -19,4 +19,8 @@ enum MetricAliasEnum: string
     case MQTT_DISCONNECTED = 'mqtt_disconnected';
 
 
+    case USER_AUTH_FAILED = 'user_auth_failed';
+    case USER_AUTH_SUCCESSFUL = 'user_auth_successful';
+
+
 }

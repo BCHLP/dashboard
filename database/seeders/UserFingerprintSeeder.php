@@ -2,9 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Actions\UserLoginAuditAction;
 use App\Enums\RoleEnum;
 use App\Models\User;
 use App\Models\UserFingerprint;
+use App\Models\UserLoginAudit;
 use App\Services\UserFingerprintService;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
@@ -21,7 +23,7 @@ class UserFingerprintSeeder extends Seeder
 
     private array $operatorMetadata = [];
 
-    public function run(): void
+    public function run(UserLoginAuditAction $userLoginAudit): void
     {
         $this->operators = User::factory()->count(12)->create();
         foreach ($this->operators as $operator) {
@@ -29,29 +31,38 @@ class UserFingerprintSeeder extends Seeder
             $this->operatorMetadata[$operator->id] = $this->generateOperatorMetadata();
         }
 
-        $startDate = Carbon::now()->subDays(8);
+        $daysToCreate = 30;
+        $date = Carbon::now()->subDays($daysToCreate+1);
         $currentShiftHours = 0;
         $sessionId = '';
 
-        for ($day = 1; $day <= 7; $day++) {
-            $startDate->addDay();
+        for ($day = 1; $day <= $daysToCreate; $day++) {
+            $date->addDay();
             for ($hour = 0; $hour < 24; $hour++) {
+                $date->setHour($hour);
                 for ($minute = 0; $minute < 60; $minute++) {
+
+                    $date->setMinute($minute);
+
+                    $createLoginAudit = false;
                     if ($this->currentOperator === null || $currentShiftHours > 8) {
                         $this->getNextOperator();
                         $currentShiftHours = 0;
                         $sessionId = Str::uuid();
+                        $createLoginAudit = true;
+
                     }
 
                     $fingerprint = array_merge(
                         $this->operatorMetadata[$operator->id],
                         [
-                            "collected_at" => date('Y-m-d\TH:i:s.u\Z') // "2025-09-24T07:14:25.698821Z"
+                            "collected_at" => $date->format('Y-m-d\TH:i:s.u\Z') // "2025-09-24T07:14:25.698821Z"
                         ]
                     );
 
 
-                    UserFingerprint::create([
+                    $fingerprint = UserFingerprint::create([
+                        'id' => Str::uuid()->toString(),
                         'user_id' => $this->currentOperator->id,
                         'fingerprint_data' => $fingerprint,
                         'hash' => $fingerprint['hash'],
@@ -59,6 +70,17 @@ class UserFingerprintSeeder extends Seeder
                         'user_agent' => $fingerprint['user_agent'],
                         'session_id' => $sessionId,
                     ]);
+
+                    if ($createLoginAudit) {
+                        UserLoginAudit::create([
+                            'user_id' => $this->currentOperator->id,
+                            'user_fingerprint_id' =>$fingerprint->id,
+                            'email' => $this->currentOperator->email,
+                            'successful' => true,
+                            'created_at' => $date->format('Y-m-d H:i:s'),
+                            'updated_at' => $date->format('Y-m-d H:i:s'),
+                        ]);
+                    }
                 }
 
                 $currentShiftHours++;

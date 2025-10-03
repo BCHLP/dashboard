@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Actions\FailedToLogin;
+use App\Actions\UserLoginAuditAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\LoginWithMfaRequest;
@@ -40,7 +40,7 @@ class AuthenticatedSessionController extends Controller
         return Inertia::render('auth/VerifyVoice', []);
     }
 
-    public function totp(ActionAudit $audit, LoginWithMfaRequest $request) : JsonResponse
+    public function totp(ActionAudit $audit, LoginWithMfaRequest $request, UserLoginAuditAction $userLoginAudit) : JsonResponse
     {
 
         abort_if($audit->action !== 'Login', 404);
@@ -55,12 +55,15 @@ class AuthenticatedSessionController extends Controller
 
         if (!$valid) {
             Auth::logout();
+            $userLoginAudit($request->email, false);
             return response()->json(['success' => false, 'audit' => $audit, 'error' => 'Invalid token']);
         }
 
         $audit->update(['totp_completed_at' => Carbon::now(), 'totp' => null]);
         if ($audit->voice) {
             Auth::logout();
+        } else {
+            $userLoginAudit($request->email, true);
         }
         // $adaptiveService = new AdaptiveMFAService();
 
@@ -73,11 +76,11 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request, ?ActionAudit $auditAction, FailedToLogin $failedToLogin): RedirectResponse|Response
+    public function store(LoginRequest $request, ?ActionAudit $auditAction, UserLoginAuditAction $userLoginAudit): RedirectResponse|Response
     {
         $validCredentials = Auth::attempt($request->only(['email', 'password']));
         if (!$validCredentials) {
-            $failedToLogin($request->email);
+            $userLoginAudit($request->email, false);
             return back()->withErrors(["password" => "Invalid credentials"]);
         }
 
@@ -87,6 +90,7 @@ class AuthenticatedSessionController extends Controller
         }
 
         if (blank($auditAction)) {
+            $userLoginAudit($request->email, true);
             return redirect()->intended(route('home', absolute: false));
         }
 

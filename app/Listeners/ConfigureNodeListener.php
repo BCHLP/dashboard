@@ -5,6 +5,7 @@ namespace App\Listeners;
 use App\Enums\NodeTypeEnum;
 use App\Events\NodeCreatedEvent;
 use App\Models\Datapoint;
+use App\Models\Node;
 use App\Models\NodeSetting;
 use App\Services\MetricService;
 
@@ -31,7 +32,10 @@ class ConfigureNodeListener
                 NodeSetting::create(['node_id' => $event->node->id, 'name' => 'capacity', 'value' => '100', 'cast' => 'int']);
                 NodeSetting::create(['node_id' => $event->node->id, 'name' => 'filled_time', 'value' => '0', 'cast' => 'int']);
                 $event->node->metrics()->sync([$metrics['wl']]);
-                Datapoint::create(['time' => time(), 'node_id' => $event->node->id, 'metric_id' => $metrics['wl'], 'value' => 0]);
+                Datapoint::create(['time' => time(),
+                    'source_id' => $event->node->id,
+                    'source_type' => Node::class,
+                    'metric_id' => $metrics['wl'], 'value' => 0]);
 
                 break;
 

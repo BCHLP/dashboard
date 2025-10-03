@@ -35,23 +35,6 @@ export default function Dashboard ({sensors, tanks, nodeMetrics} : Props ) {
     const [metrics, setMetrics] = useState(nodeMetrics);
     const uniqueLineIds = [...new Set(tanks.map(tank => tank.treatment_line_id))];
 
-    const { isCollecting, sendFingerprint, error } = useContextFingerprint();
-
-    // Run once on component mount
-    useEffect(() => {
-        const sendInitialFingerprint = async () => {
-            try {
-                const result = await sendFingerprint();
-                console.log('Initial fingerprint sent:', result);
-            } catch (error) {
-                console.error('Failed to send initial fingerprint:', error);
-            }
-        };
-
-        sendInitialFingerprint();
-    }, []); // Empty dependency array = runs once on mount
-
-
     useEcho(`NewDatapointEvent`, ['DatapointCreatedEvent'], (e) => {
         setMetrics(prev => ({
             ...prev,

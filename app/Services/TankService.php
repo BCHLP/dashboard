@@ -92,7 +92,8 @@ class TankService
 
         $datapoint = Datapoint::create([
             'time' => time(),
-            'node_id'=>$this->tank->id,
+            'source_id'=>$this->tank->id,
+            'source_type' => Node::class,
             'metric_id'=> $this->metrics['wl'],
             'value'=>$level]);
 

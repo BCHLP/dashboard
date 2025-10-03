@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Datapoint;
+use App\Models\Node;
 use Illuminate\Http\Request;
 
 class DatapointController extends Controller
@@ -27,7 +28,8 @@ class DatapointController extends Controller
             }
 
             Datapoint::create([
-                'node_id' => $server->id,
+                'source_id' => $server->id,
+                'source_type' => Node::class,
                 'metric_id' => $metric->id,
                 'time' => $point['time'],
                 'value' => $point['value'],

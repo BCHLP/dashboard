@@ -408,12 +408,12 @@ export const useFingerprint = (options: FingerprintOptions = {}): FingerprintHoo
     useEffect(() => {
         if (autoCollectOnMount && !lastFingerprint) {
             const timeoutId = setTimeout(() => {
-                collectFingerprint().catch(console.error);
+                sendFingerprint().catch(console.error);
             }, 100); // Small delay to prevent issues during initial render
 
             return () => clearTimeout(timeoutId);
         }
-    }, [autoCollectOnMount, lastFingerprint, collectFingerprint]);
+    }, [autoCollectOnMount, lastFingerprint, sendFingerprint]);
 
     return {
         isCollecting,

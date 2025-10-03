@@ -35,6 +35,9 @@ class WastewaterSeeder extends Seeder
         Metric::create(['name' => 'MQTT Published', 'alias' => MetricAliasEnum::MQTT_PUBLISHED]);
         Metric::create(['name' => 'MQTT Disconnected', 'alias' => MetricAliasEnum::MQTT_DISCONNECTED]);
 
+        Metric::create(['name' => 'User Authentication Failed', 'alias' => MetricAliasEnum::USER_AUTH_FAILED]);
+        Metric::create(['name' => 'User Authentication Successful', 'alias' => MetricAliasEnum::USER_AUTH_SUCCESSFUL]);
+
         Cache::clear();
 
         foreach(['A','B','C'] as $letter) {

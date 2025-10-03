@@ -6,13 +6,15 @@ use App\Events\DatapointCreatedEvent;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Datapoint extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'node_id',
+        'source_id',
+        'source_type',
         'metric_id',
         'value',
         'time'
@@ -25,5 +27,9 @@ class Datapoint extends Model
     public function metric(): BelongsTo
     {
         return $this->belongsTo(Metric::class);
+    }
+
+    public function source(): MorphTo {
+        return $this->morphTo();
     }
 }

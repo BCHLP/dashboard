@@ -16,7 +16,7 @@ class FingerprintController extends Controller
 
     public function __invoke(Request $request)
     {
-//        try {
+        try {
             $clientData = $request->validate([
                 'screen_width' => 'nullable|integer',
                 'screen_height' => 'nullable|integer',
@@ -57,7 +57,7 @@ class FingerprintController extends Controller
             }
 
             // Update user baseline
-            $this->fingerprintService->updateUserBaseline(auth()->id(), $fingerprint);
+            $this->fingerprintService->updateUserBaseline(auth()->id() ?? 0, $fingerprint);
 
             // Check for suspicious activity
             $userBaseline = cache("user_baseline_" . auth()->id(), []);
@@ -80,16 +80,16 @@ class FingerprintController extends Controller
                 'fingerprint_id' => $userFingerprint->id
             ]);
 
-//        } catch (\Exception $e) {
-//            \Log::error('Fingerprint storage failed', [
-//                'error' => $e->getMessage(),
-//                'user_id' => auth()->id()
-//            ]);
-//
-//            return response()->json([
-//                'success' => false,
-//                'message' => 'Failed to store fingerprint'
-//            ], 500);
-//        }
+        } catch (\Exception $e) {
+            \Log::error('Fingerprint storage failed', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to store fingerprint'
+            ], 500);
+        }
     }
 }

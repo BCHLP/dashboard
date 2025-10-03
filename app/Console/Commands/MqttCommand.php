@@ -93,7 +93,8 @@ class MqttCommand extends Command
                 $metric = $metrics->where('alias', $metricKey);
                 if ($metric->count() === 1) {
                     Datapoint::create([
-                        'node_id' => $sensor->id,
+                        'source_id' => $sensor->id,
+                        'source_type' => Node::class,
                         'metric_id' => $metric->id,
                         'value' => $metricValue,
                         'time' => time()
@@ -136,14 +137,16 @@ class MqttCommand extends Command
 
             Datapoint::create([
                 'metric_id' => $cpu->id,
-                'node_id' => $token->tokenable_id,
+                'source_id' => $token->tokenable_id,
+                'source_type' => Node::class,
                 'value' => $payload['cpu']
 
             ]);
 
             Datapoint::create([
                 'metric_id' => $memory->id,
-                'node_id' => $token->tokenable_id,
+                'source_id' => $token->tokenable_id,
+                'source_type' => Node::class,
                 'value' => $payload['ram']
 
             ]);

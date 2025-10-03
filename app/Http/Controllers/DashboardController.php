@@ -3,9 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\NodeTypeEnum;
-use App\Http\Resources\DatapointResource;
 use App\Http\Resources\NodeResource;
-use App\Models\Datapoint;
 use App\Models\Node;
 use Inertia\Inertia;
 class DashboardController extends Controller

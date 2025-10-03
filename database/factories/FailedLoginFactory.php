@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\FailedLogin;
+use App\Models\UserLoginAudit;
 use App\Models\User;
 use App\Models\UserFingerprint;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -10,7 +10,7 @@ use Illuminate\Support\Carbon;
 
 class FailedLoginFactory extends Factory
 {
-    protected $model = FailedLogin::class;
+    protected $model = UserLoginAudit::class;
 
     public function definition(): array
     {

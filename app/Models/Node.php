@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Log;
 use Laravel\Sanctum\HasApiTokens;
@@ -54,5 +55,9 @@ class Node extends Authenticatable
             return null;
         }
         return $node;
+    }
+
+    public function datapoints(): MorphMany {
+        return $this->morphMany(Datapoint::class, 'source');
     }
 }
