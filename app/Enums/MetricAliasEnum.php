@@ -13,5 +13,10 @@ enum MetricAliasEnum: string
     case NETWORK_PACKETS_IN = 'network_packets_in';
     case NETWORK_PACKETS_OUT = 'network_packets_out';
 
+    case MQTT_CONNECTED = 'mqtt_connected';
+    case MQTT_PUBLISHED = 'mqtt_published';
+    case MQTT_SUBSCRIBED = 'mqtt_subscribed';
+    case MQTT_DISCONNECTED = 'mqtt_disconnected';
+
 
 }

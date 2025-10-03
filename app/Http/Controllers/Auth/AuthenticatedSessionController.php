@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Actions\FailedToLogin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\LoginWithMfaRequest;
@@ -72,10 +73,11 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request, ?ActionAudit $auditAction): RedirectResponse|Response
+    public function store(LoginRequest $request, ?ActionAudit $auditAction, FailedToLogin $failedToLogin): RedirectResponse|Response
     {
         $validCredentials = Auth::attempt($request->only(['email', 'password']));
         if (!$validCredentials) {
+            $failedToLogin($request->email);
             return back()->withErrors(["password" => "Invalid credentials"]);
         }
 

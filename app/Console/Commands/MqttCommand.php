@@ -4,6 +4,9 @@ namespace App\Console\Commands;
 
 use App\Models\Datapoint;
 use App\Models\Metric;
+use App\Models\MqttAudit;
+use App\Models\Node;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 use PhpMqtt\Client\Exceptions\ConfigurationInvalidException;
@@ -35,7 +38,7 @@ class MqttCommand extends Command
 
         $metrics = Metric::all();
 
-        $certPath = '';
+        $certPath = storage_path('certs/');
 
         $connectionSettings = (new \PhpMqtt\Client\ConnectionSettings)
             ->setUseTls(true)
@@ -49,9 +52,54 @@ class MqttCommand extends Command
         $mqtt->connect($connectionSettings);
         // $mqtt->publish('php-mqtt/client/test', 'Hello World!', 0);
 
-        $mqtt->subscribe("test/topic", function($topic, $message) {
+        $mqtt->subscribe("metric/send", function($topic, $message) {
             $this->info("Topic: $topic");
             $this->info("Message: $message");
+
+            $this->info("About to decode");
+            $json = json_decode($message, true);
+            $this->info("Decoded message: $message");
+            if ($json === null) {
+                $this->warn("Failed to decode json");
+            }
+
+            $this->info("Creating mqaudit");
+            $a = MqttAudit::create([
+                'client_id' => $json['client_id'] ?? "Unknown",
+                'message' => $message,
+                'unusual' => false,
+                'when' => Carbon::now(),
+            ]);
+
+
+            if ($json === null) {
+                $this->info("Return if json is null");
+                return;
+            }
+
+            $this->info("Find sensor");
+            dd($json['client_id']);
+            $sensor = Node::find($json['client_id'] ?? 0);
+            if (!$sensor) {
+                $this->info("Did not find sensor for " . $json['client_id'] ?? 0);
+                return;
+            }
+
+            $this->info("get all metrics");
+
+            $metrics = Metric::all();
+            foreach($json as $metricKey => $metricValue) {
+                $this->line($metricKey);
+                $metric = $metrics->where('alias', $metricKey);
+                if ($metric->count() === 1) {
+                    Datapoint::create([
+                        'node_id' => $sensor->id,
+                        'metric_id' => $metric->id,
+                        'value' => $metricValue,
+                        'time' => time()
+                    ]);
+                }
+            }
         });
 
         $mqtt->subscribe('hardware-metrics', function ($topic, $message, $retained, $matchedWildcards) use ($metrics) {

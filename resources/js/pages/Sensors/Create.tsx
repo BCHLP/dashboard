@@ -1,7 +1,7 @@
 import Layout from '@/layouts/app-layout'
 import { Head, useForm } from '@inertiajs/react'
 import type { BreadcrumbItem } from '@/types'
-import React, { FormEventHandler } from 'react'
+import React, { FormEventHandler, useState } from 'react'
 import { Separator } from '@/components/ui/separator'
 import HeadingSmall from '@/components/heading-small'
 import { Label } from '@/components/ui/label'
@@ -9,6 +9,13 @@ import { Input } from '@/components/ui/input'
 import InputError from '@/components/input-error'
 import { Button } from '@/components/ui/button'
 import { Transition } from '@headlessui/react'
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog'
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -28,13 +35,39 @@ export default function Create() {
     const { data, setData, post, errors, processing, recentlySuccessful } = useForm<Required<SensorForm>>({
         name: ''
     })
+    const [showDownloadModal, setShowDownloadModal] = useState(false)
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault()
+        setShowDownloadModal(true)
+    }
 
-        post('/sensors', {
-            preserveScroll: true,
-        })
+    const handleDownload = () => {
+        // Create a form and submit it to trigger file download
+        const form = document.createElement('form')
+        form.method = 'POST'
+        form.action = '/sensors'
+
+        // Add CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+        if (csrfToken) {
+            const csrfInput = document.createElement('input')
+            csrfInput.type = 'hidden'
+            csrfInput.name = '_token'
+            csrfInput.value = csrfToken
+            form.appendChild(csrfInput)
+        }
+
+        // Add form data
+        const nameInput = document.createElement('input')
+        nameInput.type = 'hidden'
+        nameInput.name = 'name'
+        nameInput.value = data.name
+        form.appendChild(nameInput)
+
+        document.body.appendChild(form)
+        form.submit()
+        document.body.removeChild(form)
     }
 
     return (
@@ -89,6 +122,25 @@ export default function Create() {
                     </section>
                 </div>
             </div>
+
+            <Dialog open={showDownloadModal} onOpenChange={setShowDownloadModal}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Sensor Created Successfully</DialogTitle>
+                        <DialogDescription>
+                            Your sensor configuration file is ready to download. This file will only be available here and cannot be re-downloaded once you leave this page.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex flex-col gap-4 py-4">
+                        <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                            Please download your sensor configuration file now. You will not be able to access it again after closing this dialog.
+                        </p>
+                        <Button onClick={handleDownload} disabled={processing}>
+                            {processing ? 'Generating...' : 'Download Configuration File'}
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </Layout>
     )
 }

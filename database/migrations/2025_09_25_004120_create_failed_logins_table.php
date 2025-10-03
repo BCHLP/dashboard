@@ -11,8 +11,8 @@ return new class extends Migration {
     {
         Schema::create('failed_logins', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(User::class)->nullable();
-            $table->foreignUuid(UserFingerprint::class);
+            $table->integer('user_id')->nullable();
+            $table->uuid('user_fingerprint_id')->nullable();
             $table->string('email');
             $table->timestamps();
         });

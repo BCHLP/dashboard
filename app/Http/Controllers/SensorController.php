@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\CreateSensorConfig;
 use App\Enums\NodeTypeEnum;
 use App\Models\Node;
 use Illuminate\Http\Request;
@@ -20,12 +21,16 @@ class SensorController extends Controller
         return Inertia::render('Sensors/Create');
     }
 
-    public function store(Request $request)
+    public function store(Request $request, CreateSensorConfig $createSensorConfig)
     {
         $data = $request->validate(['name' => 'required|string']);
         $data['node_type'] = NodeTypeEnum::SENSOR;
         $sensor = Node::create($data);
-        return redirect()->route('sensors.index');
+        $zipFileName = $createSensorConfig($sensor);
+        abort_if(!$zipFileName, 500);
+
+        return response()->download($zipFileName, 'sensor-config.zip')->deleteFileAfterSend();
+
     }
 
     public function show(Node $sensor)

@@ -30,6 +30,11 @@ class WastewaterSeeder extends Seeder
         Metric::create(['name' => 'Network Bytes In', 'alias' => MetricAliasEnum::NETWORK_BYTES_IN]);
         Metric::create(['name' => 'Network Bytes Out', 'alias' => MetricAliasEnum::NETWORK_BYTES_OUT]);
 
+        Metric::create(['name' => 'MQTT Connected', 'alias' => MetricAliasEnum::MQTT_CONNECTED]);
+        Metric::create(['name' => 'MQTT Subscribed', 'alias' => MetricAliasEnum::MQTT_SUBSCRIBED]);
+        Metric::create(['name' => 'MQTT Published', 'alias' => MetricAliasEnum::MQTT_PUBLISHED]);
+        Metric::create(['name' => 'MQTT Disconnected', 'alias' => MetricAliasEnum::MQTT_DISCONNECTED]);
+
         Cache::clear();
 
         foreach(['A','B','C'] as $letter) {

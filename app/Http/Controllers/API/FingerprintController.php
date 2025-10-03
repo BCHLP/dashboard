@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\UserFingerprint;
 use App\Services\UserFingerprintService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class FingerprintController extends Controller
 {
@@ -15,7 +16,7 @@ class FingerprintController extends Controller
 
     public function __invoke(Request $request)
     {
-        try {
+//        try {
             $clientData = $request->validate([
                 'screen_width' => 'nullable|integer',
                 'screen_height' => 'nullable|integer',
@@ -40,11 +41,12 @@ class FingerprintController extends Controller
             ]);
 
             $fingerprint = $this->fingerprintService->generateFingerprint($request, $clientData);
-            $userFingerprint = UserFingerprint::where('user_id', auth()->id)->where('fingerprint_hash', $fingerprint['fingerprint_hash'])->first();
+            $userFingerprint = UserFingerprint::where('user_id', auth()->id())->where('hash', $fingerprint['hash'])->first();
 
             if (!$userFingerprint) {
                 // Store in database
                 $userFingerprint = UserFingerprint::create([
+                    'id' => Str::uuid()->toString(),
                     'user_id' => auth()->id(),
                     'fingerprint_data' => $fingerprint,
                     'hash' => $fingerprint['hash'],
@@ -71,21 +73,23 @@ class FingerprintController extends Controller
                 ]);
             }
 
+            session(['fingerprint_id' => $userFingerprint->id]);
+
             return response()->json([
                 'success' => true,
                 'fingerprint_id' => $userFingerprint->id
             ]);
 
-        } catch (\Exception $e) {
-            \Log::error('Fingerprint storage failed', [
-                'error' => $e->getMessage(),
-                'user_id' => auth()->id()
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to store fingerprint'
-            ], 500);
-        }
+//        } catch (\Exception $e) {
+//            \Log::error('Fingerprint storage failed', [
+//                'error' => $e->getMessage(),
+//                'user_id' => auth()->id()
+//            ]);
+//
+//            return response()->json([
+//                'success' => false,
+//                'message' => 'Failed to store fingerprint'
+//            ], 500);
+//        }
     }
 }
