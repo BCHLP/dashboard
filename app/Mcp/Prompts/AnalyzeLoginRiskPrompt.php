@@ -32,6 +32,12 @@ class AnalyzeLoginRiskPrompt extends Prompt
                 description: 'JSON fingerprint data from current login attempt',
                 required: true,
             )
+        )->add(
+            new Argument(
+                name: 'event_id',
+                description: 'A unique identifier of the login attempt',
+                required: true,
+            )
         );
     }
 
@@ -39,6 +45,7 @@ class AnalyzeLoginRiskPrompt extends Prompt
     {
         $userId = $arguments['user_id'];
         $fingerprint = $arguments['current_fingerprint'];
+        $eventId = $arguments['event_id'];
 
         $systemPrompt = <<<PROMPT
 You are a security analyst specializing in adaptive authentication. Your role is to assess login risk and recommend appropriate MFA requirements.
@@ -76,6 +83,7 @@ PROMPT;
 Analyze this login attempt:
 
 **User ID:** {$userId}
+**Event ID:** {$eventId}
 
 **Current Fingerprint:**
 {$fingerprint}

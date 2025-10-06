@@ -2,7 +2,9 @@
 
 namespace App\Mcp\Tools;
 
+use App\Events\MfaDecisionEvent;
 use Generator;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Mcp\Server\Tool;
 use Laravel\Mcp\Server\Tools\Annotations\Title;
 use Laravel\Mcp\Server\Tools\ToolInputSchema;
@@ -24,15 +26,19 @@ class RecordMFADecision extends Tool
      */
     public function schema(ToolInputSchema $schema): ToolInputSchema
     {
+        $schema->integer('event_id')
+            ->description('The ID of the event')
+            ->required();
+
         $schema->integer('user_id')
             ->description('The ID of the user')
             ->required();
 
-        $schema->boolean('voice_mfa')
+        $schema->boolean('voice')
             ->description('Is Voice Recognition required for this user?')
             ->required();
 
-        $schema->boolean('totp_mfa')
+        $schema->boolean('totp')
             ->description('Is TOTP required for this user?')
             ->required();
 
@@ -48,7 +54,8 @@ class RecordMFADecision extends Tool
     {
         // Implement tool logic here
 
-        ray("A MFA decision has been made", $arguments);
+        Cache::put('MfaDecision.'.$arguments['event_id'], json_encode($arguments), 600);
+        MfaDecisionEvent::dispatch($arguments['event_id'], $arguments['totp'], $arguments['voice']);
 
         return ToolResult::text('Tool executed successfully.');
     }

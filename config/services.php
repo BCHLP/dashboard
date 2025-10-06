@@ -37,6 +37,10 @@ return [
 
     'maxmind' => [
         'license_key' => env('MAXMIND_LICENSE_KEY'),
-    ]
+    ],
+
+    'anthropic' => [
+        'api_key' => env('ANTHROPIC_API_KEY'),
+    ],
 
 ];

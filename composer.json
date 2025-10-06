@@ -11,6 +11,7 @@
     "require": {
         "php": "^8.2",
         "ext-zip": "*",
+        "anthropic-ai/sdk": "0.3.0",
         "asbiin/laravel-webauthn": "^5.3",
         "chillerlan/php-qrcode": "^5.0",
         "clickbar/laravel-magellan": "^2.0",

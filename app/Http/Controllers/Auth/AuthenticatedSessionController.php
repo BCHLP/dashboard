@@ -9,6 +9,7 @@ use App\Http\Requests\Auth\LoginWithMfaRequest;
 use App\Jobs\AdaptiveMfaJob;
 use App\Models\ActionAudit;
 use App\Models\User;
+use App\Models\UserLoginAudit;
 use App\Services\AdaptiveMFAService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -128,7 +129,7 @@ class AuthenticatedSessionController extends Controller
         return redirect('/');
     }
 
-    public function validate(string $event_id) {
+    public function validate(UserLoginAuditAction $userLoginAudit, string $event_id) {
         $result = Cache::get('MfaDecision.'.$event_id);
         abort_if(blank($result), 404);
 
@@ -139,6 +140,8 @@ class AuthenticatedSessionController extends Controller
             abort_if(!$user, 404);
 
             Auth::login($user);
+            $userLoginAudit($user->email, true);
+
             return response()->redirectToRoute('home');
         }
 

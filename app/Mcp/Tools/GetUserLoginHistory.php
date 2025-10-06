@@ -66,6 +66,8 @@ class GetUserLoginHistory extends Tool
                     'fingerprint_hash' => $audit->fingerprint['hash'],
                 ]);
 
+            ray("user login history", $history);
+
 
         yield ToolResult::json([
             'user_id' => $arguments['user_id'],
