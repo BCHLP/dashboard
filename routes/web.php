@@ -15,9 +15,6 @@ use Inertia\Inertia;
 //})->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('map', function(){
-        return Inertia::render('PerthMap');
-    })->name('map');
 
     Route::get('/', DashboardController::class)->name('home');
     Route::resource('servers', ServerController::class);

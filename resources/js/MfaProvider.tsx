@@ -11,7 +11,6 @@ import { MfaDecision } from '@/types';
 
 interface MfaChallenge {
     action: string; // The route or action that triggered MFA
-    audit_id:string;
     onSuccess?: (decision:MfaDecision) => void; // Callback for successful MFA
     onCancel?: () => void; // Callback for cancelled MFA
     message?: string; // Custom message for the modal
@@ -26,7 +25,6 @@ interface MfaContextType {
     dismissMfa: () => void;
     isActive: boolean;
     endpoint?: string;
-    audit_id: string;
 }
 
 const MfaContext = createContext<MfaContextType | undefined>(undefined);

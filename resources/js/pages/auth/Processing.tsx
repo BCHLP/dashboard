@@ -4,6 +4,7 @@ import { useEchoPublic } from '@laravel/echo-react'
 import { LoaderCircle, Shield } from 'lucide-react'
 import { useState } from 'react';
 import { useMfa } from '@/MfaProvider';
+import { MfaDecision } from '@/types';
 
 type Props = {
     eventId: string
@@ -22,7 +23,7 @@ export default function Processing({eventId} : Props) {
     const { requireMfa } = useMfa();
 
     console.log("eventId", eventId);
-    useEchoPublic(`MfaProcess.${eventId}`, ['MfaDecisionEvent'], (e:MfaDecisionEvent) => {
+    useEchoPublic(`MfaProcess.${eventId}`, ['MfaDecisionEvent'], (e:TotpDecisionEvent) => {
 
         console.log("e", e);
 
@@ -38,7 +39,7 @@ export default function Processing({eventId} : Props) {
                 action: 'complete-login',
                 message: 'Please verify your identity to complete login',
                 endpoint: 'auth.totp',
-                onSuccess: (response:TotpDecision) => {
+                onSuccess: (response:MfaDecision) => {
                     // Redirect to dashboard or intended page
                     console.log("redirect to home");
                     // window.location.href = route('home');
@@ -46,7 +47,6 @@ export default function Processing({eventId} : Props) {
                     if (response.success) {
                         router.visit('/');
                     }
-
                 },
                 onCancel: () => {
                     // Maybe redirect back to login or show a message

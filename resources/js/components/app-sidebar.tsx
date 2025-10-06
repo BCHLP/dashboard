@@ -14,11 +14,6 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
         permission: ''
     },{
-        title: 'Map',
-        href: '/map',
-        icon: MapPin,
-        permission: ''
-    },{
         title: 'Servers',
         href: '/servers',
         icon: Server,
