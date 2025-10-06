@@ -2,32 +2,57 @@ import Layout from '@/layouts/auth-layout'
 import { Head, router } from '@inertiajs/react'
 import { useEchoPublic } from '@laravel/echo-react'
 import { LoaderCircle, Shield } from 'lucide-react'
+import { useState } from 'react';
+import { useMfa } from '@/MfaProvider';
 
 type Props = {
     eventId: string
 };
 
-type MfaDecisionEvent = {
+type TotpDecisionEvent = {
     eventId: string,
     totp:false,
     voice:false
 }
 
+
+
 export default function Processing({eventId} : Props) {
 
+    const { requireMfa } = useMfa();
+
     console.log("eventId", eventId);
-    // channel.listen('.MfaDecisionEvent', handleMfaDecision);
     useEchoPublic(`MfaProcess.${eventId}`, ['MfaDecisionEvent'], (e:MfaDecisionEvent) => {
 
         console.log("e", e);
 
-        if (e.totp) {
-            router.visit('/login/totp');
-            return;
-        }
+
 
         if (e.voice) {
             router.visit('/login/voice');
+            return;
+        }
+
+        if (e.totp) {
+            requireMfa({
+                action: 'complete-login',
+                message: 'Please verify your identity to complete login',
+                endpoint: 'auth.totp',
+                onSuccess: (response:TotpDecision) => {
+                    // Redirect to dashboard or intended page
+                    console.log("redirect to home");
+                    // window.location.href = route('home');
+
+                    if (response.success) {
+                        router.visit('/');
+                    }
+
+                },
+                onCancel: () => {
+                    // Maybe redirect back to login or show a message
+                    console.log('MFA cancelled during login');
+                }
+            });
             return;
         }
 

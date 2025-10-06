@@ -46,10 +46,16 @@ export interface User {
     // [key: string]: unknown; // This allows for additional properties...
 }
 
-export type AuditAction = {
-    id: string;
+// export type AuditAction = {
+//     id: string;
+//     voice:boolean;
+//     voice_completed_at:string;
+//     totp:boolean;
+//     totp_completed_at:string;
+// }
+
+export type MfaDecision = {
+    success:boolean;
+    error:string;
     voice:boolean;
-    voice_completed_at:string;
-    totp:boolean;
-    totp_completed_at:string;
 }

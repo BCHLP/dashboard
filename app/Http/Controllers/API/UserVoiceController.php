@@ -2,9 +2,15 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Actions\UserLoginAuditAction;
+use App\Facades\AdaptiveMfaFacade;
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Models\UserLoginAudit;
 use App\Services\VoiceRecognitionService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class  UserVoiceController extends Controller
 {
@@ -28,19 +34,34 @@ class  UserVoiceController extends Controller
         }
     }
 
-    public function compare(Request $request) {
+    public function compare(Request $request, UserLoginAuditAction $userLoginAudit) {
         $data = $request->validate([
             'audio' => ['required', 'file', 'mimes:webm'],
         ]);
 
         $base64 = base64_encode($request->file('audio')->get());
 
+        $event = AdaptiveMfaFacade::load();
+        $user = User::find($event['user_id']);
+
         $service = new VoiceRecognitionService();
-        $success = $service->compare($base64);
+        $success = $service->compare($base64, $user);
+
+        if ($success) {
+
+            AdaptiveMfaFacade::setVoice(false);
+        }
+
+        if ($event['totp']) {
+            dd("user still needs to enter totp");
+        }
 
         if ($success) {
             // Redirect to dashboard on success
-            return redirect('/')->with('message', 'Voice registration successful!');
+            Auth::login($user);
+            $userLoginAudit($user->email, true);
+            AdaptiveMfaFacade::clear();
+            return redirect('/');
         } else {
             // Return back with error
             return back()->withErrors(['audio' => 'Voice did not match']);

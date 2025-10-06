@@ -14,13 +14,13 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
 
-
-
     Route::get('login/processing', [AuthenticatedSessionController::class, 'processing'])
         ->name('login.processing');
 
     Route::get('login/voice', [AuthenticatedSessionController::class, 'voice'])
         ->name('voice');
+
+    Route::post('login/totp', [AuthenticatedSessionController::class, 'totp'])->name('auth.totp');
 
     Route::get('login/validate/{event_id}', [AuthenticatedSessionController::class, 'validate'])
         ->name('validate');
@@ -47,7 +47,7 @@ Route::middleware('guest')->group(function () {
         ->middleware(['signed', 'throttle:6,1'])
         ->name('verification.verify');
 
-    Route::post('/totp/{audit}', [AuthenticatedSessionController::class, 'totp'])->name('auth.totp');
+
 });
 
 Route::middleware('auth')->withoutMiddleware(MfaMiddleware::class)->group(function () {

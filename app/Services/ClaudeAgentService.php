@@ -5,10 +5,12 @@ namespace App\Services;
 
 use Anthropic\Client;
 use App\Events\MfaDecisionEvent;
+use App\Mcp\Tools\GetRecentFailedAttempts;
 use App\Mcp\Tools\GetUserLoginHistory;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use \App\Facades\AdaptiveMfaFacade;
 
 class ClaudeAgentService
 {
@@ -157,7 +159,6 @@ class ClaudeAgentService
         $results = $tool->handle($input);
         foreach($results as $result) {
             $json = json_decode($result->content[0]->text, true);
-            ray("return this array", $json);
             return $json;
 
         }
@@ -174,12 +175,15 @@ class ClaudeAgentService
         $daysBack = $input['days_back'] ?? 7;
         $limit = $input['limit'] ?? 50;
 
-        return [
-            'user_id' => $userId,
-            'days_back' => $daysBack,
-            'failed_attempts_count' => 0,
-            'attempts' => []
-        ];
+        $tool = new GetRecentFailedAttempts();
+        $results = $tool->handle($input);
+        foreach($results as $result) {
+            $json = json_decode($result->content[0]->text, true);
+            return $json;
+
+        }
+
+        return [];
     }
 
     /**
@@ -194,8 +198,7 @@ class ClaudeAgentService
 
         ray("record mfa decision", $input);
 
-        Cache::put('MfaDecision.'.$eventId, json_encode($input), 600);
-        MfaDecisionEvent::dispatch($eventId, $totp, $voice);
+        AdaptiveMfaFacade::setBoth( $totp, $voice, $eventId, $userId);
 
         return [
             'success' => true,

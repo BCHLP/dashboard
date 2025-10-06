@@ -1,14 +1,11 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Tank from '../components/tank';
 import '@patternfly/react-core/dist/styles/base-no-reset.css';
-import { useEchoModel } from "@laravel/echo-react";
 import { useEcho } from "@laravel/echo-react";
 
-import { flushSync } from 'react-dom';
-import { useContextFingerprint } from '@/components/FingerprintProvider';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {

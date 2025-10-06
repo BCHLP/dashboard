@@ -15,6 +15,7 @@ class MfaDecisionEvent implements ShouldBroadcast
 
     public function __construct(public string $eventId, public bool $totp, public bool $voice)
     {
+
     }
 
     public function broadcastOn(): array

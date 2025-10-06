@@ -3,9 +3,10 @@
 namespace App\Jobs;
 
 use App\Events\MfaDecisionEvent;
+use App\Facades\AdaptiveMfaFacade;
 use App\Models\User;
 use App\Models\UserFingerprint;
-use App\Services\AdaptiveMFAService;
+use App\Services\AdaptiveMfaService;
 use App\Services\ClaudeAgentService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -26,6 +27,9 @@ class AdaptiveMfaJob implements ShouldQueue
     {
         $user = User::where('email', $this->email)->first();
         if (!$user) return;
+
+//       AdaptiveMfaFacade::setBoth(false, true, $this->eventId, $user->id);
+//        return;
 
         $fingerprint = UserFingerprint::find($this->fingerprintId);
 ;
@@ -73,18 +77,5 @@ PROMPT;
 
             ray($response);
 
-
-//        $adaptiveMfaService = new AdaptiveMfaService;
-//        $adaptiveMfaService->getFactors("Login", $user);
-
-//        sleep(5);
-//        $result = [
-//            'totp' => false,
-//            'voice' => false,
-//            'user_id' => $user->id,
-//        ];
-//
-//        Cache::put('MfaDecision.'.$this->eventId, json_encode($result), 600);
-//        MfaDecisionEvent::dispatch($this->eventId, $result['totp'], $result['voice']);
     }
 }

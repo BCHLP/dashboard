@@ -3,6 +3,7 @@
 namespace App\Mcp\Tools;
 
 use App\Events\MfaDecisionEvent;
+use App\Facades\AdaptiveMfaFacade;
 use Generator;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Mcp\Server\Tool;
@@ -52,10 +53,7 @@ class RecordMFADecision extends Tool
      */
     public function handle(array $arguments): ToolResult|Generator
     {
-        // Implement tool logic here
-
-        Cache::put('MfaDecision.'.$arguments['event_id'], json_encode($arguments), 600);
-        MfaDecisionEvent::dispatch($arguments['event_id'], $arguments['totp'], $arguments['voice']);
+        AdaptiveMfaFacade::setBoth($arguments['totp'], $arguments['voice'], $arguments['event_id']);
 
         return ToolResult::text('Tool executed successfully.');
     }

@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 namespace App\Services;
+use App\Models\User;
 use App\Models\UserVoice;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -32,10 +33,10 @@ class VoiceRecognitionService
         return false;
     }
 
-    public function compare(string $base64audio) : bool {
+    public function compare(string $base64audio, User $user) : bool {
         $endpoint = config('scada.services.voice.compare');
 
-        $embeddings = auth()->user()->voice->embeddings;
+        $embeddings = $user->voice->embeddings;
         if (blank($embeddings)) {
             return false;
         }
@@ -52,9 +53,6 @@ class VoiceRecognitionService
         Log::debug("response from server:" . print_r($response,true));
 
         $authenticated = $response['authenticated'] ?? false;
-        if ($authenticated) {
-            session(["voice" => time()]);
-        }
 
         return $authenticated;
     }

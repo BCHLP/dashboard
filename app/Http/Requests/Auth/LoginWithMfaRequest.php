@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Auth;
 
-class LoginWithMfaRequest extends LoginRequest
+use Illuminate\Foundation\Http\FormRequest;
+
+class LoginWithMfaRequest extends FormRequest
 {
     public function rules(): array
     {

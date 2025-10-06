@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Actions\UserLoginAuditAction;
+use App\Facades\AdaptiveMfaFacade;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\LoginWithMfaRequest;
@@ -10,7 +11,7 @@ use App\Jobs\AdaptiveMfaJob;
 use App\Models\ActionAudit;
 use App\Models\User;
 use App\Models\UserLoginAudit;
-use App\Services\AdaptiveMFAService;
+use App\Services\AdaptiveMfaService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -44,19 +45,15 @@ class AuthenticatedSessionController extends Controller
 
     public function voice(Request $request): JsonResponse|Response|RedirectResponse
     {
-//        if (!auth()->check()) {
-//            return response()->redirectToRoute('login');
-//        }
-        return Inertia::render('auth/VerifyVoice', []);
+        return Inertia::render('auth/VerifyVoice');
     }
 
-    public function totp(ActionAudit $audit, LoginWithMfaRequest $request, UserLoginAuditAction $userLoginAudit) : JsonResponse
+    public function totp(LoginWithMfaRequest $request, UserLoginAuditAction $userLoginAudit) : JsonResponse
     {
 
-        abort_if($audit->action !== 'Login', 404);
-
-        $user = $audit->user;
-        abort_if(blank($user), 404);
+        $event = AdaptiveMfaFacade::load();
+        $user = User::find($event['user_id']);
+        abort_if(!$user, 404);
 
         // Temporarily authenticate
         Auth::login($user);
@@ -65,22 +62,18 @@ class AuthenticatedSessionController extends Controller
 
         if (!$valid) {
             Auth::logout();
-            $userLoginAudit($request->email, false);
-            return response()->json(['success' => false, 'audit' => $audit, 'error' => 'Invalid token']);
+            $userLoginAudit($user->email, false);
+            return response()->json(['success' => false, 'error' => 'Invalid token', 'voice' => true]);
         }
 
-        $audit->update(['totp_completed_at' => Carbon::now(), 'totp' => null]);
-        if ($audit->voice) {
+        if ($event['voice']) {
             Auth::logout();
         } else {
-            $userLoginAudit($request->email, true);
+            $userLoginAudit($user->email, true);
+            AdaptiveMfaFacade::clear();
         }
-        // $adaptiveService = new AdaptiveMFAService();
 
-        return response()->json(['success' => true, 'audit' => $audit]);
-        // return $adaptiveService->getNextRoute($audit, null, fn() => Auth::logout());
-
-        // return redirect()->intended(route($nextRoute, absolute: false));
+        return response()->json(['success' => true, 'error' => '', 'voice' => true]);
     }
 
     /**
@@ -95,25 +88,13 @@ class AuthenticatedSessionController extends Controller
         }
 
         $eventId = Str::uuid()->toString();
-        session(['mfa_process' => 0, 'mfa_event_id' => $eventId]);
+        session(['mfa_event_id' => $eventId]);
 
         AdaptiveMfaJob::dispatch($request->email, $eventId, session('fingerprint_id') ?? '');
-        /*if (blank($auditAction->id)) {
-            $auditAction = $amfaService->getFactors("Login", auth()->user());
-        }
-
-        if (blank($auditAction)) {
-            $userLoginAudit($request->email, true);
-            return redirect()->intended(route('home', absolute: false));
-        }*/
-
         Auth::logout();
 
         return redirect()->route('login.processing');
 
-        // return $amfaService->getNextRoute($auditAction, fn() => $request->session()->regenerate());
-
-        // return redirect()->intended(route('home', absolute: false));
     }
 
     /**
@@ -130,13 +111,11 @@ class AuthenticatedSessionController extends Controller
     }
 
     public function validate(UserLoginAuditAction $userLoginAudit, string $event_id) {
-        $result = Cache::get('MfaDecision.'.$event_id);
-        abort_if(blank($result), 404);
+        $event = AdaptiveMfaFacade::load();
+        abort_if(blank($event), 404);
 
-        $result = json_decode($result);
-
-        if ($result->totp === false && $result->voice === false) {
-            $user = User::find($result->user_id);
+        if ($event['totp'] === false && $event['voice'] === false) {
+            $user = User::find($event['user_id']);
             abort_if(!$user, 404);
 
             Auth::login($user);

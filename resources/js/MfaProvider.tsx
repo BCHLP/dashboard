@@ -7,12 +7,12 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/input-error';
-import {AuditAction} from '@/types';
+import { MfaDecision } from '@/types';
 
 interface MfaChallenge {
     action: string; // The route or action that triggered MFA
     audit_id:string;
-    onSuccess?: (audit:AuditAction) => void; // Callback for successful MFA
+    onSuccess?: (decision:MfaDecision) => void; // Callback for successful MFA
     onCancel?: () => void; // Callback for cancelled MFA
     message?: string; // Custom message for the modal
     endpoint?: string;
@@ -60,9 +60,9 @@ export const MfaProvider: React.FC<MfaProviderProps> = ({ children }) => {
         setIsOpen(false);
     }, [challenge]);
 
-    const handleMfaSuccess = useCallback((audit:AuditAction) => {
+    const handleMfaSuccess = useCallback((decision:MfaDecision) => {
         if (challenge?.onSuccess) {
-            challenge.onSuccess(audit);
+            challenge.onSuccess(decision);
         }
         setChallenge(null);
         setIsOpen(false);
@@ -85,7 +85,7 @@ export const MfaProvider: React.FC<MfaProviderProps> = ({ children }) => {
 interface MfaModalProps {
     open: boolean;
     challenge: MfaChallenge | null;
-    onSuccess: (audit:AuditAction) => void;
+    onSuccess: (decision:MfaDecision) => void;
     onCancel: () => void;
     endpoint?: string;
     email?:string;
@@ -104,16 +104,12 @@ const MfaModal: React.FC<MfaModalProps> = ({ open, challenge, onSuccess, onCance
 
         if (!challenge) return;
 
-        console.log("audit", {audit:challenge.audit_id});
-
         try {
             // Post to a dedicated MFA verification endpoint
-            const response = await axios.post(route(challenge.endpoint, {audit:challenge.audit_id}), {
+            const response = await axios.post(route(challenge.endpoint), {
                 token: data.token,
                 action: challenge.action,
             });
-
-            console.log("send token successful", response.data);
 
             if (!response.data.success) {
                 setTokenError(response.data.error);
@@ -124,7 +120,7 @@ const MfaModal: React.FC<MfaModalProps> = ({ open, challenge, onSuccess, onCance
             setTokenError('');
             reset();
             clearErrors();
-            onSuccess(response.data.audit);
+            onSuccess(response.data);
         } catch (error) {
             console.log("an error occurred", error);
             tokenInput.current?.focus();

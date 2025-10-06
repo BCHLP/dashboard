@@ -14,10 +14,6 @@ Route::middleware(['web','auth'])->group(function () {
         ->name('voice.register')
         ->withoutMiddleware([MfaMiddleware::class]);
 
-    Route::post('/voice/compare', [UserVoiceController::class, 'compare'])
-        ->name('voice.compare')
-        ->withoutMiddleware([MfaMiddleware::class]);
-
 });
 
 Route::name('api.')->middleware(['auth:sanctum'])->group(function () {
@@ -27,3 +23,6 @@ Route::name('api.')->middleware(['auth:sanctum'])->group(function () {
 });
 
 Route::post('fingerprint', FingerprintController::class)->middleware('web');
+Route::post('/voice/compare', [UserVoiceController::class, 'compare'])
+    ->name('voice.compare')
+    ->middleware('web');

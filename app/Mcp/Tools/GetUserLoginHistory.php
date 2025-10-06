@@ -54,16 +54,16 @@ class GetUserLoginHistory extends Tool
                 ->map(fn($audit) => [
                     'successful' => $audit->successful,
                     'timestamp' => $audit->created_at->toIso8601String(),
-                    'ip_address' => $audit->fingerprint->ip_address,
-                    'city' => $audit->fingerprint['city'],
-                    'country' => $audit->fingerprint['country'],
-                    'timezone' => $audit->fingerprint['timezone'],
-                    'timezone_offset' => $audit->fingerprint['timezone_offset'],
-                    'browser' => $audit->fingerprint['browser'],
-                    'platform' => $audit->fingerprint['platform'],
-                    'device' => $audit->fingerprint['device'],
-                    'is_mobile' => $audit->fingerprint['is_mobile'],
-                    'fingerprint_hash' => $audit->fingerprint['hash'],
+                    'ip_address' => $audit->fingerprint['ip_address'] ?? '',
+                    'city' => $audit->fingerprint['city'] ?? '',
+                    'country' => $audit->fingerprint['country'] ?? '',
+                    'timezone' => $audit->fingerprint['timezone'] ?? '',
+                    'timezone_offset' => $audit->fingerprint['timezone_offset'] ?? '',
+                    'browser' => $audit->fingerprint['browser'] ?? '',
+                    'platform' => $audit->fingerprint['platform'] ?? '',
+                    'device' => $audit->fingerprint['device'] ?? '',
+                    'is_mobile' => $audit->fingerprint['is_mobile'] ?? '',
+                    'fingerprint_hash' => $audit->fingerprint['hash'] ?? '',
                 ]);
 
             ray("user login history", $history);

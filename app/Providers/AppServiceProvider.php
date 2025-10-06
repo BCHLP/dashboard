@@ -2,9 +2,9 @@
 
 namespace App\Providers;
 
+use App\Services\AdaptiveMfaService;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Event;
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -12,7 +12,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind('amfa', function ($app) {
+            return new AdaptiveMfaService();
+        });
     }
 
     /**
