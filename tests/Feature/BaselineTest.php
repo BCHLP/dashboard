@@ -22,7 +22,8 @@ it('can generate baseline data', function () {
         $this->travelTo(now()->setHour($startHour)->setMinute($minute)->setSecond(0));
         Datapoint::factory([
             'metric_id' => $metric->id,
-            'node_id' => $server->id,
+            'source_id' => $server->id,
+            'source_type' => \App\Enums\NodeTypeEnum::SERVER,
             'value' => $minute,
         ])->create();
     }
@@ -32,8 +33,8 @@ it('can generate baseline data', function () {
 
     $this->travelBack();
 
-    $service = app(BaselineService::class);
-    $service();
+    $service = new BaselineService();
+    $service->execute();
 
     expect(MetricBaseline::count())->toBe(1);
 

@@ -10,10 +10,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['web','auth'])->group(function () {
     Route::get('/map/{north}/{east}/{south}/{west}', MapController::class);
-    Route::post('/voice/register', [UserVoiceController::class, 'register'])
-        ->name('voice.register')
-        ->withoutMiddleware([MfaMiddleware::class]);
-
 });
 
 Route::name('api.')->middleware(['auth:sanctum'])->group(function () {
