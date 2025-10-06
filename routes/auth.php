@@ -14,10 +14,21 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
 
-    Route::get('login/{audit?}', [AuthenticatedSessionController::class, 'create'])
+
+
+    Route::get('login/processing', [AuthenticatedSessionController::class, 'processing'])
+        ->name('login.processing');
+
+    Route::get('login/voice', [AuthenticatedSessionController::class, 'voice'])
+        ->name('voice');
+
+    Route::get('login/validate/{event_id}', [AuthenticatedSessionController::class, 'validate'])
+        ->name('validate');
+
+    Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 
-    Route::post('login/{audit?}', [AuthenticatedSessionController::class, 'store'])
+    Route::post('login/', [AuthenticatedSessionController::class, 'store'])
         ->name('login.store');
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
@@ -41,8 +52,7 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->withoutMiddleware(MfaMiddleware::class)->group(function () {
 
-    Route::get('voice', [AuthenticatedSessionController::class, 'voice'])
-        ->name('voice');
+
 
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');

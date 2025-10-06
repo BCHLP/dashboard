@@ -4,10 +4,8 @@ namespace App\Mcp\Tools;
 
 use App\Models\UserLoginAudit;
 use Generator;
-use Illuminate\Support\Facades\Log;
 use Laravel\Mcp\Server\Tool;
 use Laravel\Mcp\Server\Tools\Annotations\Title;
-use Illuminate\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Tools\ToolInputSchema;
 use Laravel\Mcp\Server\Tools\ToolResult;
 
@@ -48,10 +46,10 @@ class GetUserLoginHistory extends Tool
     {
 
             $history = UserLoginAudit::with('fingerprint')->where('user_id', $arguments['user_id'])
-                ->where('created_at', '>=', now()->subDays($arguments['days_back'] ?? 90))
+                ->where('created_at', '>=', now()->subDays($arguments['days_back'] ?? 30))
                 ->where('successful', true)
                 ->latest()
-                ->limit($arguments['limit'] ?? 50)
+                ->limit($arguments['limit'] ?? 25)
                 ->get()
                 ->map(fn($audit) => [
                     'successful' => $audit->successful,

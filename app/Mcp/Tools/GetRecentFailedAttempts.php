@@ -46,10 +46,10 @@ class GetRecentFailedAttempts extends Tool
     {
 
         $history = UserLoginAudit::with('fingerprint')->where('user_id', $arguments['user_id'])
-            ->where('created_at', '>=', now()->subDays($arguments['days_back'] ?? 90))
+            ->where('created_at', '>=', now()->subDays($arguments['days_back'] ?? 7))
             ->where('successful', false)
             ->latest()
-            ->limit($arguments['limit'] ?? 50)
+            ->limit($arguments['limit'] ?? 25)
             ->get()
             ->map(fn($audit) => [
                 'successful' => $audit->successful,

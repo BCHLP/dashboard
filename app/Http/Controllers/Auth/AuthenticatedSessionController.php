@@ -6,6 +6,7 @@ use App\Actions\UserLoginAuditAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\LoginWithMfaRequest;
+use App\Jobs\AdaptiveMfaJob;
 use App\Models\ActionAudit;
 use App\Models\User;
 use App\Services\AdaptiveMFAService;
@@ -14,13 +15,21 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 use PragmaRX\Google2FAQRCode\Google2FA;
 
 class AuthenticatedSessionController extends Controller
 {
+
+    public function processing() {
+        $eventId = session('mfa_event_id');
+        return Inertia::render('auth/Processing', ['eventId' => $eventId]);
+    }
+
     /**
      * Show the login page.
      */
@@ -34,9 +43,9 @@ class AuthenticatedSessionController extends Controller
 
     public function voice(Request $request): JsonResponse|Response|RedirectResponse
     {
-        if (!auth()->check()) {
-            return response()->redirectToRoute('login');
-        }
+//        if (!auth()->check()) {
+//            return response()->redirectToRoute('login');
+//        }
         return Inertia::render('auth/VerifyVoice', []);
     }
 
@@ -76,7 +85,7 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request, ?ActionAudit $auditAction, UserLoginAuditAction $userLoginAudit): RedirectResponse|Response
+    public function store(LoginRequest $request, UserLoginAuditAction $userLoginAudit): RedirectResponse|Response
     {
         $validCredentials = Auth::attempt($request->only(['email', 'password']));
         if (!$validCredentials) {
@@ -84,18 +93,24 @@ class AuthenticatedSessionController extends Controller
             return back()->withErrors(["password" => "Invalid credentials"]);
         }
 
-        $amfaService = new AdaptiveMFAService;
-        if (blank($auditAction->id)) {
+        $eventId = Str::uuid()->toString();
+        session(['mfa_process' => 0, 'mfa_event_id' => $eventId]);
+
+        AdaptiveMfaJob::dispatch($request->email, $eventId);
+        /*if (blank($auditAction->id)) {
             $auditAction = $amfaService->getFactors("Login", auth()->user());
         }
 
         if (blank($auditAction)) {
             $userLoginAudit($request->email, true);
             return redirect()->intended(route('home', absolute: false));
-        }
+        }*/
 
         Auth::logout();
-        return $amfaService->getNextRoute($auditAction, fn() => $request->session()->regenerate());
+
+        return redirect()->route('login.processing');
+
+        // return $amfaService->getNextRoute($auditAction, fn() => $request->session()->regenerate());
 
         // return redirect()->intended(route('home', absolute: false));
     }
@@ -111,5 +126,22 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    public function validate(string $event_id) {
+        $result = Cache::get('MfaDecision.'.$event_id);
+        abort_if(blank($result), 404);
+
+        $result = json_decode($result);
+
+        if ($result->totp === false && $result->voice === false) {
+            $user = User::find($result->user_id);
+            abort_if(!$user, 404);
+
+            Auth::login($user);
+            return response()->redirectToRoute('home');
+        }
+
+        abort(404);
     }
 }

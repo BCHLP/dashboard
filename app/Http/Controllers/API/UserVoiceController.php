@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\VoiceRecognitionService;
 use Illuminate\Http\Request;
 
-class UserVoiceController extends Controller
+class  UserVoiceController extends Controller
 {
     public function register(Request $request)
     {

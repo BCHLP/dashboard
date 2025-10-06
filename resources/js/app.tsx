@@ -45,16 +45,12 @@ createInertiaApp({
 
         root.render(
             <MfaProvider>
-                <FingerprintProvider
-                    endpoint="/api/fingerprint"
-                    csrfToken={getCsrfToken()}
-                    autoCollectOnMount={true}
-                >
+                <FingerprintProvider endpoint="/api/fingerprint" csrfToken={getCsrfToken()} autoCollectOnMount={true}>
                     <APIProvider apiKey={'AIzaSyDX0I9nlNK5SfmzWLDU0vnqr83Aj8HTqnY'} onLoad={() => console.log('Maps API has loaded.')}>
                         <App {...props} />
                     </APIProvider>
                 </FingerprintProvider>
-            </MfaProvider>
+            </MfaProvider>,
         );
     },
     progress: {

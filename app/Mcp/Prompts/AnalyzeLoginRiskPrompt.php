@@ -55,7 +55,7 @@ You are a security analyst specializing in adaptive authentication. Your role is
 
 **Analysis Process:**
 1. Read the risk assessment guidelines
-2. Fetch user's login history (last 90 days recommended)
+2. Fetch user's login history (last 30 days recommended)
 3. Fetch recent failed attempts (last 24 hours)
 4. Compare current fingerprint against historical patterns
 5. Identify anomalies and threat indicators

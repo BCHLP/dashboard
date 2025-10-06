@@ -2,7 +2,6 @@ import { Head, useForm, usePage } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 import { FormEventHandler } from 'react';
 import { useMfa } from '@/MfaProvider';
-import {AuditAction} from '@/types';
 
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
@@ -20,10 +19,9 @@ type LoginForm = {
 
 interface LoginProps {
     status?: string;
-    auditAction?: AuditAction;
 }
 
-export default function Login({ status, auditAction }: LoginProps) {
+export default function Login({ status }: LoginProps) {
     const { requireMfa } = useMfa();
     const { props } = usePage();
     const { data, setData, post, processing, errors, reset } = useForm<Required<LoginForm>>({
@@ -32,57 +30,13 @@ export default function Login({ status, auditAction }: LoginProps) {
         remember: false,
     });
 
-    console.log("auditAction", auditAction);
-
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post(route('login.store', {audit:auditAction?.id??''}), {
+        post(route('login.store'), {
             onSuccess: (page) => {
-                const pageAuditAction = page.props.auditAction;
+                console.log("success");
+                console.log(page);
 
-                console.log("on success:",  page);
-
-                console.log("auditAction", pageAuditAction);
-
-                // return;
-
-                if (pageAuditAction === null || pageAuditAction === undefined) {
-                    // window.location.href = route('home');
-                    return;
-                }
-
-                if (pageAuditAction.totp === true) {
-                    requireMfa({
-                        action: 'complete-login',
-                        audit_id:pageAuditAction.id,
-                        message: 'Please verify your identity to complete login',
-                        endpoint: 'auth.totp',
-                        email: data.email,
-                        password: data.password,
-                        onSuccess: (updatedAudit:AuditAction) => {
-                            // Redirect to dashboard or intended page
-                            console.log("redirect to home", updatedAudit);
-                            // window.location.href = route('home');
-
-                            if (updatedAudit.voice) {
-                                console.log("display voice modal");
-                            } else {
-                                window.location.href = route('home');
-                            }
-
-                        },
-                        onCancel: () => {
-                            // Maybe redirect back to login or show a message
-                            console.log('MFA cancelled during login');
-                        }
-                    });
-
-                } else if (pageAuditAction.voice) {
-                    console.log("request voice");
-                } else {
-                    console.log("ok what now?");
-                   // window.location.href = route('home');
-                }
             },
             onFinish: () => reset('password'),
         });
