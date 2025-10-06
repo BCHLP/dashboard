@@ -13,6 +13,8 @@ class Datapoint extends Model
     use HasFactory;
 
     protected $fillable = [
+        'created_at',
+        'updated_at',
         'source_id',
         'source_type',
         'metric_id',

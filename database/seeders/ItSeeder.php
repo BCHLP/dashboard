@@ -9,28 +9,21 @@ use App\Models\Router;
 use App\Models\Server;
 use Illuminate\Database\Seeder;
 use App\Models\Node;
+use Illuminate\Support\Facades\DB;
+use Laravel\Sanctum\PersonalAccessToken;
+
 class ItSeeder extends Seeder
 {
     public function run(): void
     {
-        $scada = Node::factory(['name' => 'SCADA', 'node_type' => NodeTypeEnum::SERVER])->create();
-        $mqtt = Node::factory(['name' => 'MQTT Proxy', 'node_type' => NodeTypeEnum::SERVER])->create();
-        $router = Node::factory(['name' => 'Router', 'node_type' => NodeTypeEnum::ROUTER])->create();
-        $sensor = Node::factory(['name' => 'SEN001', 'node_type' => NodeTypeEnum::SENSOR])->create();
+        $ai = Node::factory(['name' => 'AI', 'node_type' => NodeTypeEnum::SERVER])->create();
 
-        $cpu = Metric::create([
-            'name' => 'CPU',
-            'alias' => 'cpu',
+        DB::table('personal_access_tokens')->insert([
+            'tokenable_type' => 'App\Models\Node',
+            'tokenable_id' => $ai->id,
+            'name' => 'AI',
+            'token' => '7b155a576de0e4245b458216ab024c6b4aa2207ddf51581867acffea8603a5a9',
+            'abilities' => '["*"]',
         ]);
-
-        $memory = Metric::create([
-            'name' => 'Memory',
-            'alias' => 'ram',
-        ]);
-
-        foreach([$scada, $mqtt, $router] as $device) {
-            $device->metrics()->attach($cpu);
-            $device->metrics()->attach($memory);
-        }
     }
 }

@@ -7,6 +7,7 @@ use App\Enums\RoleEnum;
 use App\Models\User;
 use App\Models\UserFingerprint;
 use App\Models\UserLoginAudit;
+use App\Services\BaselineService;
 use App\Services\UserFingerprintService;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
@@ -35,6 +36,7 @@ class UserFingerprintSeeder extends Seeder
         $date = Carbon::now()->subDays($daysToCreate+1);
         $currentShiftHours = 0;
         $sessionId = '';
+
 
         for ($day = 1; $day <= $daysToCreate; $day++) {
             $date->addDay();
@@ -67,6 +69,14 @@ class UserFingerprintSeeder extends Seeder
                         'fingerprint_data' => $fingerprint,
                         'hash' => $fingerprint['hash'],
                         'ip_address' => $fingerprint['ip_address'],
+                        'city' => $fingerprint['city'],
+                        'country' => $fingerprint['country'],
+                        'timezone' => $fingerprint['timezone'],
+                        'timezone_offset' => $fingerprint['timezone_offset'],
+                        'browser' => $fingerprint['browser'],
+                        'platform' => $fingerprint['platform'],
+                        'device' => $fingerprint['device'],
+                        'is_mobile' => $fingerprint['is_mobile'],
                         'user_agent' => $fingerprint['user_agent'],
                         'session_id' => $sessionId,
                     ]);
@@ -82,6 +92,9 @@ class UserFingerprintSeeder extends Seeder
                         ]);
                     }
                 }
+
+                Carbon::setTestNow($date);
+                (new BaselineService())->createLoginAuditDatapoints()->execute();
 
                 $currentShiftHours++;
             }

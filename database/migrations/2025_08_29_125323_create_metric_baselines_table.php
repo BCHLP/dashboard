@@ -10,14 +10,15 @@ return new class extends Migration {
         Schema::create('metric_baselines', function (Blueprint $table) {
             $table->id();
             $table->foreignId('metric_id');
-            $table->foreignId('device_metric_id');
+            $table->integer('source_id');
+            $table->string('source_type');
             $table->tinyInteger('hour');
             $table->tinyInteger('dow');
             $table->float('mean');
             $table->float('median');
             $table->float('sd');
             $table->timestamps();
-            $table->index(['metric_id', 'device_metric_id', 'dow', 'hour'])->unique();
+            $table->index(['metric_id', 'source_id', 'dow', 'hour'])->unique();
         });
     }
 

@@ -2,7 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Enums\MetricAliasEnum;
 use App\Enums\NodeTypeEnum;
+use App\Models\Datapoint;
+use App\Models\Metric;
 use App\Models\MqttAudit;
 use App\Models\Node;
 use App\Models\UserFingerprint;
@@ -17,6 +20,14 @@ class MqttAuditSeeder extends Seeder
         $sensor = Node::factory(['node_type' => NodeTypeEnum::SENSOR])->create();
 
         $startDate = Carbon::now()->subDays(8);
+
+        $metrics = Metric::whereIn('alias', [MetricAliasEnum::MQTT_CONNECTED, MetricAliasEnum::MQTT_DISCONNECTED,
+            MetricAliasEnum::MQTT_PUBLISHED, MetricAliasEnum::MQTT_SUBSCRIBED])->get();
+
+        $connected = $metrics->where('alias', MetricAliasEnum::MQTT_CONNECTED)->first();
+        $disconnected = $metrics->where('alias', MetricAliasEnum::MQTT_DISCONNECTED)->first();
+        $published = $metrics->where('alias', MetricAliasEnum::MQTT_PUBLISHED)->first();
+        $subscribed = $metrics->where('alias', MetricAliasEnum::MQTT_SUBSCRIBED)->first();
 
         for ($day = 1; $day <= 7; $day++) {
             $startDate->addDay();
@@ -45,9 +56,19 @@ class MqttAuditSeeder extends Seeder
                     'message' => 'Client connected'
                 ]);
 
+                Datapoint::create([
+                    'source_id' => $sensor->id,
+                    'source_type' => Node::class,
+                    'metric_id' => $connected->id,
+                    'time' => $startDate->timestamp,
+                    'created_at' => $startDate,
+                    'updated_at' => $startDate,
+                    'value' => 1
+                ]);
+
                 MqttAudit::create([
                     'client_id' => $sensor->id,
-                    'message' => json_encode(['client_id' => $sensor->id, 'wl' => 5, 'fr => 7']),
+                    'message' => json_encode(['client_id' => $sensor->id, 'wl' => 5, 'fr' => 7]),
                     'unusual' => false,
                     'when' => Carbon::now(),
                 ]);
@@ -59,11 +80,31 @@ class MqttAuditSeeder extends Seeder
                     'when' => Carbon::now(),
                 ]);
 
+                Datapoint::create([
+                    'source_id' => $sensor->id,
+                    'source_type' => Node::class,
+                    'metric_id' => $published->id,
+                    'time' => $startDate->timestamp,
+                    'created_at' => $startDate,
+                    'updated_at' => $startDate,
+                    'value' => 1
+                ]);
+
                 MqttAudit::create([
                     'client_id' => $sensor->id,
                     'message' => "Client disconnected",
                     'unusual' => false,
                     'when' => Carbon::now(),
+                ]);
+
+                Datapoint::create([
+                    'source_id' => $sensor->id,
+                    'source_type' => Node::class,
+                    'metric_id' => $disconnected->id,
+                    'time' => $startDate->timestamp,
+                    'created_at' => $startDate,
+                    'updated_at' => $startDate,
+                    'value' => 1
                 ]);
             }
         }

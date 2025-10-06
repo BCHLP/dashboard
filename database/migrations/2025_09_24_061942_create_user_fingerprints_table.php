@@ -13,6 +13,14 @@ return new class extends Migration {
             $table->json('fingerprint_data');
             $table->string('hash', 64)->index();
             $table->ipAddress();
+            $table->string('city');
+            $table->string('country');
+            $table->string('timezone');
+            $table->string('timezone_offset');
+            $table->string('browser');
+            $table->string('platform');
+            $table->string('device');
+            $table->boolean('is_mobile');
             $table->text('user_agent');
             $table->string('session_id');
             $table->boolean('is_suspicious')->default(false);

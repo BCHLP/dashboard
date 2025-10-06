@@ -21,9 +21,19 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Collection::macro('sd', function () {
+
+            if ($this->count() === 0) {
+                return 0;
+            }
+
             $mean = $this->avg();
-            $variance = $this->map(fn($value) => pow($value - $mean, 2))->avg();
-            return sqrt($variance);
+            $distance_sum = 0;
+            $this->each(function($value) use (&$distance_sum, $mean) {
+                $distance_sum += ($value - $mean) ** 2;
+            });
+            $variance = $distance_sum / $this->count();
+
+           return sqrt($variance);
         });
     }
 }

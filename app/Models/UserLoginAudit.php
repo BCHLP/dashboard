@@ -24,8 +24,8 @@ class UserLoginAudit extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function userFingerprint(): BelongsTo
+    public function fingerprint(): BelongsTo
     {
-        return $this->belongsTo(UserFingerprint::class);
+        return $this->belongsTo(UserFingerprint::class, 'user_fingerprint_id');
     }
 }

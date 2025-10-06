@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\BaselineService;
 use Illuminate\Console\Command;
 
 class BaselineCommand extends Command
@@ -12,7 +13,8 @@ class BaselineCommand extends Command
 
     public function handle(): void
     {
-        $service = app(\App\Services\BaselineService::class);
-        $service();
+        $service = new BaselineService();
+        $service->createLoginAuditDatapoints()
+            ->execute();
     }
 }

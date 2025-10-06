@@ -7,6 +7,9 @@ enum MetricAliasEnum: string
 {
     case FLOW_RATE = 'fr';
     case WATER_LEVEL = 'wl';
+
+    CASE WATER_TEMPERATURE = 'wt';
+
     case CPU = 'cpu';
     case NETWORK_BYTES_IN = 'network_bytes_in';
     case NETWORK_BYTES_OUT = 'network_bytes_out';
