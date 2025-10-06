@@ -4,7 +4,7 @@ namespace App\Models;
 
 use App\Enums\NodeTypeEnum;
 use App\Events\NodeCreatedEvent;
-use Clickbar\Magellan\Data\Geometries\Point;
+// use Clickbar\Magellan\Data\Geometries\Point;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -22,7 +22,7 @@ class Node extends Authenticatable
     protected $guarded = [];
 
     protected $casts = [
-        'coordinates' => Point::class,
+//        'coordinates' => Point::class,
         'node_type' => NodeTypeEnum::class,
     ];
 

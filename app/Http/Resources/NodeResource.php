@@ -16,7 +16,7 @@ class NodeResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'coordinates' => $this->coordinates,
+            // 'coordinates' => $this->coordinates,
             'node_type' => $this->node_type,
             'treatment_line_id' => $this->treatment_line_id,
             'metrics' => MetricResource::collection($this->whenLoaded('metrics')),
