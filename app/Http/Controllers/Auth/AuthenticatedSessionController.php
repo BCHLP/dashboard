@@ -97,7 +97,7 @@ class AuthenticatedSessionController extends Controller
         $eventId = Str::uuid()->toString();
         session(['mfa_process' => 0, 'mfa_event_id' => $eventId]);
 
-        AdaptiveMfaJob::dispatch($request->email, $eventId);
+        AdaptiveMfaJob::dispatch($request->email, $eventId, session('fingerprint_id') ?? '');
         /*if (blank($auditAction->id)) {
             $auditAction = $amfaService->getFactors("Login", auth()->user());
         }

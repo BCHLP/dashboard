@@ -4,7 +4,9 @@ declare(strict_types=1);
 namespace App\Services;
 
 use Anthropic\Client;
+use App\Events\MfaDecisionEvent;
 use App\Mcp\Tools\GetUserLoginHistory;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -23,7 +25,7 @@ class ClaudeAgentService
     /**
      * Send a prompt to Claude and handle the full conversation loop with tool execution
      */
-    public function chat(string $prompt, array $context = []): string
+    public function chat(string $prompt, string $system=null): string
     {
         $messages = [
             ['role' => 'user', 'content' => $prompt]
@@ -39,7 +41,8 @@ class ClaudeAgentService
                     maxTokens: 4096,
                     messages: $messages,
                     model: 'claude-sonnet-4-5-20250929',
-                    tools: $this->tools,
+                    system: $system,
+                    tools: $this->tools
                 );
 
                 // If Claude is done, return the text response
@@ -171,30 +174,11 @@ class ClaudeAgentService
         $daysBack = $input['days_back'] ?? 7;
         $limit = $input['limit'] ?? 50;
 
-        $attempts = DB::table('user_login_history')
-            ->where('user_id', $userId)
-            ->where('success', false)
-            ->where('created_at', '>=', now()->subDays($daysBack))
-            ->orderBy('created_at', 'desc')
-            ->limit($limit)
-            ->get()
-            ->map(function ($record) {
-                return [
-                    'id' => $record->id,
-                    'ip_address' => $record->ip_address,
-                    'user_agent' => $record->user_agent,
-                    'device_fingerprint' => $record->device_fingerprint ?? null,
-                    'failure_reason' => $record->failure_reason ?? null,
-                    'created_at' => $record->created_at,
-                ];
-            })
-            ->toArray();
-
         return [
             'user_id' => $userId,
             'days_back' => $daysBack,
-            'failed_attempts_count' => count($attempts),
-            'attempts' => $attempts
+            'failed_attempts_count' => 0,
+            'attempts' => []
         ];
     }
 
@@ -204,23 +188,18 @@ class ClaudeAgentService
     private function recordMFADecision(array $input): array
     {
         $userId = $input['user_id'];
-        $totpMfa = $input['totp_mfa'];
-        $voiceMfa = $input['voice_mfa'];
+        $eventId = $input['event_id'];
+        $totp = $input['totp'];
+        $voice = $input['voice'];
 
-        $id = DB::table('mfa_decisions')->insertGetId([
-            'user_id' => $userId,
-            'totp_mfa' => $totpMfa,
-            'voice_mfa' => $voiceMfa,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        ray("record mfa decision", $input);
+
+        Cache::put('MfaDecision.'.$eventId, json_encode($input), 600);
+        MfaDecisionEvent::dispatch($eventId, $totp, $voice);
 
         return [
             'success' => true,
-            'decision_id' => $id,
             'user_id' => $userId,
-            'totp_mfa' => $totpMfa,
-            'voice_mfa' => $voiceMfa,
             'recorded_at' => now()->toIso8601String()
         ];
     }
@@ -284,17 +263,20 @@ class ClaudeAgentService
                         'user_id' => [
                             'type' => 'integer',
                             'description' => 'The ID of the user'
+                        ],'event_id' => [
+                            'type' => 'string',
+                            'description' => 'A UUID of the event'
                         ],
-                        'totp_mfa' => [
+                        'totp' => [
                             'type' => 'boolean',
                             'description' => 'Is TOTP required for this user?'
                         ],
-                        'voice_mfa' => [
+                        'voice' => [
                             'type' => 'boolean',
                             'description' => 'Is Voice Recognition required for this user?'
                         ]
                     ],
-                    'required' => ['user_id', 'totp_mfa', 'voice_mfa']
+                    'required' => ['user_id', 'event_id', 'totp_mfa', 'voice_mfa']
                 ]
             ]
         ];
