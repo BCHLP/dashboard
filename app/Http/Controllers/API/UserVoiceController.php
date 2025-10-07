@@ -53,7 +53,7 @@ class  UserVoiceController extends Controller
         }
 
         if ($event['totp']) {
-            dd("user still needs to enter totp");
+            return response()->json(['totp'=>true, 'voice' => false]);
         }
 
         if ($success) {
@@ -61,10 +61,10 @@ class  UserVoiceController extends Controller
             Auth::login($user);
             $userLoginAudit($user->email, true);
             AdaptiveMfaFacade::clear();
-            return redirect('/');
+            return response()->json(['totp' => false, 'voice' => false]);
         } else {
             // Return back with error
-            return back()->withErrors(['audio' => 'Voice did not match']);
+            return response()->json(['totp' => false, 'voice' => true]);
         }
     }
 }

@@ -17,7 +17,7 @@ class MqttAuditSeeder extends Seeder
 {
     public function run(): void
     {
-        $sensor = Node::factory(['node_type' => NodeTypeEnum::SENSOR])->create();
+        $sensor = Node::create(['name' => 'SEN01', 'node_type' => NodeTypeEnum::SENSOR]);
 
         $startDate = Carbon::now()->subDays(8);
 

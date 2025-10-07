@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Head, router } from '@inertiajs/react';
 import Layout from '@/layouts/auth-layout';
 import { FaMicrophone } from 'react-icons/fa';
+import axios from 'axios';
+import { MfaDecision } from '@/types';
+import { useMfa } from '@/MfaProvider';
 
 type Props = {
     apiEndpoint: string;
@@ -22,6 +25,7 @@ const Voice = (props:Props) => {
     const isRecordingRef = useRef(false) // This tracks recording state for animation
 
     const audioFormat = 'audio/webm';
+    const { requireMfa } = useMfa();
 
     const createVisualizer = useCallback(() => {
         if (!visualizerRef.current) return
@@ -99,21 +103,49 @@ const Voice = (props:Props) => {
             const filename = `recording_${Date.now()}.webm`
             formData.append('audio', audioBlob, filename)
 
-            router.post(props.apiEndpoint, formData, {
-                onSuccess: (page) => {
-
-                    console.log(`Upload successful: ${JSON.stringify(page.props)}`)
-                    setStatus('Upload successful!')
-                    router.visit('/')
-                },
-                onError: (errors) => {
-                    console.error('Upload failed:', errors)
-                    setStatus('Upload failed!')
+            const response = await axios.post(props.apiEndpoint, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
                 }
             })
+
+            if (response.data.voice) {
+                setStatus('Voice recognition failed');
+                return;
+            }
+
+            if (response.data.totp) {
+                console.log("activate totp");
+                requireMfa({
+                    action: 'complete-login',
+                    message: 'Please verify your identity to complete login',
+                    endpoint: 'auth.totp',
+                    onSuccess: (response:MfaDecision) => {
+                        // Redirect to dashboard or intended page
+                        console.log("redirect to home");
+                        // window.location.href = route('home');
+
+                        if (response.success) {
+                            router.visit('/');
+                        }
+                    },
+                    onCancel: () => {
+                        // Maybe redirect back to login or show a message
+                        console.log('MFA cancelled during login');
+                    }
+                });
+
+                return;
+            }
+
+            return router.visit('/');
+
+            console.log(`Upload successful: ${JSON.stringify(response.data)}`)
+            setStatus('Please wait');
+
         } catch (error) {
             console.log(`Upload failed: ${error.message}`)
-            setStatus('Upload failed - Check console')
+            setStatus('Upload failed')
         }
     }, [])
 

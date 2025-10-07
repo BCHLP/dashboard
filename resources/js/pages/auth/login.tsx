@@ -25,7 +25,7 @@ export default function Login({ status }: LoginProps) {
     const { requireMfa } = useMfa();
     const { props } = usePage();
     const { data, setData, post, processing, errors, reset } = useForm<Required<LoginForm>>({
-        email: 'admin@example.com',
+        email: '',
         password: '',
         remember: false,
     });
@@ -59,7 +59,7 @@ export default function Login({ status }: LoginProps) {
                             autoComplete="email"
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
-                            placeholder="email@example.com"
+                            placeholder="your@email.com"
                         />
                         <InputError message={errors.email} />
                     </div>

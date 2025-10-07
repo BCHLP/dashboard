@@ -26,11 +26,16 @@ class UserFingerprintSeeder extends Seeder
 
     public function run(UserLoginAuditAction $userLoginAudit): void
     {
+        if (app()->isProduction()) {
+            return;
+        }
+
         $this->operators = User::factory()->count(12)->create();
         foreach ($this->operators as $operator) {
             $operator->roles->add(RoleEnum::NONE);
             $this->operatorMetadata[$operator->id] = $this->generateOperatorMetadata();
         }
+
 
         $daysToCreate = 30;
         $date = Carbon::now()->subDays($daysToCreate+1);
