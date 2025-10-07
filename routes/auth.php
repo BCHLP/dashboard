@@ -76,7 +76,7 @@ Route::middleware('auth')->withoutMiddleware(MfaMiddleware::class)->group(functi
     Route::get('/totp', [SetupController::class, 'totp'])->name('totp.register');
 
     Route::post('/api/voice/register', [UserVoiceController::class, 'register'])
-        ->name('voice.register');
+        ->name('voice.store');
 
 });
 
