@@ -3,6 +3,7 @@
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\TotpController;
+use App\Http\Middleware\MfaMiddleware;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -20,7 +21,8 @@ Route::middleware('auth')->group(function () {
         ->name('password.update');
 
     Route::get('settings/totp', [TotpController::class, 'edit'])->name('totp.edit');
-    Route::post('settings/totp', [TotpController::class, 'update'])->name('totp.update');
+    Route::post('settings/totp', [TotpController::class, 'update'])->name('totp.update')
+        ->withoutMiddleware(MfaMiddleware::class);
 
     Route::get('settings/appearance', function () {
         return Inertia::render('settings/appearance');

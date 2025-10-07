@@ -19,7 +19,11 @@ class CreateUser
             $user->assignRole($role);
         }
 
-        $user->notify(new VerifyEmailNotification);
+        $token = $user->createToken('registration');
+        $notification = new VerifyEmailNotification();
+        $notification->setToken($token->plainTextToken);
+
+        $user->notify($notification);
 
         return $user;
 

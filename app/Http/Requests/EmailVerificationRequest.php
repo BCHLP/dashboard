@@ -11,6 +11,7 @@ class EmailVerificationRequest extends \Illuminate\Foundation\Auth\EmailVerifica
 {
     public function authorize(): bool
     {
+
         $token = PersonalAccessToken::findToken($this->query('token') ?? '');
         if (!$token || $token->tokenable_type !== User::class) {
             return false;
@@ -22,7 +23,6 @@ class EmailVerificationRequest extends \Illuminate\Foundation\Auth\EmailVerifica
         }
 
         Auth::login($user);
-        $token->delete();
 
         return true;
     }

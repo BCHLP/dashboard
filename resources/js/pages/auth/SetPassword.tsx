@@ -10,15 +10,18 @@ import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
 
 export default function SetPassword() {
-    const { data, setData, post, processing, errors, reset } = useForm<Required<{ password: string, password_confirmation: string }>>({
+    const { data, setData, put, processing, errors, reset } = useForm<Required<{ password: string, password_confirmation: string }>>({
         password: '',
         password_confirmation: '',
     });
 
     const submit: FormEventHandler = (e) => {
+
+        console.log("on submit", e);
+
         e.preventDefault();
 
-        post(route('password.update'), {
+        put(route('password.save'), {
             onFinish: () => reset('password'),
         });
     };
@@ -63,7 +66,7 @@ export default function SetPassword() {
                     </div>
 
                     <div className="flex items-center">
-                        <Button className="w-full" disabled={processing}>
+                        <Button className="w-full" disabled={processing} type={"submit"}>
                             {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                             Confirm password
                         </Button>

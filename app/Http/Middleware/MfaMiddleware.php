@@ -14,7 +14,9 @@ class MfaMiddleware
         if (!auth()->check()) {
             abort(401);
         }
+
         if (is_null($request->user()->password)) {
+
             return redirect()->route('password.set');
         }
 
@@ -22,7 +24,7 @@ class MfaMiddleware
             return redirect()->route('voice.register');
         }
 
-        if (blank($request->user()->totp_secret)) {
+        if (blank($request->user()->totp_activated_at)) {
             return redirect()->route('totp.register');
         }
 

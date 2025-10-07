@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\UserVoiceController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
@@ -71,7 +72,11 @@ Route::middleware('auth')->withoutMiddleware(MfaMiddleware::class)->group(functi
         ->name('logout');
 
     Route::get('/set-password', [SetupController::class, 'password'])->name('password.set');
+    Route::put('/set-password', [SetupController::class, 'storePassword'])->name('password.save');
     Route::get('/totp', [SetupController::class, 'totp'])->name('totp.register');
+
+    Route::post('/api/voice/register', [UserVoiceController::class, 'register'])
+        ->name('voice.register');
 
 });
 
