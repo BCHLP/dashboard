@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
+use Laravel\Sanctum\PersonalAccessToken;
 use PragmaRX\Google2FAQRCode\Exceptions\MissingQrCodeServiceException;
 use PragmaRX\Google2FAQRCode\Google2FA;
 class SetupController extends Controller
@@ -51,6 +52,8 @@ class SetupController extends Controller
         $request->user()->update([
             'password' => Hash::make($validated['password']),
         ]);
+
+        PersonalAccessToken::where('name','registration')->where('tokenable_id', $request->user()->id)->delete();
 
         return response()->redirectToRoute('home');
 
