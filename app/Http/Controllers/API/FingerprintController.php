@@ -32,7 +32,7 @@ class FingerprintController extends Controller
                 'cookies_enabled' => 'nullable|boolean',
                 'languages' => 'nullable|string',
                 'cpu_cores' => 'nullable|integer',
-                'memory_gb' => 'nullable|numeric',
+                'memory_gb' => 'nullable|numeric|string',
                 'max_touch_points' => 'nullable|integer',
                 'battery_level' => 'nullable|integer',
                 'battery_charging' => 'nullable|boolean',
