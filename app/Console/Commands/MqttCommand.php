@@ -45,8 +45,8 @@ class MqttCommand extends Command
             ->setTlsVerifyPeer(true)
             // ->setTlsVerifyPeerName(false)  // May need this for localhost
             ->setTlsCertificateAuthorityFile($certPath . "ca-chain.crt")
-            ->setTlsClientCertificateFile($certPath . "laravel.crt")  // PEM format
-            ->setTlsClientCertificateKeyFile($certPath . "laravel.key");  // PEM format
+            ->setTlsClientCertificateFile($certPath . "bchklp.crt")  // PEM format
+            ->setTlsClientCertificateKeyFile($certPath . "bchklp.key");  // PEM format
 
         $mqtt = new MqttClient($server, $port, $clientId);
         $mqtt->connect($connectionSettings);
@@ -78,7 +78,6 @@ class MqttCommand extends Command
             }
 
             $this->info("Find sensor");
-            dd($json['client_id']);
             $sensor = Node::find($json['client_id'] ?? 0);
             if (!$sensor) {
                 $this->info("Did not find sensor for " . $json['client_id'] ?? 0);

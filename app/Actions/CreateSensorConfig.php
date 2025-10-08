@@ -40,12 +40,12 @@ class CreateSensorConfig
             abort(500, 'Private key file not found');
         }
 
-        shell_exec("openssl req -new -key {$key} -out {$csr} -subj {$subject}");
+        shell_exec("openssl req -new -key {$key} -out {$csr} -subj {$subject} -addext \"subjectAltName=DNS:{$sensor->name}\"");
         if (!file_exists($csr)) {
             abort(500, 'CSR file not found');
         }
 
-        shell_exec("openssl x509 -req -in {$csr} -CA {$intermediaCa} -CAkey {$intermediaCaKey} -CAcreateserial -out {$crt} -days 365");
+        shell_exec("openssl x509 -req -in {$csr} -CA {$intermediaCa} -CAkey {$intermediaCaKey} -CAcreateserial -out {$crt} -days 365 -extfile <(printf \"subjectAltName=DNS:{$sensor->name}\nkeyUsage=digitalSignature,keyEncipherment\nextendedKeyUsage=serverAuth,clientAuth\")");
         if (!file_exists($crt)) {
             abort(500, 'Certificate file not found');
         }
