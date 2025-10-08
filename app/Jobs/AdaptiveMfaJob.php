@@ -14,6 +14,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class AdaptiveMfaJob implements ShouldQueue
 {
@@ -28,10 +29,14 @@ class AdaptiveMfaJob implements ShouldQueue
         $user = User::where('email', $this->email)->first();
         if (!$user) return;
 
-//       AdaptiveMfaFacade::setBoth(false, true, $this->eventId, $user->id);
-//        return;
+        $fingerprint = null;
+        if (filled($this->fingerprintId) && Str::isUuid($this->fingerprintId)) {
+            $fingerprint = UserFingerprint::find($this->fingerprintId);
+        }
 
-        $fingerprint = UserFingerprint::find($this->fingerprintId);
+        if (blank($fingerprint)) {
+            $fingerprint = "No fingerprint";
+        }
 ;
         $systemPrompt = <<<PROMPT
 You are a security analyst specializing in adaptive authentication. Your role is to assess login risk and recommend appropriate MFA requirements.
