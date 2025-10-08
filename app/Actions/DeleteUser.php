@@ -9,6 +9,9 @@ class DeleteUser
 {
     public function __invoke(User $user)
     {
+        if ($user->voice) {
+            $user->voice->delete();
+        }
         $user->delete();
     }
 }
