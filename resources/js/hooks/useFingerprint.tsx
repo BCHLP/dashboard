@@ -234,8 +234,8 @@ export const useFingerprint = (options: FingerprintOptions = {}): FingerprintHoo
     // Hardware Information
     const collectHardwareInfo = useCallback(async (): Promise<void> => {
         try {
-            fingerprintDataRef.current.cpu_cores = navigator.hardwareConcurrency || 'unknown';
-            fingerprintDataRef.current.memory_gb = (navigator as any).deviceMemory || 'unknown';
+            fingerprintDataRef.current.cpu_cores = navigator.hardwareConcurrency || 0;
+            fingerprintDataRef.current.memory_gb = (navigator as any).deviceMemory || 0;
             fingerprintDataRef.current.max_touch_points = navigator.maxTouchPoints || 0;
 
             // Battery API (if available)
