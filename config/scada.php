@@ -7,5 +7,9 @@ return [
             'token' => env('VOICE_TOKEN', ''),
         ],
         'adaptive_mfa_endpoint' => env('ADAPTIVE_MFA_ENDPOINT', ''),
+    ],
+    'mqtt_broker' => [
+        'host' => env('MQTT_HOST', 'localhost'),
+        'port' => env('MQTT_PORT', 8883),
     ]
 ];

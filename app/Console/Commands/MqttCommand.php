@@ -32,8 +32,8 @@ class MqttCommand extends Command
      */
     public function handle(): void
     {
-        $server   = 'localhost';
-        $port     = 8883;
+        $server   = config('scada.mqtt_broker.host');
+        $port     = config('scada.mqtt_broker.port');
         $clientId = 'laravel';
 
         $metrics = Metric::all();
