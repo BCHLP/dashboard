@@ -6,6 +6,6 @@ Broadcast::channel('App.Models.Node.{id}', function ($user, $id) {
     return true;
 });
 
-Broadcast::channel('NewDatapointEvent', function ($user) {
+Broadcast::channel('NewDatapointEvent.{node}', function ($user, $node) {
     return true;
 });

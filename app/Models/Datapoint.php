@@ -12,6 +12,10 @@ class Datapoint extends Model
 {
     use HasFactory;
 
+    protected $dispatchesEvents = [
+        'created' => DatapointCreatedEvent::class,
+    ];
+
     protected $fillable = [
         'created_at',
         'updated_at',

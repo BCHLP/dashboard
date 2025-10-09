@@ -4,39 +4,38 @@ namespace App\Http\Controllers;
 
 use App\Enums\NodeTypeEnum;
 use App\Http\Resources\NodeResource;
+use App\Models\Datapoint;
 use App\Models\Node;
 use Inertia\Inertia;
 class DashboardController extends Controller
 {
     public function __invoke()
     {
-        $nodes = Node::with('metrics')->get();
-        $servers = $nodes->where('node_type', NodeTypeEnum::SERVER);
-        $sensors = $nodes->where('node_type', NodeTypeEnum::SENSOR);
-        $routers = $nodes->where('node_type', NodeTypeEnum::ROUTER);
-        $tanks = $nodes->whereIn('node_type',[
-            NodeTypeEnum::SEDIMENTATION_TANK,
-            NodeTypeEnum::AERATION_TANK,
-            NodeTypeEnum::DIGESTION_TANK]);
 
-        $nodeMetrics = [];
-        foreach($nodes as $node) {
-            if ($node->metrics->count() === 0) {
-                continue;
-            }
+        $node = Node::with('metrics')->where('name', 'SEN-001')->first();
 
-            $nodeMetrics[$node->id] = [];
-            foreach($node->metrics as $metric) {
-                $nodeMetrics[$node->id][$metric->alias] = 0;
+        $datapoints = [];
+        foreach($node->metrics as $metric) {
+            $datapoint = Datapoint::where('metric_id', $metric->id)
+                ->where('source_id', $node->id)
+                ->where('source_type', Node::class)
+                ->latest()
+                ->first();
+
+            if ($datapoint) {
+                $datapoints[] = [
+                    'alias' => $metric->alias,
+                    'x' => $datapoint->time,
+                    'y' => $datapoint->value,
+                    'node_id' => $node->id,
+                    'metric_id' => $metric->id,
+                ];
             }
         }
 
         return Inertia::render('dashboard', [
-            'servers' => NodeResource::collection($servers),
-            'sensors' => NodeResource::collection($sensors),
-            'routers' => NodeResource::collection($routers),
-            'tanks' => NodeResource::collection($tanks),
-            'nodeMetrics' => $nodeMetrics,
+            'node' => $node,
+            'datapoints' => $datapoints,
         ]);
     }
 }

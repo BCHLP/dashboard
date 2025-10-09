@@ -19,57 +19,65 @@ const breadcrumbs: BreadcrumbItem[] = [
 type Node = {
     id:number;
     name: string;
-    treatment_line_id: number;
 }
 type Props = {
-    sensors: Node[],
-    tanks: Node[],
-    nodeMetrics: object[]
+    node: Node;
+    datapoints: Datapoint[];
 };
+
+type Datapoint = {
+    alias: string;
+    x: number;
+    y: number;
+    node_id: number;
+    metric_id: number;
+}
 
 const GaugeChart = ({ value, min, max, label, unit, color }) => {
     const percentage = ((value - min) / (max - min)) * 100;
     const angle = (percentage / 100) * 180 - 90;
 
     return (
-        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 flex flex-col items-center">
-            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-400 mb-4">{label}</h3>
-            <div className="relative w-48 h-24 mb-4">
-                <svg viewBox="0 0 200 100" className="w-full h-full">
-                    <path
-                        d="M 20 80 A 80 80 0 0 1 180 80"
-                        fill="none"
-                        stroke="#e5e7eb"
-                        strokeWidth="20"
-                        strokeLinecap="round"
-                    />
-                    <path
-                        d="M 20 80 A 80 80 0 0 1 180 80"
-                        fill="none"
-                        stroke={color}
-                        strokeWidth="20"
-                        strokeLinecap="round"
-                        strokeDasharray={`${percentage * 2.51} 251`}
-                    />
-                    <line
-                        x1="100"
-                        y1="80"
-                        x2="100"
-                        y2="20"
-                        stroke="#374151"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        transform={`rotate(${angle} 100 80)`}
-                    />
-                    <circle cx="100" cy="80" r="8" fill="#374151" />
-                </svg>
-            </div>
-            <div className="text-center">
-                <div className="text-3xl font-bold text-gray-800 dark:text-gray-400">
-                    {value.toFixed(1)}
-                    <span className="text-lg text-gray-600 ml-1">{unit}</span>
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-4 flex flex-col items-center justify-center h-full overflow-hidden">
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-1 flex-shrink-0">{label}</h3>
+            <div className="flex-1 flex items-center justify-center w-full min-h-0">
+                <div className="relative w-40 max-h-full">
+                    <svg viewBox="0 0 200 120" className="w-full h-auto" preserveAspectRatio="xMidYMid meet">
+                        <path
+                            d="M 20 90 A 80 80 0 0 1 180 90"
+                            fill="none"
+                            stroke="#e5e7eb"
+                            strokeWidth="20"
+                            strokeLinecap="round"
+                        />
+                        <path
+                            d="M 20 90 A 80 80 0 0 1 180 90"
+                            fill="none"
+                            stroke={color}
+                            strokeWidth="20"
+                            strokeLinecap="round"
+                            strokeDasharray={`${percentage * 2.51} 251`}
+                        />
+                        <line
+                            x1="100"
+                            y1="90"
+                            x2="100"
+                            y2="30"
+                            stroke="#374151"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            transform={`rotate(${angle} 100 90)`}
+                        />
+                        <circle cx="100" cy="90" r="8" fill="#374151" />
+                    </svg>
                 </div>
-                <div className="text-sm text-gray-500 mt-1">
+            </div>
+            <div className="text-center flex-shrink-0">
+                <div className="text-3xl font-bold text-gray-800 dark:text-gray-100">
+                    {value.toFixed(1)}
+                    <span className="text-lg text-gray-600 dark:text-gray-400 ml-1">{unit}</span>
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
                     Range: {min} - {max} {unit}
                 </div>
             </div>
@@ -79,57 +87,58 @@ const GaugeChart = ({ value, min, max, label, unit, color }) => {
 
 const WaterTank = ({ level }) => {
     return (
-        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 h-full flex flex-col">
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2">
                 <Droplets className="w-5 h-5" />
                 Water Tank
             </h3>
-            <div className="flex flex-col items-center">
-                <div className="relative w-32 h-48 border-4 border-gray-700 rounded-lg overflow-hidden bg-gray-100">
+            <div className="flex-1 flex items-center justify-center gap-8">
+                <div className="relative w-64 h-24 border-4 border-gray-700 dark:border-gray-400 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
                     <div
                         className="absolute bottom-0 w-full bg-blue-500 transition-all duration-1000"
                         style={{ height: `${level}%` }}
                     >
-                        <div className="absolute inset-0 opacity-30 bg-gradient-to-t from-blue-600 to-blue-400"></div>
+                        <div className="absolute inset-0 opacity-30 bg-gradient-to-r from-blue-600 to-blue-400"></div>
                     </div>
-
+                    <div className="absolute inset-0 flex items-center justify-center">
+                    </div>
                 </div>
-                <div className="mt-4 text-center">
-                    <div className="text-sm text-gray-600">Current Level</div>
-                    <div className="text-xl font-semibold text-gray-800">{level}%</div>
+                <div className="text-center">
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Current Level</div>
+                    <div className="text-2xl font-semibold text-gray-800 dark:text-gray-100">{level}%</div>
                 </div>
             </div>
         </div>
     );
 };
 
-const LocationMap = () => {
+const LocationMap = ({lat, lng}) => {
     return (
-        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-700  mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 h-full flex flex-col">
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2">
                 <MapPin className="w-5 h-5" />
                 Location
             </h3>
-            <div className="relative w-full h-64 bg-gray-200 rounded-lg overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-green-100 via-blue-100 to-green-200">
+            <div className="relative flex-1 bg-gray-200 dark:bg-gray-800 rounded-lg overflow-hidden">
+                <div className="absolute inset-0 filter dark:brightness-75 dark:contrast-125 dark:saturate-50">
                     <Map
-                        mapId={"4f6dde3310be51d7"}
+                        // mapId={"4f6dde3310be51d7"}
                         style={{width: '100vw', height: '100vh'}}
-                        defaultCenter={{lat: -31.743739, lng: 115.770545 }}
-                        defaultZoom={10}
+                        defaultCenter={{lat: lat, lng: lng }}
+                        defaultZoom={15}
                         gestureHandling={'greedy'}
                         disableDefaultUI={true}
                         onCameraChanged={ (ev: MapCameraChangedEvent) =>
                             console.log('camera changed:', ev.detail.center, 'zoom:', ev.detail.zoom)
                         }
                     >
-                        <AdvancedMarker
-                            position={{lat: -31.743739, lng: 115.770545}}
-                        >
-                            <div className="bg-blue-600 p-3 rounded-full shadow-lg border-4 border-white">
-                                <Droplets className="w-6 h-6 text-white" />
-                            </div>
-                        </AdvancedMarker>
+                        {/*<AdvancedMarker*/}
+                        {/*    position={{lat: lat, lng: lng}}*/}
+                        {/*>*/}
+                        {/*    <div className="bg-blue-600 p-3 rounded-full shadow-lg border-4 border-white">*/}
+                        {/*        <Droplets className="w-6 h-6 text-white" />*/}
+                        {/*    </div>*/}
+                        {/*</AdvancedMarker>*/}
 
                     </Map>
                 </div>
@@ -140,12 +149,12 @@ const LocationMap = () => {
 
 const SecurityCamera = () => {
     return (
-        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 h-full flex flex-col">
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2">
                 <Camera className="w-5 h-5" />
                 Security Camera
             </h3>
-            <div className="relative w-full h-64 bg-gray-800 rounded-lg overflow-hidden">
+            <div className="relative flex-1 bg-gray-800 rounded-lg overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-gray-700 to-gray-900">
                     <svg className="w-full h-full opacity-20" viewBox="0 0 400 300">
                         <rect x="50" y="80" width="120" height="140" fill="#4b5563" />
@@ -167,34 +176,55 @@ const SecurityCamera = () => {
     );
 };
 
-const Dashboard = () => {
-    const [waterLevel, setWaterLevel] = useState(75);
-    const [temperature, setTemperature] = useState(24.5);
-    const [phLevel, setPhLevel] = useState(7.2);
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setWaterLevel(prev => Math.max(20, Math.min(95, prev + (Math.random() - 0.5) * 3)));
-            setTemperature(prev => Math.max(15, Math.min(35, prev + (Math.random() - 0.5) * 0.5)));
-            setPhLevel(prev => Math.max(6, Math.min(9, prev + (Math.random() - 0.5) * 0.1)));
-        }, 3000);
+const Dashboard = (props:Props) => {
 
-        return () => clearInterval(interval);
-    }, []);
+
+    const [waterLevel, setWaterLevel] = useState(props.datapoints.find(d => {
+        return d.alias == 'wl'
+    })?.y ?? 80);
+    const [temperature, setTemperature] = useState(props.datapoints.find(d => {
+        return d.alias == 'temp'
+    })?.y ?? 0);
+    const [phLevel, setPhLevel] = useState(props.datapoints.find(d => {
+        return d.alias == 'pH'
+    })?.y ?? 0);
+    const [lat, setLat] = useState(props.datapoints.find(d => {
+        return d.alias == 'lat'
+    })?.y ?? 0);
+    const [lng, setLng] = useState(props.datapoints.find(d => {
+        return d.alias == 'lng'
+    })?.y ?? 0);
+
+    useEcho(`NewDatapointEvent.${props.node.id}`, ['DatapointCreatedEvent'], (e:Datapoint) => {
+        switch(e.alias) {
+            case 'pH':
+                setPhLevel(e.y);
+                break;
+            case 'temp':
+                setTemperature(e.y);
+                break;
+            case 'wl':
+                setWaterLevel(e.y);
+                break;
+            case 'lat':
+                setLat(e.y);
+                break;
+            case 'lng':
+                setLng(e.y);
+                break;
+
+        }
+    });
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
-            <div className="bg-gradient-to-br from-blue-50 to-gray-100 dark:from-neutral-950 dark:to-gray-800 min-h-screen p-8">
-                <div className="max-w-7xl mx-auto">
+            <div className="h-screen bg-gradient-to-br from-blue-50 to-gray-100 dark:from-slate-950 dark:to-gray-950 p-8 overflow-hidden">
+                <div className="h-full max-w-7xl mx-auto flex flex-col">
 
-                    <div className="grid grid-cols-3 gap-6 mb-6">
-                        <WaterTank level={waterLevel} />
-                        <LocationMap />
-                        <SecurityCamera />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Top Row - Large Gauges - 1/3 height */}
+                    <div className="flex-1 grid grid-cols-2 gap-6 mb-4">
                         <GaugeChart
                             value={temperature}
                             min={0}
@@ -211,6 +241,17 @@ const Dashboard = () => {
                             unit=""
                             color="#8b5cf6"
                         />
+                    </div>
+
+                    {/* Middle Row - Tank and Camera - 1/3 height */}
+                    <div className="flex-1 grid grid-cols-2 gap-6 mb-4">
+                        <WaterTank level={waterLevel} />
+                        <SecurityCamera />
+                    </div>
+
+                    {/* Bottom Row - Full Width Map - 1/3 height */}
+                    <div className="flex-1">
+                        <LocationMap lat={lat} lng={lng} />
                     </div>
                 </div>
             </div>

@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\MetricAliasEnum;
 use App\Models\Datapoint;
 use App\Models\Metric;
 use App\Models\MqttAudit;
@@ -78,20 +79,48 @@ class MqttCommand extends Command
                 return;
             }
 
-            $this->info("Find sensor");
-            $sensor = Node::find($json['client_id'] ?? 0);
+            $sensor = Node::with('metrics')->where('name',$json['id'])->first();
             if (!$sensor) {
-                $this->info("Did not find sensor for " . $json['client_id'] ?? 0);
+                $this->info("Did not find sensor for " . $json['id'] ?? '');
                 return;
             }
 
-            $this->info("get all metrics");
-
-            $metrics = Metric::all();
+            $metrics = $sensor->metrics;
             foreach($json as $metricKey => $metricValue) {
-                $this->line($metricKey);
-                $metric = $metrics->where('alias', $metricKey);
-                if ($metric->count() === 1) {
+                if ($metricKey === 'id') {
+                    continue;
+                }
+
+                if ($metricKey === 'gps') {
+                    $this->info("testing gps");
+                    // gps is handled slightly differently
+
+
+                    $lat = $metrics->where('alias', MetricAliasEnum::GPS_LAT->value)->first();
+                    $lng = $metrics->where('alias', MetricAliasEnum::GPS_LNG->value)->first();
+
+                    $d1 = Datapoint::create([
+                        'source_id' => $sensor->id,
+                        'source_type' => Node::class,
+                        'metric_id' => $lat->id,
+                        'value' => $metricValue['lat'],
+                        'time' => time()
+                    ]);
+
+                    $d2 = Datapoint::create([
+                        'source_id' => $sensor->id,
+                        'source_type' => Node::class,
+                        'metric_id' => $lng->id,
+                        'value' => $metricValue['lng'],
+                        'time' => time()
+                    ]);
+
+                    continue;
+                }
+
+                $metric = $metrics->where('alias', $metricKey)->first();
+
+                if ($metric) {
                     Datapoint::create([
                         'source_id' => $sensor->id,
                         'source_type' => Node::class,

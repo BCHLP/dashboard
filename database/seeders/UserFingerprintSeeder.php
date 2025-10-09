@@ -99,7 +99,7 @@ class UserFingerprintSeeder extends Seeder
                 }
 
                 Carbon::setTestNow($date);
-                (new BaselineService())->createLoginAuditDatapoints()->execute();
+                (new BaselineService())->quietly()->createLoginAuditDatapoints()->execute();
 
                 $currentShiftHours++;
             }

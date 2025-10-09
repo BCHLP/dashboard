@@ -17,9 +17,16 @@ class BaselineService
     private Carbon $startDate;
     private Carbon $endDate;
 
+    private bool $quietly = false;
+
     public function __construct() {
         $this->startDate = Carbon::now()->subHours(2)->setMinutes(0)->setSeconds(0);
         $this->endDate = Carbon::now()->subHours()->setMinutes(0)->setSeconds(0);
+    }
+
+    public function quietly() : self {
+        $this->quietly = true;
+        return $this;
     }
 
     public function createLoginAuditDatapoints() : self {
@@ -37,6 +44,23 @@ class BaselineService
 
             $successful = $counts->where('successful',true)->first()->counts ?? 0;
             $failed = $counts->where('successful',false)->first()->counts ?? 0;
+
+            if ($this->quietly) {
+                Datapoint::createQuietly([
+                    'source_id' => $user->id,
+                    'source_type' => User::class,
+                    'metric_id' => $failedMetric->id,
+                    'time' => $this->startDate->timestamp,
+                    'value' => $failed]);
+
+                Datapoint::createQuietly([
+                    'source_id' => $user->id,
+                    'source_type' => User::class,
+                    'metric_id' => $successfulmetric->id,
+                    'time' => $this->startDate->timestamp,
+                    'value' => $successful]);
+                continue;
+            }
 
             Datapoint::create([
                 'source_id' => $user->id,

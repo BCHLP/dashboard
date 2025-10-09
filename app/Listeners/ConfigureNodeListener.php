@@ -32,11 +32,29 @@ class ConfigureNodeListener
             case NodeTypeEnum::DIGESTION_TANK:
                 NodeSetting::create(['node_id' => $event->node->id, 'name' => 'capacity', 'value' => '100', 'cast' => 'int']);
                 NodeSetting::create(['node_id' => $event->node->id, 'name' => 'filled_time', 'value' => '0', 'cast' => 'int']);
-                $event->node->metrics()->sync([$metrics['wl'],$metrics['wt']]);
-                Datapoint::create(['time' => time(),
+                $event->node->metrics()->sync([
+                    $metrics[MetricAliasEnum::WATER_LEVEL->value],
+                    $metrics[MetricAliasEnum::WATER_TEMPERATURE->value],
+                    $metrics[MetricAliasEnum::PH_LEVEL->value],
+                    $metrics[MetricAliasEnum::GPS_LAT->value],
+                    $metrics[MetricAliasEnum::GPS_LNG->value]
+                    ]);
+
+
+                Datapoint::createQuietly(['time' => time(),
                     'source_id' => $event->node->id,
                     'source_type' => Node::class,
-                    'metric_id' => $metrics['wl'], 'value' => 0]);
+                    'metric_id' => $metrics[MetricAliasEnum::WATER_LEVEL->value], 'value' => 80]);
+
+                Datapoint::createQuietly(['time' => time(),
+                    'source_id' => $event->node->id,
+                    'source_type' => Node::class,
+                    'metric_id' => $metrics[MetricAliasEnum::GPS_LNG->value], 'value' => 115.770545]);
+
+                Datapoint::createQuietly(['time' => time(),
+                    'source_id' => $event->node->id,
+                    'source_type' => Node::class,
+                    'metric_id' => $metrics[MetricAliasEnum::GPS_LAT->value], 'value' => -31.743739]);
 
                 break;
 

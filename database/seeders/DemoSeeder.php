@@ -25,6 +25,9 @@ class DemoSeeder extends Seeder
         $flowRate = Metric::create(['name' => 'Flow Rate', 'alias' => MetricAliasEnum::FLOW_RATE]);
         $waterLevel = Metric::create(['name' => 'Water Level', 'alias' => MetricAliasEnum::WATER_LEVEL]);
         $waterTemp = Metric::create(['name' => 'Water Temperature', 'alias' => MetricAliasEnum::WATER_TEMPERATURE]);
+        $phLevel = Metric::create(['name' => 'pH Level', 'alias' => MetricAliasEnum::PH_LEVEL]);
+        $gpsLat = Metric::create(['name' => 'lat', 'alias' => MetricAliasEnum::GPS_LAT]);
+        $gpsLng = Metric::create(['name' => 'lng', 'alias' => MetricAliasEnum::GPS_LNG]);
 
         Metric::create(['name' => 'CPU', 'alias' => MetricAliasEnum::CPU]);
         Metric::create(['name' => 'Network Packets In', 'alias' => MetricAliasEnum::NETWORK_PACKETS_IN]);
@@ -42,32 +45,7 @@ class DemoSeeder extends Seeder
 
         Cache::clear();
 
-        foreach(['A'] as $letter) {
-
-            $line = TreatmentLine::create([
-                'name' => $letter,
-                'maintenance_mode' => false,
-                'stage_1' => TreatmentStageEnum::FILLING,
-            ]);
-
-            $tank = Node::create(['name' => "SED-{$letter}1", 'node_type' => NodeTypeEnum::SEDIMENTATION_TANK, 'treatment_line_id' => $line->id], $inlet);
-
-            $valve = Node::create(['name' => "VAL-{$letter}0", 'node_type' => NodeTypeEnum::VALVE, 'treatment_line_id' => $line->id], $tank);
-
-            $sensor = Node::create(['name' => "SNR-{$letter}0", 'node_type' => NodeTypeEnum::SENSOR, 'treatment_line_id' => $line->id], $valve);
-
-            $outlet = Node::create(['name' => "Outlet-{$letter}", 'node_type' => NodeTypeEnum::OUTLET, 'treatment_line_id' => $line->id], $sensor);
-
-            // create history
-
-            $this->createHistory($tank, $waterLevel, 0,100);
-            $this->createHistory($valve, $flowRate, 1,5);
-            $this->createHistory($sensor, $waterTemp, 1,12);
-        }
-
-//        NodeSetting::where('name', 'opened')
-//            ->whereNotIn('node_id', $valvesToKeepOpen)
-//            ->update(['value' =>  '0']);
+        $tank = Node::create(['name' => "SEN-001", 'node_type' => NodeTypeEnum::SEDIMENTATION_TANK]);
 
     }
 

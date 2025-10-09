@@ -4,6 +4,7 @@ namespace App\Events;
 
 use App\Http\Resources\DatapointResource;
 use App\Models\Datapoint;
+use App\Models\User;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -22,8 +23,14 @@ class DatapointCreatedEvent implements ShouldBroadcast
 
     public function broadcastOn(): array
     {
+        if ($this->datapoint->source_type === User::class) {
+            return [];
+        }
+
+        ray("about to broadcast on NewDatapointEvent.".$this->datapoint->source_id);
+
         return [
-            new PrivateChannel("NewDatapointEvent"),
+            new PrivateChannel("NewDatapointEvent.".$this->datapoint->source_id),
         ];
     }
 
