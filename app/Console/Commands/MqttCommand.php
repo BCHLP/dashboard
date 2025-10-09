@@ -43,10 +43,11 @@ class MqttCommand extends Command
         $connectionSettings = (new \PhpMqtt\Client\ConnectionSettings)
             ->setUseTls(true)
             ->setTlsVerifyPeer(true)
-            // ->setTlsVerifyPeerName(false)  // May need this for localhost
+            ->setTlsVerifyPeerName(false)
             ->setTlsCertificateAuthorityFile($certPath . "ca-chain.crt")
             ->setTlsClientCertificateFile($certPath . "bchklp.crt")  // PEM format
-            ->setTlsClientCertificateKeyFile($certPath . "bchklp.key");  // PEM format
+            ->setTlsClientCertificateKeyFile($certPath . "bchklp.key")  // PEM format
+            ->setTlsSelfSignedAllowed(false);
 
         $mqtt = new MqttClient($server, $port, $clientId);
         $mqtt->connect($connectionSettings);
