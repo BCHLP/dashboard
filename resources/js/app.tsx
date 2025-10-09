@@ -7,6 +7,7 @@ import { initializeTheme } from './hooks/use-appearance';
 import { configureEcho } from '@laravel/echo-react';
 import { MfaProvider} from '@/MfaProvider';
 import { FingerprintProvider } from './components/FingerprintProvider';
+import {APIProvider} from '@vis.gl/react-google-maps';
 
 configureEcho({
     broadcaster: "reverb",
@@ -45,7 +46,9 @@ createInertiaApp({
         root.render(
             <MfaProvider>
                 <FingerprintProvider endpoint="/api/fingerprint" csrfToken={getCsrfToken()} autoCollectOnMount={true}>
-                    <App {...props} />
+                    <APIProvider apiKey={'AIzaSyDX0I9nlNK5SfmzWLDU0vnqr83Aj8HTqnY'} onLoad={() => console.log('Maps API has loaded.')}>
+                        <App {...props} />
+                    </APIProvider>
                 </FingerprintProvider>
             </MfaProvider>,
         );
