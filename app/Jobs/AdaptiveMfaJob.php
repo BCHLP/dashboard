@@ -37,6 +37,13 @@ class AdaptiveMfaJob implements ShouldQueue
         if (blank($fingerprint)) {
             $fingerprint = "No fingerprint";
         }
+
+        $chatGpt = new \App\Services\ChatGptMfaService();
+        $decision = $chatGpt->decide($user->id, $fingerprint, $this->eventId);
+        ray("Chat GPT decision", $decision);
+    }
+
+    private function claude($user, $fingerprint) {
 ;
         $systemPrompt = <<<PROMPT
 You are a security analyst specializing in adaptive authentication. Your role is to assess login risk and recommend appropriate MFA requirements.

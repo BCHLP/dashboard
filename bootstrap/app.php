@@ -3,6 +3,7 @@
 use App\Http\Middleware\MfaMiddleware;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\OpenAiMiddleware;
 use App\Http\Middleware\RedirectIfUnauthenticatedMiddleware;
 use App\Http\Middleware\VerifyVoiceAuthenticatedMiddleware;
 use Illuminate\Foundation\Application;
@@ -34,6 +35,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->appendToGroup('auth', [
             MfaMiddleware::class,
         ]);
+
+        $middleware->alias(['openai' => OpenAiMiddleware::class]);
 
     })
     ->withExceptions(function (Exceptions $exceptions) {

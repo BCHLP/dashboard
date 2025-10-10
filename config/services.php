@@ -43,4 +43,8 @@ return [
         'api_key' => env('ANTHROPIC_API_KEY'),
     ],
 
+    'openai' => [
+        'mcp_secret' => env('OPENAI_MCP_SECRET'),
+    ]
+
 ];

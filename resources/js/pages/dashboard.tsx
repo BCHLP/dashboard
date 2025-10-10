@@ -72,14 +72,20 @@ const GaugeChart = ({ value, min, max, label, unit, color }) => {
                     </svg>
                 </div>
             </div>
-            <div className="text-center flex-shrink-0">
-                <div className="text-3xl font-bold text-gray-800 dark:text-gray-100">
-                    {value.toFixed(1)}
-                    <span className="text-lg text-gray-600 dark:text-gray-400 ml-1">{unit}</span>
+            <div className="w-full flex items-end justify-between flex-shrink-0">
+                <button className="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded shadow-md transition-colors">
+                    Capture
+                </button>
+                <div className="text-center">
+                    <div className="text-3xl font-bold text-gray-800 dark:text-gray-100">
+                        {value.toFixed(1)}
+                        <span className="text-lg text-gray-600 dark:text-gray-400 ml-1">{unit}</span>
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                        Range: {min} - {max} {unit}
+                    </div>
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                    Range: {min} - {max} {unit}
-                </div>
+                <div className="w-20"></div>
             </div>
         </div>
     );
@@ -132,13 +138,13 @@ const LocationMap = ({lat, lng}) => {
                             console.log('camera changed:', ev.detail.center, 'zoom:', ev.detail.zoom)
                         }
                     >
-                        {/*<AdvancedMarker*/}
-                        {/*    position={{lat: lat, lng: lng}}*/}
-                        {/*>*/}
-                        {/*    <div className="bg-blue-600 p-3 rounded-full shadow-lg border-4 border-white">*/}
-                        {/*        <Droplets className="w-6 h-6 text-white" />*/}
-                        {/*    </div>*/}
-                        {/*</AdvancedMarker>*/}
+                        <AdvancedMarker
+                            position={{lat: lat, lng: lng}}
+                        >
+                            <div className="bg-blue-600 p-3 rounded-full shadow-lg border-4 border-white">
+                                <Droplets className="w-6 h-6 text-white" />
+                            </div>
+                        </AdvancedMarker>
 
                     </Map>
                 </div>
