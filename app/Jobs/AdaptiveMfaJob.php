@@ -14,6 +14,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class AdaptiveMfaJob implements ShouldQueue
@@ -22,6 +23,7 @@ class AdaptiveMfaJob implements ShouldQueue
 
     public function __construct(public string $email, public string $eventId, public string $fingerprintId)
     {
+        ray("construct fingerprintid = $this->fingerprintId");
     }
 
     public function handle(): void
@@ -37,6 +39,8 @@ class AdaptiveMfaJob implements ShouldQueue
         if (blank($fingerprint)) {
             $fingerprint = "No fingerprint";
         }
+
+        ray("fingerprint", $fingerprint);
 ;
         $systemPrompt = <<<PROMPT
 You are a security analyst specializing in adaptive authentication. Your role is to assess login risk and recommend appropriate MFA requirements.
@@ -80,7 +84,7 @@ PROMPT;
             $claude = new ClaudeAgentService();
             $response = $claude->chat($userPrompt, $systemPrompt);
 
-            ray($response);
+            Log::debug("Response from claude:".$response);
 
     }
 }

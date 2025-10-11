@@ -101,12 +101,19 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+
+        $fingerprintId = session('fingerprint_id');
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        if (filled($fingerprintId)) {
+            session(['fingerprint_id' => $fingerprintId]);
+        }
+
+        return redirect('/login');
     }
 
     public function validate(UserLoginAuditAction $userLoginAudit, string $event_id) {
