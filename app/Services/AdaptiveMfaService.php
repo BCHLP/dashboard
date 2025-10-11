@@ -21,8 +21,6 @@ class AdaptiveMfaService
             return false;
         }
 
-        ray("loaded event", $result);
-
         return $result;
     }
 

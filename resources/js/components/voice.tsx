@@ -107,7 +107,8 @@ const Voice = (props:Props) => {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
-            })
+            });
+
 
             if (response.data.voice) {
                 setStatus('Voice recognition failed');

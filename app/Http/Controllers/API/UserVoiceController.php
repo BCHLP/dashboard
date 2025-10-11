@@ -46,25 +46,22 @@ class  UserVoiceController extends Controller
 
         $service = new VoiceRecognitionService();
         $success = $service->compare($base64, $user);
+        $voiceStillRequired = !$success;
 
         if ($success) {
+
+            ray("VOICE RECOGNITION WAS SUCCESSFUL")->green();
 
             AdaptiveMfaFacade::setVoice(false);
         }
 
-        if ($event['totp']) {
-            return response()->json(['totp'=>true, 'voice' => false]);
-        }
-
-        if ($success) {
+        if ($success && $event['totp'] === false) {
             // Redirect to dashboard on success
             Auth::login($user);
             $userLoginAudit($user->email, true);
             AdaptiveMfaFacade::clear();
-            return response()->json(['totp' => false, 'voice' => false]);
-        } else {
-            // Return back with error
-            return response()->json(['totp' => false, 'voice' => true]);
         }
+
+        return response()->json(['totp'=> $event['totp'], 'voice' => $voiceStillRequired]);
     }
 }

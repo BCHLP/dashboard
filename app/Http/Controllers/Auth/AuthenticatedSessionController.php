@@ -50,7 +50,6 @@ class AuthenticatedSessionController extends Controller
 
     public function totp(LoginWithMfaRequest $request, UserLoginAuditAction $userLoginAudit) : JsonResponse
     {
-
         $event = AdaptiveMfaFacade::load();
         $user = User::find($event['user_id']);
         abort_if(!$user, 404);
