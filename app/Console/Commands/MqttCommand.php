@@ -54,9 +54,11 @@ class MqttCommand extends Command
         $mqtt->connect($connectionSettings);
         // $mqtt->publish('php-mqtt/client/test', 'Hello World!', 0);
 
-        $mqtt->subscribe("metric/send", function($topic, $message) {
+        $mqtt->subscribe("application/+/device/+/command/+", function(string $topic, string $message,
+                                                                      bool $retained, array $wildcards) {
             $this->info("Topic: $topic");
             $this->info("Message: $message");
+            $this->info("Wildcards: " . json_encode($wildcards));
 
             $this->info("About to decode");
             $json = json_decode($message, true);
