@@ -59,6 +59,7 @@ class AdaptiveMfaService
     private function save(array $event) : void {
         Cache::put('MfaDecision.'.$event['event_id'], $event);
 
+        ray("dispatching mfa decision");
         MfaDecisionEvent::dispatch($event['event_id'], $event['totp'], $event['voice']);
     }
 }
