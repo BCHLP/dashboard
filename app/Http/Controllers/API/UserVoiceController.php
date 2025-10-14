@@ -42,7 +42,9 @@ class  UserVoiceController extends Controller
         $base64 = base64_encode($request->file('audio')->get());
 
         $event = AdaptiveMfaFacade::load();
+        ray("event", $event);
         $user = User::find($event['user_id']);
+        abort_if(!$user, 404);
 
         $service = new VoiceRecognitionService();
         $success = $service->compare($base64, $user);

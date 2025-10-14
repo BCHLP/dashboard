@@ -46,7 +46,7 @@ class AdaptiveMfaJob implements ShouldQueue
     }
 
     private function claude($user, $fingerprint) {
-        
+
         $systemPrompt = <<<PROMPT
 You are a security analyst specializing in adaptive authentication. Your role is to assess login risk and recommend appropriate MFA requirements.
 

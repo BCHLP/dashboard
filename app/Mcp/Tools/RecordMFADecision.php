@@ -53,7 +53,12 @@ class RecordMFADecision extends Tool
      */
     public function handle(array $arguments): ToolResult|Generator
     {
-        AdaptiveMfaFacade::setBoth($arguments['totp'], $arguments['voice'], $arguments['event_id']);
+        $userId = $arguments['user_id'];
+        $eventId = $arguments['event_id'];
+        $totp = $arguments['totp'];
+        $voice = $arguments['voice'];
+
+        AdaptiveMfaFacade::setBoth( $totp, $voice, $eventId, $userId);
 
         return ToolResult::text('Tool executed successfully.');
     }

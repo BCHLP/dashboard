@@ -29,7 +29,6 @@ class AdaptiveMfaService
         $event['totp'] = $required;
         $event['user_id'] = $event['user_id'] ?? $userId ?? null;
 
-
         $this->save($event);
 
     }
