@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Settings;
 
+use App\Actions\DeleteUser;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -53,11 +54,12 @@ class ProfileController extends Controller
 
         Auth::logout();
 
-        $user->delete();
+        $deleteUser = app(DeleteUser::class);
+        $deleteUser($user);
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect('/login');
     }
 }

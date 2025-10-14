@@ -33,8 +33,8 @@ test('you can see the users page with the User Management role', function() {
         ->and($this->get(route('users.create'))->content())->not->toContain('This action is unauthorized')
         ->and($this->get(route('users.edit', $manager))->content())->not->toContain('This action is unauthorized')
         ->and($this->post(route('users.store'))->content())->not->toContain('This action is unauthorized')
-        ->and($this->post(route('users.update', $manager))->content())->not->toContain('This action is unauthorized')
-        ->and($this->post(route('users.destroy', $manager))->content())->not->toContain('This action is unauthorized');
+        ->and($this->put(route('users.update', $manager))->content())->not->toContain('This action is unauthorized')
+        ->and($this->delete(route('users.destroy', $manager))->content())->not->toContain('This action is unauthorized');
 
 
 });

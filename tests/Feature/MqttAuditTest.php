@@ -7,25 +7,23 @@ use App\Models\Node;
 
 it('can store mqtt audits', function () {
 
-    $mqttBroker = Node::factory(['node_type' => NodeTypeEnum::SERVER])->create();
-    $token = $mqttBroker->createToken("mqttBroker");
+    $createServer = app(\App\Actions\CreateServer::class);
+    $result = $createServer("broker");
+    $mqttBroker = $result['server'];
+    $token = $result['token'];
 
     $this->actingAs($mqttBroker);
 
     expect(MqttAudit::query()->count())->toBe(0);
 
-    $response = $this->postJson(route('api.mqtt.audits'), [
-        'audits' => [
-            [
-                'client_id' => "Client",
-                "when" => now()->toIso8601String(),
-                "unusual" => false,
-                "message" => "testing"
-            ]
+    $this->postJson(route('api.mqtt.audits'), [
+        [
+            'clientId' => "Client",
+            "when" => now()->toIso8601String(),
+            "unusual" => false,
+            "message" => "testing"
         ]
-    ]);
+    ])->assertStatus(200);
 
     expect(MqttAudit::query()->count())->toBe(1);
-
-    $response->assertStatus(200);
 });

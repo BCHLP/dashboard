@@ -50,7 +50,6 @@ class AuthenticatedSessionController extends Controller
 
     public function totp(LoginWithMfaRequest $request, UserLoginAuditAction $userLoginAudit) : JsonResponse
     {
-
         $event = AdaptiveMfaFacade::load();
         $user = User::find($event['user_id']);
         abort_if(!$user, 404);
@@ -87,6 +86,10 @@ class AuthenticatedSessionController extends Controller
             return back()->withErrors(["password" => "Invalid credentials"]);
         }
 
+        if (!config('scada.amfa.enabled')) {
+            return redirect()->route('home');
+        }
+
         $eventId = Str::uuid()->toString();
         session(['mfa_event_id' => $eventId]);
 
@@ -102,12 +105,19 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+
+        $fingerprintId = session('fingerprint_id');
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        if (filled($fingerprintId)) {
+            session(['fingerprint_id' => $fingerprintId]);
+        }
+
+        return redirect('/login');
     }
 
     public function validate(UserLoginAuditAction $userLoginAudit, string $event_id) {

@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Enums\NodeTypeEnum;
 use App\Events\NodeCreatedEvent;
-// use Clickbar\Magellan\Data\Geometries\Point;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -22,7 +21,6 @@ class Node extends Authenticatable
     protected $guarded = [];
 
     protected $casts = [
-//        'coordinates' => Point::class,
         'node_type' => NodeTypeEnum::class,
     ];
 
@@ -37,11 +35,6 @@ class Node extends Authenticatable
 
     public function settings(): HasMany {
         return $this->hasMany(NodeSetting::class);
-    }
-
-    public function treatmentLine(): BelongsTo
-    {
-        return $this->belongsTo(TreatmentLine::class);
     }
 
     public function isTank(): bool {

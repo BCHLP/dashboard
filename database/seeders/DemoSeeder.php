@@ -44,9 +44,6 @@ class DemoSeeder extends Seeder
         Metric::create(['name' => 'User Authentication Successful', 'alias' => MetricAliasEnum::USER_AUTH_SUCCESSFUL]);
 
         Cache::clear();
-
-        $tank = Node::create(['name' => "SEN-001", 'node_type' => NodeTypeEnum::SEDIMENTATION_TANK]);
-
     }
 
     private function createHistory(Node $node, Metric $metric, int $min, int $max) : void {

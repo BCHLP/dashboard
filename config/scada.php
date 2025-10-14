@@ -11,5 +11,8 @@ return [
     'mqtt_broker' => [
         'host' => env('MQTT_HOST', 'localhost'),
         'port' => env('MQTT_PORT', 8883),
+    ],
+    'amfa' => [
+        'enabled' => env('AMFA_ENABLED', true),
     ]
 ];
