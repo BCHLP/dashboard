@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use function DI\create;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
@@ -9,7 +10,7 @@ test('guests are redirected to the login page', function () {
 });
 
 test('authenticated users can visit the dashboard', function () {
-    $this->actingAs($user = User::factory()->create());
+    $this->actingAs($user = createUser());
 
     $this->get('/')->assertOk();
 });

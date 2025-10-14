@@ -15,21 +15,23 @@ class DashboardController extends Controller
         $node = Node::with('metrics')->where('name', 'SEN-001')->first();
 
         $datapoints = [];
-        foreach($node->metrics as $metric) {
-            $datapoint = Datapoint::where('metric_id', $metric->id)
-                ->where('source_id', $node->id)
-                ->where('source_type', Node::class)
-                ->latest()
-                ->first();
+        if ($node) {
+            foreach ($node->metrics as $metric) {
+                $datapoint = Datapoint::where('metric_id', $metric->id)
+                    ->where('source_id', $node->id)
+                    ->where('source_type', Node::class)
+                    ->latest()
+                    ->first();
 
-            if ($datapoint) {
-                $datapoints[] = [
-                    'alias' => $metric->alias,
-                    'x' => $datapoint->time,
-                    'y' => $datapoint->value,
-                    'node_id' => $node->id,
-                    'metric_id' => $metric->id,
-                ];
+                if ($datapoint) {
+                    $datapoints[] = [
+                        'alias' => $metric->alias,
+                        'x' => $datapoint->time,
+                        'y' => $datapoint->value,
+                        'node_id' => $node->id,
+                        'metric_id' => $metric->id,
+                    ];
+                }
             }
         }
 

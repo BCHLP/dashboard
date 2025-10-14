@@ -62,33 +62,6 @@ class User extends Authenticatable
         return $this->hasOne(UserVoice::class);
     }
 
-    public function webAuthnCredentials()
-    {
-        return $this->hasMany(WebauthnCredential::class);
-    }
-
-    public function webAuthnAuthLogs()
-    {
-        return $this->hasMany(WebauthnAuthLog::class);
-    }
-
-    public function hasWebAuthnCredentials(): bool
-    {
-        return $this->webAuthnCredentials()->exists();
-    }
-
-    public function getWebAuthnCredentialsByType(string $type = null): Collection
-    {
-        $query = $this->webAuthnCredentials();
-
-        if ($type) {
-            // Filter by authenticator type if needed
-            $query->where('aaguid', $type);
-        }
-
-        return $query->get();
-    }
-
     public function datapoints(): MorphMany {
         return $this->morphMany(Datapoint::class, 'source');
     }

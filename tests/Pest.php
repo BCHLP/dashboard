@@ -11,36 +11,22 @@
 |
 */
 
+use App\Actions\CreateServer;
 use App\Enums\NodeTypeEnum;
 use App\Enums\RoleEnum;
-use App\Models\Metric;
+use App\Events\DatapointCreatedEvent;
 use App\Models\Node;
 use App\Models\TreatmentLine;
 use App\Models\User;
 use App\Models\UserVoice;
 
 pest()->extend(Tests\TestCase::class)->beforeEach(function () {
+    Event::fake([DatapointCreatedEvent::class]);
     $this->seed(\Database\Seeders\TestingSeeder::class);
-    Metric::create(['name' => 'Flow Rate', 'alias' => 'fr']);
-    Metric::create(['name' => 'Water Level', 'alias' => 'wl']);
 })
- // ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+    // ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
     ->in('Feature');
 
-/*
-|--------------------------------------------------------------------------
-| Expectations
-|--------------------------------------------------------------------------
-|
-| When you're writing tests, you often need to check that values meet certain conditions. The
-| "expect()" function gives you access to a set of "expectations" methods that you can use
-| to assert different things. Of course, you may extend the Expectation API at any time.
-|
-*/
-
-expect()->extend('toBeOne', function () {
-    return $this->toBe(1);
-});
 
 
 /*
@@ -54,60 +40,21 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function createTank(TreatmentLine $line, string $name='TANK', ?Node $parent=null) : Node  {
-
-    if ($parent) {
-        $node = $parent->children()->create([
-            'name' => $name,
-            'node_type' => NodeTypeEnum::SEDIMENTATION_TANK,
-            'treatment_line_id' => $line->id,
-        ]);
-    } else {
-        $node = Node::factory(['name' => $name, 'node_type' => NodeTypeEnum::SEDIMENTATION_TANK])->create();
-    }
-    return $node;
-}
-
-function createValve(TreatmentLine $line, string $name='VALVE', ?Node $parent=null) : Node  {
-
-    if ($parent) {
-        $node = $parent->children()->create([
-            'name' => $name,
-            'node_type' => NodeTypeEnum::VALVE,
-            'treatment_line_id' => $line->id,
-        ]);
-    } else {
-        $node = Node::factory(['name' => $name, 'node_type' => NodeTypeEnum::VALVE])->create();
-    }
-    return $node;
-}
-
-function createScreen(TreatmentLine $line, string $name='SCREEN', ?Node $parent=null) : Node  {
-
-    if ($parent) {
-        $node = $parent->children()->create([
-            'name' => $name,
-            'node_type' => NodeTypeEnum::SCREEN,
-            'treatment_line_id' => $line->id,
-        ]);
-    } else {
-        $node = Node::factory(['name' => $name, 'node_type' => NodeTypeEnum::SCREEN])->create();
-    }
-    return $node;
-}
-
-function createLine(array $attributes = []) {
-    return TreatmentLine::factory($attributes)->create();
-}
 
 function createUser(RoleEnum $role = RoleEnum::NONE) : User {
-    $user = User::factory()->create();
+    $user = User::factory(['totp_secret' => '123', 'totp_activated_at' => now()])->create();
     if ($role !== RoleEnum::NONE) {
         $user->assignRole($role);
     }
     UserVoice::create(['user_id' => $user->id, 'embeddings' => 'embedded']);
 
     return $user;
+}
+
+function createServer(string $name="server") {
+    $createServer = app(CreateServer::class);
+    $result = $createServer($name);
+    return $result['server'];
 }
 
 function disableMfaAuthentication() : void {

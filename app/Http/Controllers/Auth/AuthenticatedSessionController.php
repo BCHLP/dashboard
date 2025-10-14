@@ -86,6 +86,10 @@ class AuthenticatedSessionController extends Controller
             return back()->withErrors(["password" => "Invalid credentials"]);
         }
 
+        if (!config('scada.amfa.enabled')) {
+            return redirect()->route('home');
+        }
+
         $eventId = Str::uuid()->toString();
         session(['mfa_event_id' => $eventId]);
 

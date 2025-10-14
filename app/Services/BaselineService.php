@@ -87,10 +87,10 @@ class BaselineService
 
         foreach ($metrics as $metric) {
 
-
             if ($metric->alias === MetricAliasEnum::USER_AUTH_FAILED->value
                 || $metric->alias === MetricAliasEnum::USER_AUTH_SUCCESSFUL->value) {
                 foreach($users as $user) {
+
                     $this->create($metric, $user, User::class);
                 }
                 continue;
@@ -101,8 +101,6 @@ class BaselineService
             foreach($metric->nodes as $node) {
                 $this->create($metric, $node, Node::class);
             }
-
-
         }
     }
 
