@@ -37,8 +37,6 @@ class MqttCommand extends Command
         $port     = config('scada.mqtt_broker.port');
         $clientId = 'laravel';
 
-        $metrics = Metric::all();
-
         $certPath = storage_path('certs/');
 
         $connectionSettings = (new \PhpMqtt\Client\ConnectionSettings)
@@ -56,20 +54,11 @@ class MqttCommand extends Command
 
         $mqtt->subscribe("application/+/device/+/command/+", function(string $topic, string $message,
                                                                       bool $retained, array $wildcards) {
-            $this->info("Topic: $topic");
-            $this->info("Message: $message");
-            $this->info("Wildcards: " . json_encode($wildcards));
 
-            $this->info("About to decode");
             $json = json_decode($message, true);
-            $this->info("Decoded message: $message");
-            if ($json === null) {
-                $this->warn("Failed to decode json");
-            }
 
-            $this->info("Creating mqaudit");
             $a = MqttAudit::create([
-                'client_id' => $json['client_id'] ?? "Unknown",
+                'client_id' => $json['id'] ?? "Unknown",
                 'message' => $message,
                 'unusual' => false,
                 'when' => Carbon::now(),
@@ -77,13 +66,11 @@ class MqttCommand extends Command
 
 
             if ($json === null) {
-                $this->info("Return if json is null");
                 return;
             }
 
             $sensor = Node::with('metrics')->where('name',$json['id'])->first();
             if (!$sensor) {
-                $this->info("Did not find sensor for " . $json['id'] ?? '');
                 return;
             }
 
@@ -94,7 +81,6 @@ class MqttCommand extends Command
                 }
 
                 if ($metricKey === 'gps') {
-                    $this->info("testing gps");
                     // gps is handled slightly differently
 
 
@@ -134,56 +120,6 @@ class MqttCommand extends Command
             }
         });
 
-        $mqtt->subscribe('hardware-metrics', function ($topic, $message, $retained, $matchedWildcards) use ($metrics) {
-            $this->info("Topic: $topic");
-            $payload = json_decode($message, true);
-            if (is_null($payload)) {
-                $this->error("Bad payload received:  {$message}");
-                return;
-            }
-
-            if (!isset($payload['token'], $payload['cpu'], $payload['ram'], $payload['load_avg'])) {
-                $this->error("Bad JSON received");
-                return;
-            }
-
-            $token = Cache::remember('users', 3600, function () use ($payload) {
-                return PersonalAccessToken::findToken($payload['token']);
-            });
-
-
-            if (blank($token)) {
-                $this->error("Token not found");
-                return;
-            }
-
-            $cpu = $metrics->where('alias', 'cpu')->first();
-            $memory = $metrics->where('alias', 'ram')->first();
-
-            if (!$cpu || !$memory) {
-                $this->error("CPU or MEMORY metrics not found");
-                return;
-            }
-
-
-            Datapoint::create([
-                'metric_id' => $cpu->id,
-                'source_id' => $token->tokenable_id,
-                'source_type' => Node::class,
-                'value' => $payload['cpu']
-
-            ]);
-
-            Datapoint::create([
-                'metric_id' => $memory->id,
-                'source_id' => $token->tokenable_id,
-                'source_type' => Node::class,
-                'value' => $payload['ram']
-
-            ]);
-
-
-        }, 0);
         $mqtt->loop(true);
         $mqtt->disconnect();
     }
