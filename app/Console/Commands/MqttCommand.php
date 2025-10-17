@@ -55,6 +55,10 @@ class MqttCommand extends Command
         $mqtt->subscribe("application/+/device/+/command/+", function(string $topic, string $message,
                                                                       bool $retained, array $wildcards) {
 
+            $this->info("Topic: $topic");
+            $this->info("Message: $message");
+            $this->info("Wildcards: " . json_encode($wildcards));
+
             $json = json_decode($message, true);
 
             $a = MqttAudit::create([
