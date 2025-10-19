@@ -4,14 +4,9 @@ namespace Database\Seeders;
 
 use App\Enums\MetricAliasEnum;
 use App\Enums\NodeTypeEnum;
-use App\Enums\TreatmentStageEnum;
 use App\Models\Datapoint;
 use App\Models\Metric;
 use App\Models\Node;
-use App\Models\NodeSetting;
-use App\Models\NodeConnection;
-use App\Models\TreatmentLine;
-use App\Services\MetricService;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Cache;
@@ -20,14 +15,13 @@ class DemoSeeder extends Seeder
 {
     public function run(): void
     {
-
-        $inlet = Node::create(['name' => "Inlet", 'node_type' => NodeTypeEnum::INLET]);
-        $flowRate = Metric::create(['name' => 'Flow Rate', 'alias' => MetricAliasEnum::FLOW_RATE]);
-        $waterLevel = Metric::create(['name' => 'Water Level', 'alias' => MetricAliasEnum::WATER_LEVEL]);
-        $waterTemp = Metric::create(['name' => 'Water Temperature', 'alias' => MetricAliasEnum::WATER_TEMPERATURE]);
-        $phLevel = Metric::create(['name' => 'pH Level', 'alias' => MetricAliasEnum::PH_LEVEL]);
-        $gpsLat = Metric::create(['name' => 'lat', 'alias' => MetricAliasEnum::GPS_LAT]);
-        $gpsLng = Metric::create(['name' => 'lng', 'alias' => MetricAliasEnum::GPS_LNG]);
+        Metric::create(['name' => 'Flow Rate', 'alias' => MetricAliasEnum::FLOW_RATE]);
+        Metric::create(['name' => 'Water Level', 'alias' => MetricAliasEnum::WATER_LEVEL]);
+        Metric::create(['name' => 'Water Temperature', 'alias' => MetricAliasEnum::WATER_TEMPERATURE]);
+        Metric::create(['name' => 'pH Level', 'alias' => MetricAliasEnum::PH_LEVEL]);
+        Metric::create(['name' => 'Latitude', 'alias' => MetricAliasEnum::GPS_LAT]);
+        Metric::create(['name' => 'Longitude', 'alias' => MetricAliasEnum::GPS_LNG]);
+        Metric::create(['name' => 'Camera', 'alias' => MetricAliasEnum::CAMERA]);
 
         Metric::create(['name' => 'CPU', 'alias' => MetricAliasEnum::CPU]);
         Metric::create(['name' => 'Network Packets In', 'alias' => MetricAliasEnum::NETWORK_PACKETS_IN]);

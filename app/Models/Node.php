@@ -37,10 +37,6 @@ class Node extends Authenticatable
         return $this->hasMany(NodeSetting::class);
     }
 
-    public function isTank(): bool {
-        return in_array($this->node_type, [NodeTypeEnum::SEDIMENTATION_TANK, NodeTypeEnum::DIGESTION_TANK, NodeTypeEnum::AERATION_TANK]);
-    }
-
     public static function findByName(string $name): ?Node {
         $node = Node::where('name', $name)->first();
         if (!$node) {

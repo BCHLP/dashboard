@@ -7,9 +7,11 @@ use App\Models\Datapoint;
 use App\Models\Metric;
 use App\Models\MqttAudit;
 use App\Models\Node;
+use App\Models\NodePhoto;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 use PhpMqtt\Client\Exceptions\ConfigurationInvalidException;
 use PhpMqtt\Client\Exceptions\ConnectingToBrokerFailedException;
 use PhpMqtt\Client\Exceptions\DataTransferException;
@@ -85,7 +87,6 @@ class MqttCommand extends Command
                 if ($metricKey === 'gps') {
                     // gps is handled slightly differently
 
-
                     $lat = $metrics->where('alias', MetricAliasEnum::GPS_LAT->value)->first();
                     $lng = $metrics->where('alias', MetricAliasEnum::GPS_LNG->value)->first();
 
@@ -111,6 +112,17 @@ class MqttCommand extends Command
                 $metric = $metrics->where('alias', $metricKey)->first();
 
                 if ($metric) {
+
+                    if ($metricKey === 'camera') {
+
+                        $filename = Str::uuid()->toString() . ".png";
+
+                        NodePhoto::create([
+                            'node_id' => $sensor->id,
+                            'location' => $metricValue['camera'],
+                        ]);
+                    }
+
                     Datapoint::create([
                         'source_id' => $sensor->id,
                         'source_type' => Node::class,

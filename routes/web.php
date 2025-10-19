@@ -3,6 +3,7 @@
 use App\Enums\PermissionEnum;
 use App\Http\Controllers\Auth\VoiceRecognitionController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\MediaController;
 use App\Http\Controllers\SensorController;
 use App\Http\Controllers\ServerController;
 use App\Http\Controllers\UserController;
@@ -19,6 +20,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/', DashboardController::class)->name('home');
     Route::resource('servers', ServerController::class);
     Route::resource('sensors', SensorController::class);
+    Route::get('media/{path}', MediaController::class)->where(['path' => '(.*)'])->name('media');
 
     Route::get('/voice/register', [VoiceRecognitionController::class, 'index'])
         ->name('voice.register')

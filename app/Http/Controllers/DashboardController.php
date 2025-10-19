@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Enums\NodeTypeEnum;
+use App\Http\Resources\NodePhotoResource;
 use App\Http\Resources\NodeResource;
 use App\Models\Datapoint;
 use App\Models\Node;
+use App\Models\NodePhoto;
 use Inertia\Inertia;
 class DashboardController extends Controller
 {
@@ -13,6 +15,7 @@ class DashboardController extends Controller
     {
 
         $node = Node::with('metrics')->where('name', 'SEN-001')->first();
+        $photo = NodePhoto::where('node_id', $node->id)->latest()->first();
 
         $datapoints = [];
         if ($node) {
@@ -38,6 +41,7 @@ class DashboardController extends Controller
         return Inertia::render('dashboard', [
             'node' => $node,
             'datapoints' => $datapoints,
+            'photo' => NodePhotoResource::make($photo),
         ]);
     }
 }

@@ -13,6 +13,8 @@ enum MetricAliasEnum: string
     case GPS_LAT = 'lat';
     case GPS_LNG = 'lng';
 
+    case CAMERA = 'camera';
+
     case CPU = 'cpu';
     case NETWORK_BYTES_IN = 'network_bytes_in';
     case NETWORK_BYTES_OUT = 'network_bytes_out';
