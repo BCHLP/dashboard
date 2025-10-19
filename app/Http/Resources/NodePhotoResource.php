@@ -19,6 +19,7 @@ class NodePhotoResource extends JsonResource
             'face_detected' => $this->face_detected,
             'node_id' => $this->node_id,
             'node' => new NodeResource($this->whenLoaded('node')),
+            'created_at' => $this->created_at,
         ];
     }
 }

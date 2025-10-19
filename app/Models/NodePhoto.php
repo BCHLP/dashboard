@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\NodePhotoCreatedEvent;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,6 +15,10 @@ class NodePhoto extends Model
         'node_id',
         'location',
         'face_detected',
+    ];
+
+    protected $dispatchesEvents = [
+        'created'=> NodePhotoCreatedEvent::class,
     ];
 
     public function node(): BelongsTo

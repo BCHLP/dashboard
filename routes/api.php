@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\DashboardController;
 use App\Http\Controllers\API\DatapointController;
 use App\Http\Controllers\API\FingerprintController;
 use App\Http\Controllers\API\MqttAuditController;
@@ -15,7 +16,10 @@ Route::name('api.')->middleware(['auth:sanctum'])->group(function () {
 
 });
 
-Route::post('fingerprint', FingerprintController::class)->middleware('web');
-Route::post('/voice/compare', [UserVoiceController::class, 'compare'])
-    ->name('voice.compare')
-    ->middleware('web');
+Route::middleware('web')->group(function () {
+    Route::post('fingerprint', FingerprintController::class);
+    Route::post('/voice/compare', [UserVoiceController::class, 'compare'])
+        ->name('voice.compare');
+    Route::post('/dashboard/capture/image', [DashboardController::class, 'captureImage']);
+
+});

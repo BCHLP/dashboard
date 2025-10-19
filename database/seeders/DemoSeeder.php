@@ -15,13 +15,18 @@ class DemoSeeder extends Seeder
 {
     public function run(): void
     {
-        Metric::create(['name' => 'Flow Rate', 'alias' => MetricAliasEnum::FLOW_RATE]);
-        Metric::create(['name' => 'Water Level', 'alias' => MetricAliasEnum::WATER_LEVEL]);
-        Metric::create(['name' => 'Water Temperature', 'alias' => MetricAliasEnum::WATER_TEMPERATURE]);
-        Metric::create(['name' => 'pH Level', 'alias' => MetricAliasEnum::PH_LEVEL]);
-        Metric::create(['name' => 'Latitude', 'alias' => MetricAliasEnum::GPS_LAT]);
-        Metric::create(['name' => 'Longitude', 'alias' => MetricAliasEnum::GPS_LNG]);
-        Metric::create(['name' => 'Camera', 'alias' => MetricAliasEnum::CAMERA]);
+        $sensor = Node::create(['name' => 'SEN-001', 'node_type' => NodeTypeEnum::SENSOR]);
+
+        $metrics = [];
+        $metrics[] = Metric::create(['name' => 'Water Temperature', 'alias' => MetricAliasEnum::WATER_TEMPERATURE]);
+        $metrics[] = Metric::create(['name' => 'pH Level', 'alias' => MetricAliasEnum::PH_LEVEL]);
+        $metrics[] = Metric::create(['name' => 'Latitude', 'alias' => MetricAliasEnum::GPS_LAT]);
+        $metrics[] = Metric::create(['name' => 'Longitude', 'alias' => MetricAliasEnum::GPS_LNG]);
+        $metrics[] = Metric::create(['name' => 'Camera', 'alias' => MetricAliasEnum::CAMERA]);
+
+        foreach($metrics as $metric) {
+            $sensor->metrics()->attach($metric);
+        }
 
         Metric::create(['name' => 'CPU', 'alias' => MetricAliasEnum::CPU]);
         Metric::create(['name' => 'Network Packets In', 'alias' => MetricAliasEnum::NETWORK_PACKETS_IN]);

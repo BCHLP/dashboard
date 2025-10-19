@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             DemoSeeder::class,
             // MqttAuditSeeder::class,
-            UserFingerprintSeeder::class,
+            // UserFingerprintSeeder::class,
         ]);
     }
 }

@@ -5,10 +5,10 @@ namespace App\Enums;
 
 enum MetricAliasEnum: string
 {
-    case FLOW_RATE = 'fr';
-    case WATER_LEVEL = 'wl';
     CASE WATER_TEMPERATURE = 'temp';
     CASE PH_LEVEL = 'pH';
+    CASE PRESSURE = 'MPa';
+    CASE ORB = 'mV';
 
     case GPS_LAT = 'lat';
     case GPS_LNG = 'lng';

@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Actions\CreateNodePhoto;
 use App\Enums\MetricAliasEnum;
 use App\Models\Datapoint;
 use App\Models\Metric;
@@ -54,7 +55,7 @@ class MqttCommand extends Command
         $mqtt->connect($connectionSettings);
         // $mqtt->publish('php-mqtt/client/test', 'Hello World!', 0);
 
-        $mqtt->subscribe("/metrics/send/up", function(string $topic, string $message) {
+        $mqtt->subscribe("/application/1/device/SEN-001/up", function(string $topic, string $message) {
 
             $this->info("Topic: $topic");
             $this->info("Message: $message");
@@ -115,12 +116,9 @@ class MqttCommand extends Command
 
                     if ($metricKey === 'camera') {
 
-                        $filename = Str::uuid()->toString() . ".png";
-
-                        NodePhoto::create([
-                            'node_id' => $sensor->id,
-                            'location' => $metricValue['camera'],
-                        ]);
+                        $createNodePhoto = app(CreateNodePhoto::class);
+                        $createNodePhoto($metricValue, $sensor, false);
+                        continue;
                     }
 
                     Datapoint::create([
@@ -134,7 +132,9 @@ class MqttCommand extends Command
             }
         });
 
+        $this->line(($mqtt->isConnected() ? "Connected" : "Disconnected"));
         $mqtt->loop(true);
+
         $mqtt->disconnect();
     }
 }

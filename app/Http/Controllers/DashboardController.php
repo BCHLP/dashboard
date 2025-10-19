@@ -41,7 +41,7 @@ class DashboardController extends Controller
         return Inertia::render('dashboard', [
             'node' => $node,
             'datapoints' => $datapoints,
-            'photo' => NodePhotoResource::make($photo),
+            'photo' => ($photo ? NodePhotoResource::make($photo) : []),
         ]);
     }
 }

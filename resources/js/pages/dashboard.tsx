@@ -7,6 +7,7 @@ import '@patternfly/react-core/dist/styles/base-no-reset.css';
 import { useEcho } from '@laravel/echo-react';
 import { Camera, Droplets, MapPin } from 'lucide-react';
 import { Map, AdvancedMarker, MapCameraChangedEvent, useMap } from '@vis.gl/react-google-maps';
+import axios from 'axios';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -37,11 +38,12 @@ type Photo = {
     id: number;
     path: string;
     face_detected: boolean;
+    created_at: string;
 };
 
 const GaugeChart = ({ value, min, max, label, unit, color }) => {
-    const percentage = ((value - min) / (max - min)) * 100;
-    const angle = (percentage / 100) * 180 - 90;
+    const percentage = (value === min ? 0.01 : ((value - min) / (max - min)) * 100);
+    const angle = (percentage == 0 ? 0 : (percentage / 100) * 180 - 90);
 
     return (
         <div className="flex h-full flex-col items-center justify-center overflow-hidden rounded-lg bg-white p-4 shadow-lg dark:bg-gray-900">
@@ -84,30 +86,6 @@ const GaugeChart = ({ value, min, max, label, unit, color }) => {
         </div>
     );
 };
-
-const WaterTank = ({ level }) => {
-    return (
-        <div className="flex h-full flex-col rounded-lg bg-white p-6 shadow-lg dark:bg-gray-900">
-            <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-700 dark:text-gray-200">
-                <Droplets className="h-5 w-5" />
-                Water Tank
-            </h3>
-            <div className="flex flex-1 items-center justify-center gap-8">
-                <div className="relative h-24 w-64 overflow-hidden rounded-lg border-4 border-gray-700 bg-gray-100 dark:border-gray-400 dark:bg-gray-800">
-                    <div className="absolute bottom-0 w-full bg-blue-500 transition-all duration-1000" style={{ height: `${level}%` }}>
-                        <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-400 opacity-30"></div>
-                    </div>
-                    <div className="absolute inset-0 flex items-center justify-center"></div>
-                </div>
-                <div className="text-center">
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Current Level</div>
-                    <div className="text-2xl font-semibold text-gray-800 dark:text-gray-100">{level}%</div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
 const LocationMap = ({ lat, lng }) => {
     return (
         <div className="flex h-full flex-col rounded-lg bg-white p-6 shadow-lg dark:bg-gray-900">
@@ -138,18 +116,43 @@ const LocationMap = ({ lat, lng }) => {
     );
 };
 
-const SecurityCamera = (photo: Photo) => {
-    console.log("photo", photo.photo);
+const SecurityCamera = ({ photo, handleCapture, disableCapture }:
+                        { photo?: Photo; handleCapture: () => void, disableCapture:boolean }) => {
+    console.log("photo", photo);
+
+    const date = new Date(photo?.created_at ?? new Date());
+// Format as day of month, Hour:minute:second
+    const day = date.getDate();
+    const month = date.toLocaleString('en-US', { month: 'short' });
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+
+    const formatted = `${day} ${month} ${year}, ${hours}:${minutes}:${seconds}`;
+
+
+
     return (
         <div className="flex h-full flex-col rounded-lg bg-white p-6 shadow-lg dark:bg-gray-900">
-            <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-700 dark:text-gray-200">
-                <Camera className="h-5 w-5" />
-                Security Camera
-            </h3>
+            <div className="mb-4 flex items-center justify-between">
+                <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-700 dark:text-gray-200">
+                    <Camera className="h-5 w-5" />
+                    Security Camera
+                </h3>
+                <button
+                    onClick={handleCapture}
+                    disabled={disableCapture}
+                    className="flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <Camera className="h-4 w-4" />
+                    Capture
+                </button>
+            </div>
             <div className="relative flex-1 overflow-hidden rounded-lg bg-gray-800">
-                <div className="absolute inset-0 bg-gradient-to-br from-gray-700 to-gray-900">
+                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900">
                     {photo ? (
-                        <img src={photo.photo.path}  alt={"Capture"}/>
+                        <img src={photo.path} alt={"Capture"} className="max-h-full max-w-full object-contain" />
                     ) : (
                         <svg className="h-full w-full opacity-20" viewBox="0 0 400 300">
                             <rect x="50" y="80" width="120" height="140" fill="#4b5563" />
@@ -159,12 +162,14 @@ const SecurityCamera = (photo: Photo) => {
                         </svg>
                     )}
                 </div>
+                {photo?.face_detected && (
                 <div className="absolute top-2 left-2 flex items-center gap-1 rounded bg-red-600 px-2 py-1 text-xs text-white">
                     <div className="h-2 w-2 animate-pulse rounded-full bg-white"></div>
-                    LIVE
+                    PERSON DETECTED
                 </div>
+                    )}
                 <div className="bg-opacity-60 absolute top-2 right-2 rounded bg-black px-2 py-1 font-mono text-xs text-white">
-                    {new Date().toLocaleTimeString()}
+                    {formatted}
                 </div>
                 <div className="absolute inset-0 border-2 border-green-500 opacity-30"></div>
             </div>
@@ -175,10 +180,15 @@ const SecurityCamera = (photo: Photo) => {
 const Dashboard = (props: Props) => {
     console.log(props);
 
-    const [waterLevel, setWaterLevel] = useState(
+    const [pressure, setPressure] = useState(
         props.datapoints.find((d) => {
-            return d.alias == 'wl';
-        })?.y ?? 80,
+            return d.alias == 'MPa';
+        })?.y ?? 0,
+    );
+    const [orb, setOrb] = useState(
+        props.datapoints.find((d) => {
+            return d.alias == 'mV';
+        })?.y ?? -1100,
     );
     const [temperature, setTemperature] = useState(
         props.datapoints.find((d) => {
@@ -201,6 +211,29 @@ const Dashboard = (props: Props) => {
         })?.y ?? 0,
     );
 
+    const [photo, setPhoto] = useState(
+        props.photo,
+    );
+
+    const [disableCapture, setDisableCapture] = useState(false);
+
+    const handleCapture = () => {
+        // Add your capture logic here
+        console.log("Capture button clicked");
+        setDisableCapture(true);
+
+        // send axios post request to /dashboard/capture/image
+        axios.post('/api/dashboard/capture/image', {
+            node_id: props.node.id
+        }).then(response => {
+            console.log("Capture successful", response.data);
+        }).catch(error => {
+            console.error("Capture failed", error);
+            setDisableCapture(false);
+        });
+
+    };
+
     useEcho(`NewDatapointEvent.${props.node.id}`, ['DatapointCreatedEvent'], (e: Datapoint) => {
         switch (e.alias) {
             case 'pH':
@@ -209,8 +242,11 @@ const Dashboard = (props: Props) => {
             case 'temp':
                 setTemperature(e.y);
                 break;
-            case 'wl':
-                setWaterLevel(e.y);
+            case 'MPa':
+                setPressure(e.y);
+                break;
+            case 'mV':
+                setOrb(e.y);
                 break;
             case 'lat':
                 setLat(e.y);
@@ -219,6 +255,11 @@ const Dashboard = (props: Props) => {
                 setLng(e.y);
                 break;
         }
+    });
+
+    useEcho(`NewNodePhoto.${props.node.id}`, ['NodePhotoCreatedEvent'], (e: Photo) => {
+        setPhoto(e);
+        setDisableCapture(false);
     });
 
     return (
@@ -234,12 +275,13 @@ const Dashboard = (props: Props) => {
 
                     {/* Middle Row - Tank and Camera - 1/3 height */}
                     <div className="mb-4 grid flex-1 grid-cols-2 gap-6">
-                        <WaterTank level={waterLevel} />
-                        <SecurityCamera photo={props.photo} />
+                        <GaugeChart value={pressure} min={0} max={1.6} label="Water Pressure" unit="MPa" color="#06b6d4" />
+                        <GaugeChart value={orb} min={-1100} max={1100} label="Oxidation-Reduction Potential" unit="mV" color="#ec4899" />
+
                     </div>
 
-                    {/* Bottom Row - Full Width Map - 1/3 height */}
-                    <div className="flex-1">
+                    <div className="mb-4 grid flex-1 grid-cols-2 gap-6">
+                        <SecurityCamera photo={photo}  handleCapture={handleCapture} disableCapture={disableCapture} />
                         <LocationMap lat={lat} lng={lng} />
                     </div>
                 </div>

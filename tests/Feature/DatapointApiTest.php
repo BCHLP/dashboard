@@ -39,7 +39,7 @@ test('a server can store one or more datapoints', function () {
                 'value' => 100,
             ],[
                 'time' => $time,
-                'metric' => MetricAliasEnum::WATER_LEVEL->value,
+                'metric' => MetricAliasEnum::PH_LEVEL->value,
                 'value' => 75,
             ]
         ]
