@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 namespace App\Services;
+use App\Interfaces\AgentAiInterface;
 use App\Mcp\Tools\GetRecentFailedAttempts;
 use App\Mcp\Tools\GetUserLoginHistory;
 use App\Mcp\Tools\RecordMFADecision;
@@ -10,7 +11,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use OpenAI\Laravel\Facades\OpenAI;
-class ChatGptMfaService
+class ChatGptMfaService implements AgentAiInterface
 {
     public function decide(int $userId, UserFingerprint $fingerprint, string $eventId): array
     {
@@ -85,7 +86,7 @@ If there is little or no user history, treat this as **high risk** due to lack o
 1. Call `GetUserLoginHistory` (30 days) and `GetRecentFailedAttempts` (24 hours)
 2. Analyze patterns and anomalies
 3. Assign a risk level
-4. Always call `RecordMFADecision` with your final decision before finishing
+4. **MANDATORY: Call `RecordMFADecision` with your final decision. This is required and must be done before your response completes. Do not finish without calling this tool.**
 
 **Output Format:**
 - Risk Level: [LOW/MEDIUM/HIGH]
@@ -93,6 +94,8 @@ If there is little or no user history, treat this as **high risk** due to lack o
 - Key Factors: bullet list
 - Reasoning: short paragraph
 - Confidence: [High/Medium/Low]
+
+**CRITICAL INSTRUCTION:** You must always call the RecordMFADecision tool. Your response is incomplete until this tool has been called. Never finish without making this tool call.
 PROMPT;
 
         $max = 5;
@@ -116,15 +119,21 @@ PROMPT;
 
         $totpRequired = false;
         $voiceRequired = false;
+        $reasoning = '';
+        $recordMFAWasCalled = false;
 
 
+
+        ray("Start of Chat GPT conversation");
         do {
             $toolMessages = [];
 
+            ray("Chat GPT Response", $response);
+
             foreach ($response->choices as $choice) {
                 $msg = $choice->message;
-                if (filled($msg->content)) {
-                    ray("CHATGPT: " . $msg->content);
+                if (filled($msg->content) && empty($reasoning)) {
+                    $reasoning = $msg->content;
                 }
 
                 // Save assistant message
@@ -153,10 +162,17 @@ PROMPT;
                             $result = $this->getUserLoginHistory($args);
                             break;
                         case 'RecordMFADecision':
+                            ray("Chat gpt recording a decision", $args);
+                            if (!isset($args['totp']) || !isset($args['voice'])) {
+                                ray("chat gpt error:", $toolCall)->red();
+                                break;
+                            }
                             $totpRequired = $args['totp'];
                             $voiceRequired = $args['voice'];
                             $result = (new RecordMFADecision())->handle($args);
                             break;
+                        default:
+                            ray("Tool name " . $toolCall->function->name . " does not exist?")->red();
                     }
 
                     $toolMessages[] = [
@@ -167,8 +183,26 @@ PROMPT;
                 }
             }
 
+            // Check if RecordMFADecision was called
+
+            foreach ($response->choices as $choice) {
+                foreach ($choice->message->toolCalls ?? [] as $toolCall) {
+                    if ($toolCall->function->name === 'RecordMFADecision') {
+                        $recordMFAWasCalled = true;
+                    }
+                }
+            }
+
             if (!empty($toolMessages)) {
                 $conversation = array_merge($conversation, $toolMessages);
+
+                // If RecordMFADecision wasn't called but we have reasoning, prompt for it
+                if (!$recordMFAWasCalled && $count < $max) {
+                    $conversation[] = [
+                        'role' => 'user',
+                        'content' => 'You have completed your analysis. Now you MUST call the RecordMFADecision tool with your decision (totp and voice booleans based on your risk assessment). This is required before completing.',
+                    ];
+                }
 
                 // Send next step to GPT
                 $response = OpenAI::chat()->create([
@@ -177,7 +211,21 @@ PROMPT;
                     'tools' => $tools,
                 ]);
             } else {
-                break;
+                // No tool calls made - if RecordMFADecision wasn't called, prompt for it
+                if (!$recordMFAWasCalled && $count < $max) {
+                    $conversation[] = [
+                        'role' => 'user',
+                        'content' => 'You have completed your analysis. Now you MUST call the RecordMFADecision tool with your decision (totp and voice booleans based on your risk assessment).',
+                    ];
+
+                    $response = OpenAI::chat()->create([
+                        'model' => 'gpt-4o-mini',
+                        'messages' => $conversation,
+                        'tools' => $tools,
+                    ]);
+                } else {
+                    break;
+                }
             }
 
             if ($count == $max) {
@@ -190,7 +238,7 @@ PROMPT;
         return [
             'voice' => $voiceRequired,
             'totp' => $totpRequired,
-            'reasoning' => Arr::get($response->choices[0]->message, 'content')
+            'reasoning' => $reasoning,
         ];
     }
 

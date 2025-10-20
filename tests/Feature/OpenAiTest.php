@@ -29,7 +29,7 @@ describe("run Open AI tests", function() {
             ->and($decision)->toHaveKeys(['totp', 'voice'])
             ->and($decision['totp'])->toBeTrue()
             ->and($decision['voice'])->toBeTrue();
-    });
+    })->skip("This test makes real calls to OpenAI. Do not include in CI pipeline");
 
     it('evaluates adaptive MFA decisions using GPT', function () {
         // Arrange
@@ -73,7 +73,7 @@ describe("run Open AI tests", function() {
             ->and($decision['decision'])->toBe('require_mfa')
             ->and($decision['methods'])->toContain('totp')
             ->and($decision['confidence'])->toBeGreaterThan(0.5);
-    });
+    })->skip("This test makes real calls to OpenAI. Do not include in CI pipeline");
 
     it('simulates GPT using MCP tools to make an adaptive MFA decision', function () {
         // Arrange
@@ -156,5 +156,5 @@ describe("run Open AI tests", function() {
             ->and($decision['tool_calls']['RecordMFADecision']['recorded'])->toBeTrue();
 
         // Simulate that GPT recorded its decision
-    });
-})->skip("These tests make real calls to OpenAI at the momemnt, faker not working. Will fix. ");
+    })->skip("This test makes real calls to OpenAI. Do not include in CI pipeline");
+});

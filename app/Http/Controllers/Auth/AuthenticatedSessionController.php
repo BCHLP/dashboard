@@ -87,6 +87,7 @@ class AuthenticatedSessionController extends Controller
         }
 
         if (!config('scada.amfa.enabled')) {
+            $userLoginAudit($request->email, true);
             return redirect()->route('home');
         }
 

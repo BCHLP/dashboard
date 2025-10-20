@@ -30,7 +30,8 @@ class UserFingerprint extends Model
         'is_mobile',
         'user_agent',
         'session_id',
-        'is_suspicious'
+        'is_suspicious',
+        'created_at'
     ];
 
     protected $casts = [

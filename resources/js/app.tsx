@@ -46,7 +46,7 @@ createInertiaApp({
         root.render(
             <MfaProvider>
                 <FingerprintProvider endpoint="/api/fingerprint" csrfToken={getCsrfToken()} autoCollectOnMount={true}>
-                    <APIProvider apiKey={'AIzaSyDX0I9nlNK5SfmzWLDU0vnqr83Aj8HTqnY'} onLoad={() => console.log('Maps API has loaded.')}>
+                    <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} onLoad={() => console.log('Maps API has loaded.', import.meta.env.VITE_GOOGLE_MAPS_API_KEY)}>
                         <App {...props} />
                     </APIProvider>
                 </FingerprintProvider>
