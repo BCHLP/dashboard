@@ -11,7 +11,7 @@ class MfaMiddleware
     public function handle(Request $request, Closure $next)
     {
 
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             abort(401);
         }
 
@@ -28,9 +28,9 @@ class MfaMiddleware
             return redirect()->route('totp.register');
         }
 
-//        if (!VoiceRecognitionService::isVoiceAuthenticated()){
-//            return redirect()->route('voice');
-//        }
+        //        if (!VoiceRecognitionService::isVoiceAuthenticated()){
+        //            return redirect()->route('voice');
+        //        }
 
         return $next($request);
     }

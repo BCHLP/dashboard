@@ -1,33 +1,36 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import React from 'react';
-import { useState, useMemo, useCallback } from 'react';
+import { useEchoModel } from '@laravel/echo-react';
 import '@patternfly/react-core/dist/styles/base-no-reset.css';
-import { useEchoModel } from "@laravel/echo-react";
-
+import React, { useMemo, useState } from 'react';
 
 // // eslint-disable-next-line patternfly-react/import-tokens-icons
 // import { RegionsIcon as Icon1 } from '@patternfly/react-icons';
 // // eslint-disable-next-line patternfly-react/import-tokens-icons
 // import { FolderOpenIcon as Icon2 } from '@patternfly/react-icons';
 
-import { TbAntenna } from "react-icons/tb";
-import { CiServer, CiRouter, CiSettings } from "react-icons/ci";
-import { RiLineChartLine } from "react-icons/ri";
-import { ChartArea, ChartContainer, ChartGroup, ChartLabel, ChartVoronoiContainer } from '@patternfly/react-charts/victory';
-import { Tabs, Tab, TabTitleText, TabTitleIcon } from '@patternfly/react-core';
+import { ChartArea, ChartGroup, ChartVoronoiContainer } from '@patternfly/react-charts/victory';
+import { Tab, Tabs, TabTitleIcon, TabTitleText } from '@patternfly/react-core';
+import { CiServer, CiSettings } from 'react-icons/ci';
+import { RiLineChartLine } from 'react-icons/ri';
 
 import {
     ColaLayout,
+    ComponentFactory,
     DefaultEdge,
     DefaultGroup,
     DefaultNode,
-    EdgeStyle,
+    Graph,
     GraphComponent,
+    Layout,
+    LayoutFactory,
+    Model,
     ModelKind,
+    Node,
     NodeModel,
     NodeShape,
+    NodeStatus,
     SELECTION_EVENT,
     TopologySideBar,
     TopologyView,
@@ -35,9 +38,8 @@ import {
     VisualizationProvider,
     VisualizationSurface,
     withSelection,
-    WithSelectionProps
+    WithSelectionProps,
 } from '@patternfly/react-topology';
-import { ComponentFactory, Graph, Layout, LayoutFactory, Model, Node, NodeStatus } from '@patternfly/react-topology';
 
 interface CustomNodeProps {
     element: Node;
@@ -55,14 +57,14 @@ const BadgeColors = [
         name: 'A',
         badgeColor: '#ace12e',
         badgeTextColor: '#0f280d',
-        badgeBorderColor: '#486b00'
+        badgeBorderColor: '#486b00',
     },
     {
         name: 'B',
         badgeColor: '#F2F0FC',
         badgeTextColor: '#5752d1',
-        badgeBorderColor: '#CBC1FF'
-    }
+        badgeBorderColor: '#CBC1FF',
+    },
 ];
 
 const CustomNode: React.FC<CustomNodeProps & WithSelectionProps> = ({ element, onSelect, selected }) => {
@@ -138,24 +140,24 @@ type Sensor = {
     id: number;
     name: string;
     metrics: Metric[];
-}
+};
 
 type Server = {
     id: number;
     name: string;
     metrics: Metric[];
-}
+};
 
 type Router = {
     id: number;
     name: string;
     metrics: Metric[];
-}
+};
 
 type Metric = {
     id: number;
     name: string;
-}
+};
 
 type Datapoint = {
     x: number;
@@ -169,97 +171,94 @@ type Props = {
     sensors: Sensor[];
     servers: Server[];
     routers: Router[];
-    datapoints:Datapoint[];
-}
+    datapoints: Datapoint[];
+};
 
-export default function Dashboard (props:Props) {
+export default function Dashboard(props: Props) {
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [activeTabKey, setActiveTabKey] = useState<string | number>(0);
     const [datapoints, setDatapoints] = useState<Datapoint[]>(props.datapoints);
     // Toggle currently active tab
-    const handleTabClick = (
-        event: React.MouseEvent<any> | React.KeyboardEvent | MouseEvent,
-        tabIndex: string | number
-    ) => {
+    const handleTabClick = (event: React.MouseEvent<any> | React.KeyboardEvent | MouseEvent, tabIndex: string | number) => {
         setActiveTabKey(tabIndex);
     };
 
-    useEchoModel("App.Models.Node", "1", ["App\\Events\\DatapointCreatedEvent"], (e) => {
+    useEchoModel('App.Models.Node', '1', ['App\\Events\\DatapointCreatedEvent'], (e) => {
         console.log(e);
-        setDatapoints(prev => {
+        setDatapoints((prev) => {
             const newArray = [...prev, e];
             return newArray.length > 60 ? newArray.slice(1) : newArray;
         });
-
     });
 
-    const NODES: NodeModel[] = useMemo(() => [
-        // {
-        //     id: 'server-0',
-        //     type: 'node',
-        //     label: 'MQTT Proxy',
-        //     width: NODE_DIAMETER,
-        //     height: NODE_DIAMETER,
-        //     shape: NodeShape.ellipse,
-        //     status: NodeStatus.danger,
-        //     data: {
-        //         badge: 'B',
-        //         icon: CiServer,
-        //     }
-        // },
-        // {
-        //     id: 'router-0',
-        //     type: 'node',
-        //     label: 'Router',
-        //     width: NODE_DIAMETER,
-        //     height: NODE_DIAMETER,
-        //     shape: NodeShape.hexagon,
-        //     status: NodeStatus.warning,
-        //     data: {
-        //         badge: 'B',
-        //         icon: CiRouter
-        //     }
-        // },
-        // {
-        //     id: 'server-1',
-        //     type: 'node',
-        //     label: 'SCADA',
-        //     width: NODE_DIAMETER,
-        //     height: NODE_DIAMETER,
-        //     shape: NodeShape.octagon,
-        //     status: NodeStatus.success,
-        //     data: {
-        //         badge: 'A',
-        //         icon: CiServer,
-        //     }
-        // },
-        // {
-        //     id: 'Group-1',
-        //     children: ['server-0', 'router-0', 'server-1'],
-        //     type: 'group',
-        //     group: true,
-        //     label: 'Group-1',
-        //     style: {
-        //         padding: 40
-        //     }
-        // },
-        ...props.servers.map((server, index) => ({
-
-            id: server.id,
-            type: 'node',
-            label: server.name,
-            width: NODE_DIAMETER,
-            height: NODE_DIAMETER,
-            shape: NodeShape.rhombus,
-            status: NodeStatus.info,
-            data: {
-                badge: 'A',
-                icon: CiServer,
-                metrics: server.metrics,
-            }
-        }))
-
-    ], [props.servers]);
+    const NODES: NodeModel[] = useMemo(
+        () => [
+            // {
+            //     id: 'server-0',
+            //     type: 'node',
+            //     label: 'MQTT Proxy',
+            //     width: NODE_DIAMETER,
+            //     height: NODE_DIAMETER,
+            //     shape: NodeShape.ellipse,
+            //     status: NodeStatus.danger,
+            //     data: {
+            //         badge: 'B',
+            //         icon: CiServer,
+            //     }
+            // },
+            // {
+            //     id: 'router-0',
+            //     type: 'node',
+            //     label: 'Router',
+            //     width: NODE_DIAMETER,
+            //     height: NODE_DIAMETER,
+            //     shape: NodeShape.hexagon,
+            //     status: NodeStatus.warning,
+            //     data: {
+            //         badge: 'B',
+            //         icon: CiRouter
+            //     }
+            // },
+            // {
+            //     id: 'server-1',
+            //     type: 'node',
+            //     label: 'SCADA',
+            //     width: NODE_DIAMETER,
+            //     height: NODE_DIAMETER,
+            //     shape: NodeShape.octagon,
+            //     status: NodeStatus.success,
+            //     data: {
+            //         badge: 'A',
+            //         icon: CiServer,
+            //     }
+            // },
+            // {
+            //     id: 'Group-1',
+            //     children: ['server-0', 'router-0', 'server-1'],
+            //     type: 'group',
+            //     group: true,
+            //     label: 'Group-1',
+            //     style: {
+            //         padding: 40
+            //     }
+            // },
+            ...props.servers.map((server, index) => ({
+                id: server.id,
+                type: 'node',
+                label: server.name,
+                width: NODE_DIAMETER,
+                height: NODE_DIAMETER,
+                shape: NodeShape.rhombus,
+                status: NodeStatus.info,
+                data: {
+                    badge: 'A',
+                    icon: CiServer,
+                    metrics: server.metrics,
+                },
+            })),
+        ],
+        [props.servers],
+    );
 
     const controller = useMemo(() => {
         const model: Model = {
@@ -268,8 +267,8 @@ export default function Dashboard (props:Props) {
             graph: {
                 id: 'g1',
                 type: 'graph',
-                layout: 'Cola'
-            }
+                layout: 'Cola',
+            },
         };
 
         const newController = new Visualization();
@@ -284,20 +283,10 @@ export default function Dashboard (props:Props) {
     }, [NODES]);
 
     const topologySideBar = (
-        <TopologySideBar
-            className="topology-example-sidebar"
-            show={selectedIds.length > 0}
-            onClose={() => setSelectedIds([])}
-        >
+        <TopologySideBar className="topology-example-sidebar" show={selectedIds.length > 0} onClose={() => setSelectedIds([])}>
             <div style={{ marginTop: 27, marginLeft: 20, height: '800px' }}>
                 <h1>{NODES.find((node) => node.id === selectedIds[0])?.label}</h1>
-                <Tabs
-                    isFilled
-                    activeKey={activeTabKey}
-                    onSelect={handleTabClick}
-                    aria-label="Tabs in the filled with icons example"
-                    role="region"
-                >
+                <Tabs isFilled activeKey={activeTabKey} onSelect={handleTabClick} aria-label="Tabs in the filled with icons example" role="region">
                     <Tab
                         eventKey={0}
                         title={
@@ -310,28 +299,29 @@ export default function Dashboard (props:Props) {
                         }
                         aria-label="filled tabs with icons content users"
                     >
-
-                        {NODES.find((node) => node.id === selectedIds[0])?.data.metrics.map((metric:Metric) => (
+                        {NODES.find((node) => node.id === selectedIds[0])?.data.metrics.map((metric: Metric) => (
                             <div key={metric.id}>
                                 <div>
                                     <ChartGroup
                                         ariaDesc={metric.name}
-                                        containerComponent={<ChartVoronoiContainer labels={({ datum }) => `${datum.name}: ${datum.y}`} constrainToVisibleArea />}
+                                        containerComponent={
+                                            <ChartVoronoiContainer labels={({ datum }) => `${datum.name}: ${datum.y}`} constrainToVisibleArea />
+                                        }
                                         height={100}
-                                        maxDomain={{y: 100}}
-                                        name={"chart"+metric.id}
+                                        maxDomain={{ y: 100 }}
+                                        name={'chart' + metric.id}
                                         padding={0}
                                         width={400}
                                     >
                                         <ChartArea
-                                            data={datapoints.filter((datapoint) => datapoint.node_id == selectedIds[0] && datapoint.metric_id == metric.id)}
+                                            data={datapoints.filter(
+                                                (datapoint) => datapoint.node_id == selectedIds[0] && datapoint.metric_id == metric.id,
+                                            )}
                                         />
                                     </ChartGroup>
                                 </div>
                             </div>
                         ))}
-
-
                     </Tab>
                     <Tab
                         eventKey={1}
@@ -344,15 +334,9 @@ export default function Dashboard (props:Props) {
                             </>
                         }
                     >
-                        <div style={{ marginLeft: '50px', marginTop: '50px', height: '135px' }}>
-                            The configuration layout will go here
-
-                        </div>
+                        <div style={{ marginLeft: '50px', marginTop: '50px', height: '135px' }}>The configuration layout will go here</div>
                     </Tab>
                 </Tabs>
-
-
-
             </div>
         </TopologySideBar>
     );
@@ -360,9 +344,8 @@ export default function Dashboard (props:Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
-                <div
-                    className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
+            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+                <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
                     <TopologyView sideBar={topologySideBar}>
                         <VisualizationProvider controller={controller}>
                             <VisualizationSurface state={{ selectedIds }} />
@@ -372,4 +355,4 @@ export default function Dashboard (props:Props) {
             </div>
         </AppLayout>
     );
-};
+}

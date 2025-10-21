@@ -2,11 +2,10 @@
 
 use App\Enums\RoleEnum;
 use App\Services\VoiceRecognitionService;
-use function Pest\Laravel\actingAs;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
-test('you cannot see the users page without the User Management role', function() {
+test('you cannot see the users page without the User Management role', function () {
 
     $plep = createUser();
     $this->actingAs($plep);
@@ -22,7 +21,7 @@ test('you cannot see the users page without the User Management role', function(
 
 });
 
-test('you can see the users page with the User Management role', function() {
+test('you can see the users page with the User Management role', function () {
 
     $manager = createUser(RoleEnum::USER_MANAGEMENT);
     $this->actingAs($manager);
@@ -35,6 +34,5 @@ test('you can see the users page with the User Management role', function() {
         ->and($this->post(route('users.store'))->content())->not->toContain('This action is unauthorized')
         ->and($this->put(route('users.update', $manager))->content())->not->toContain('This action is unauthorized')
         ->and($this->delete(route('users.destroy', $manager))->content())->not->toContain('This action is unauthorized');
-
 
 });

@@ -13,7 +13,7 @@ class BaselineCommand extends Command
 
     public function handle(): void
     {
-        $service = new BaselineService();
+        $service = new BaselineService;
         $service->createLoginAuditDatapoints()
             ->execute();
     }

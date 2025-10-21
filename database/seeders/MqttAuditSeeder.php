@@ -8,10 +8,8 @@ use App\Models\Datapoint;
 use App\Models\Metric;
 use App\Models\MqttAudit;
 use App\Models\Node;
-use App\Models\UserFingerprint;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class MqttAuditSeeder extends Seeder
 {
@@ -39,21 +37,21 @@ class MqttAuditSeeder extends Seeder
                     'client_id' => $sensor->id,
                     'when' => $startDate->format('Y-m-d H:i:s'),
                     'unusual' => false,
-                    'message' => 'Valid certificate'
+                    'message' => 'Valid certificate',
                 ]);
 
                 MqttAudit::create([
                     'client_id' => $sensor->id,
                     'when' => $startDate->format('Y-m-d H:i:s'),
                     'unusual' => false,
-                    'message' => 'Allowing connection'
+                    'message' => 'Allowing connection',
                 ]);
 
                 MqttAudit::create([
                     'client_id' => $sensor->id,
                     'when' => $startDate->format('Y-m-d H:i:s'),
                     'unusual' => false,
-                    'message' => 'Client connected'
+                    'message' => 'Client connected',
                 ]);
 
                 Datapoint::create([
@@ -63,7 +61,7 @@ class MqttAuditSeeder extends Seeder
                     'time' => $startDate->timestamp,
                     'created_at' => $startDate,
                     'updated_at' => $startDate,
-                    'value' => 1
+                    'value' => 1,
                 ]);
 
                 MqttAudit::create([
@@ -75,7 +73,7 @@ class MqttAuditSeeder extends Seeder
 
                 MqttAudit::create([
                     'client_id' => $sensor->id,
-                    'message' => "Published on metric/send",
+                    'message' => 'Published on metric/send',
                     'unusual' => false,
                     'when' => Carbon::now(),
                 ]);
@@ -87,12 +85,12 @@ class MqttAuditSeeder extends Seeder
                     'time' => $startDate->timestamp,
                     'created_at' => $startDate,
                     'updated_at' => $startDate,
-                    'value' => 1
+                    'value' => 1,
                 ]);
 
                 MqttAudit::create([
                     'client_id' => $sensor->id,
-                    'message' => "Client disconnected",
+                    'message' => 'Client disconnected',
                     'unusual' => false,
                     'when' => Carbon::now(),
                 ]);
@@ -104,7 +102,7 @@ class MqttAuditSeeder extends Seeder
                     'time' => $startDate->timestamp,
                     'created_at' => $startDate,
                     'updated_at' => $startDate,
-                    'value' => 1
+                    'value' => 1,
                 ]);
             }
         }

@@ -6,10 +6,10 @@ use App\Actions\CreateUser;
 use App\Actions\DeleteUser;
 use App\Actions\UpdateUser;
 use App\Http\Resources\UserResource;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Models\Role;
 
 class UserController extends Controller
 {
@@ -19,13 +19,13 @@ class UserController extends Controller
         $users = UserResource::collection($users);
         $users = $users->toArray($request);
 
-
         return Inertia::render('Users/Index', ['users' => $users]);
     }
 
     public function create()
     {
         $roles = Role::all();
+
         return Inertia::render('Users/Create', ['roles' => $roles]);
     }
 
@@ -42,9 +42,7 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'User created successfully.');
     }
 
-    public function show(User $user)
-    {
-    }
+    public function show(User $user) {}
 
     public function edit(User $user)
     {
@@ -54,7 +52,7 @@ class UserController extends Controller
 
         return Inertia::render('Users/Edit', [
             'user' => $userResource->toArray(request()),
-            'roles' => $roles
+            'roles' => $roles,
         ]);
     }
 

@@ -1,15 +1,12 @@
 <?php
 
-
-use App\Models\UserFingerprint;
-use App\Services\AdaptiveMfaService;
 use App\Models\User;
+use App\Models\UserFingerprint;
 use App\Services\ChatGptMfaService;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 
-describe("run Open AI tests", function() {
+describe('run Open AI tests', function () {
 
     test('real OpenAI decision', function () {
         // Arrange
@@ -21,7 +18,7 @@ describe("run Open AI tests", function() {
 
         $eventId = Str::uuid()->toString();
 
-        $service = new ChatGptMfaService();
+        $service = new ChatGptMfaService;
         $decision = $service->decide($user->id, $fingerprint, $eventId);
 
         expect($decision)
@@ -29,7 +26,7 @@ describe("run Open AI tests", function() {
             ->and($decision)->toHaveKeys(['totp', 'voice'])
             ->and($decision['totp'])->toBeTrue()
             ->and($decision['voice'])->toBeTrue();
-    })->skip("This test makes real calls to OpenAI. Do not include in CI pipeline");
+    })->skip('This test makes real calls to OpenAI. Do not include in CI pipeline');
 
     it('evaluates adaptive MFA decisions using GPT', function () {
         // Arrange
@@ -64,7 +61,7 @@ describe("run Open AI tests", function() {
 
         $eventId = Str::uuid()->toString();
 
-        $service = new ChatGptMfaService();
+        $service = new ChatGptMfaService;
         $decision = $service->decide($user->id, $fingerprint, $eventId);
 
         expect($decision)
@@ -73,7 +70,7 @@ describe("run Open AI tests", function() {
             ->and($decision['decision'])->toBe('require_mfa')
             ->and($decision['methods'])->toContain('totp')
             ->and($decision['confidence'])->toBeGreaterThan(0.5);
-    })->skip("This test makes real calls to OpenAI. Do not include in CI pipeline");
+    })->skip('This test makes real calls to OpenAI. Do not include in CI pipeline');
 
     it('simulates GPT using MCP tools to make an adaptive MFA decision', function () {
         // Arrange
@@ -142,7 +139,7 @@ describe("run Open AI tests", function() {
         ]);
 
         $eventId = Str::uuid()->toString();
-        $service = new ChatGptMfaService();
+        $service = new ChatGptMfaService;
         $decision = $service->decide($user->id, $fingerprint, $eventId);
 
         // Assert
@@ -156,5 +153,5 @@ describe("run Open AI tests", function() {
             ->and($decision['tool_calls']['RecordMFADecision']['recorded'])->toBeTrue();
 
         // Simulate that GPT recorded its decision
-    })->skip("This test makes real calls to OpenAI. Do not include in CI pipeline");
+    })->skip('This test makes real calls to OpenAI. Do not include in CI pipeline');
 });

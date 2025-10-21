@@ -1,16 +1,16 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Services;
+
 use App\Interfaces\AgentAiInterface;
 use App\Mcp\Tools\GetRecentFailedAttempts;
 use App\Mcp\Tools\GetUserLoginHistory;
 use App\Mcp\Tools\RecordMFADecision;
 use App\Models\UserFingerprint;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 use OpenAI\Laravel\Facades\OpenAI;
+
 class ChatGptMfaService implements AgentAiInterface
 {
     public function decide(int $userId, UserFingerprint $fingerprint, string $eventId): array
@@ -64,7 +64,7 @@ class ChatGptMfaService implements AgentAiInterface
             ],
         ];
 
-        $systemPrompt = <<<PROMPT
+        $systemPrompt = <<<'PROMPT'
 You are a security analyst specializing in adaptive authentication. Your task is to assess login risk and enforce appropriate MFA.
 
 **Core Principle:**
@@ -122,13 +122,11 @@ PROMPT;
         $reasoning = '';
         $recordMFAWasCalled = false;
 
-
-
-        ray("Start of Chat GPT conversation");
+        ray('Start of Chat GPT conversation');
         do {
             $toolMessages = [];
 
-            ray("Chat GPT Response", $response);
+            ray('Chat GPT Response', $response);
 
             foreach ($response->choices as $choice) {
                 $msg = $choice->message;
@@ -139,7 +137,7 @@ PROMPT;
                 // Save assistant message
                 $conversation[] = [
                     'role' => 'assistant',
-                    'tool_calls' => collect($msg->toolCalls ?? [])->map(fn($tc) => [
+                    'tool_calls' => collect($msg->toolCalls ?? [])->map(fn ($tc) => [
                         'id' => $tc->id,
                         'type' => 'function',
                         'function' => [
@@ -162,17 +160,17 @@ PROMPT;
                             $result = $this->getUserLoginHistory($args);
                             break;
                         case 'RecordMFADecision':
-                            ray("Chat gpt recording a decision", $args);
-                            if (!isset($args['totp']) || !isset($args['voice'])) {
-                                ray("chat gpt error:", $toolCall)->red();
+                            ray('Chat gpt recording a decision', $args);
+                            if (! isset($args['totp']) || ! isset($args['voice'])) {
+                                ray('chat gpt error:', $toolCall)->red();
                                 break;
                             }
                             $totpRequired = $args['totp'];
                             $voiceRequired = $args['voice'];
-                            $result = (new RecordMFADecision())->handle($args);
+                            $result = (new RecordMFADecision)->handle($args);
                             break;
                         default:
-                            ray("Tool name " . $toolCall->function->name . " does not exist?")->red();
+                            ray('Tool name '.$toolCall->function->name.' does not exist?')->red();
                     }
 
                     $toolMessages[] = [
@@ -193,11 +191,11 @@ PROMPT;
                 }
             }
 
-            if (!empty($toolMessages)) {
+            if (! empty($toolMessages)) {
                 $conversation = array_merge($conversation, $toolMessages);
 
                 // If RecordMFADecision wasn't called but we have reasoning, prompt for it
-                if (!$recordMFAWasCalled && $count < $max) {
+                if (! $recordMFAWasCalled && $count < $max) {
                     $conversation[] = [
                         'role' => 'user',
                         'content' => 'You have completed your analysis. Now you MUST call the RecordMFADecision tool with your decision (totp and voice booleans based on your risk assessment). This is required before completing.',
@@ -212,7 +210,7 @@ PROMPT;
                 ]);
             } else {
                 // No tool calls made - if RecordMFADecision wasn't called, prompt for it
-                if (!$recordMFAWasCalled && $count < $max) {
+                if (! $recordMFAWasCalled && $count < $max) {
                     $conversation[] = [
                         'role' => 'user',
                         'content' => 'You have completed your analysis. Now you MUST call the RecordMFADecision tool with your decision (totp and voice booleans based on your risk assessment).',
@@ -242,19 +240,21 @@ PROMPT;
         ];
     }
 
-    private function getRecentFailedAttempts(array $args) : array {
-        $results = (new GetRecentFailedAttempts())->handle($args);
-        foreach($results as $result) {
+    private function getRecentFailedAttempts(array $args): array
+    {
+        $results = (new GetRecentFailedAttempts)->handle($args);
+        foreach ($results as $result) {
             return json_decode($result->content[0]->text, true);
         }
 
         return [];
     }
 
-    private function getUserLoginHistory(array $args) : array {
-        $results = (new GetUserLoginHistory())->handle($args);
-        ray("GetUserLoginHistory", $results);
-        foreach($results as $result) {
+    private function getUserLoginHistory(array $args): array
+    {
+        $results = (new GetUserLoginHistory)->handle($args);
+        ray('GetUserLoginHistory', $results);
+        foreach ($results as $result) {
             return json_decode($result->content[0]->text, true);
         }
 

@@ -1,16 +1,20 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Services;
 
-use \DateTime;
-use \DateTimeZone;
+use DateTime;
+use DateTimeZone;
 
 class TotpService
 {
     private string $secretKey;
+
     private int $digits;
+
     private int $timeStepSeconds;
+
     private string $hashAlgorithm;
 
     public function __construct(
@@ -57,6 +61,7 @@ class TotpService
     {
         $timestamp = $timestamp ?? new DateTime('now', new DateTimeZone('UTC'));
         $timeCounter = $this->getTimeCounter($timestamp);
+
         return $this->generateCodeFromCounter($timeCounter);
     }
 
@@ -97,6 +102,7 @@ class TotpService
     private function getTimeCounter(DateTime $timestamp): int
     {
         $unixTimestamp = $timestamp->getTimestamp();
+
         return intval(floor($unixTimestamp / $this->timeStepSeconds));
     }
 
@@ -121,7 +127,8 @@ class TotpService
             (ord($hash[$offset + 3]) & 0xFF);
 
         $otp = $binaryCode % pow(10, $this->digits);
-        return str_pad((string)$otp, $this->digits, '0', STR_PAD_LEFT);
+
+        return str_pad((string) $otp, $this->digits, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -130,6 +137,7 @@ class TotpService
     public static function generateSecret(int $length = 32): string
     {
         $randomBytes = random_bytes($length);
+
         return self::base32Encode($randomBytes);
     }
 
@@ -139,6 +147,7 @@ class TotpService
     public function getQRCodeUri(string $issuer, string $account): string
     {
         $secret = self::base32Encode($this->secretKey);
+
         return sprintf(
             'otpauth://totp/%s:%s?secret=%s&issuer=%s&algorithm=%s&digits=%d&period=%d',
             urlencode($issuer),

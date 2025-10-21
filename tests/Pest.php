@@ -12,11 +12,8 @@
 */
 
 use App\Actions\CreateServer;
-use App\Enums\NodeTypeEnum;
 use App\Enums\RoleEnum;
 use App\Events\DatapointCreatedEvent;
-use App\Models\Node;
-use App\Models\TreatmentLine;
 use App\Models\User;
 use App\Models\UserVoice;
 
@@ -26,8 +23,6 @@ pest()->extend(Tests\TestCase::class)->beforeEach(function () {
 })
     // ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
     ->in('Feature');
-
-
 
 /*
 |--------------------------------------------------------------------------
@@ -40,8 +35,8 @@ pest()->extend(Tests\TestCase::class)->beforeEach(function () {
 |
 */
 
-
-function createUser(RoleEnum $role = RoleEnum::NONE) : User {
+function createUser(RoleEnum $role = RoleEnum::NONE): User
+{
     $user = User::factory(['totp_secret' => '123', 'totp_activated_at' => now()])->create();
     if ($role !== RoleEnum::NONE) {
         $user->assignRole($role);
@@ -51,12 +46,15 @@ function createUser(RoleEnum $role = RoleEnum::NONE) : User {
     return $user;
 }
 
-function createServer(string $name="server") {
+function createServer(string $name = 'server')
+{
     $createServer = app(CreateServer::class);
     $result = $createServer($name);
+
     return $result['server'];
 }
 
-function disableMfaAuthentication() : void {
+function disableMfaAuthentication(): void
+{
     session(['voice' => time()]);
 }

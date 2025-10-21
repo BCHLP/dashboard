@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Actions;
@@ -9,11 +10,12 @@ use Illuminate\Support\Facades\Log;
 
 class ValvePosition
 {
-    public function __invoke(Node|string $node, int $position) {
+    public function __invoke(Node|string $node, int $position)
+    {
 
         if (is_string($node)) {
             $node = Node::findByName($node);
-            if (!$node) {
+            if (! $node) {
                 return;
             }
         }
@@ -24,7 +26,7 @@ class ValvePosition
             ->where('name', 'opened')
             ->update(['value' => $position]);
 
-        if (!$setting) {
+        if (! $setting) {
             Log::error("Tried to save position for valve {$node->name} but setting doesn't exist");
         }
 

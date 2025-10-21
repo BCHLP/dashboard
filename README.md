@@ -76,7 +76,7 @@ The voice recognition AMFA feature requires the companion Python service:
 ### 1. Clone the Repository
 
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/BCHLP/dashboard
 cd project
 ```
 
@@ -284,6 +284,11 @@ php artisan queue:work
 #### Terminal 4: Frontend Assets
 ```bash
 npm run dev
+```
+
+#### Terminal 5: MQTT Client
+```bash
+php artisan mqtt
 ```
 
 ### Production Build

@@ -10,16 +10,12 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
 
 class DatapointCreatedEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(public Datapoint $datapoint)
-    {
-
-    }
+    public function __construct(public Datapoint $datapoint) {}
 
     public function broadcastOn(): array
     {
@@ -27,14 +23,15 @@ class DatapointCreatedEvent implements ShouldBroadcast
             return [];
         }
 
-        ray("about to broadcast on NewDatapointEvent.".$this->datapoint->source_id);
+        ray('about to broadcast on NewDatapointEvent.'.$this->datapoint->source_id);
 
         return [
-            new PrivateChannel("NewDatapointEvent.".$this->datapoint->source_id),
+            new PrivateChannel('NewDatapointEvent.'.$this->datapoint->source_id),
         ];
     }
 
-    public function broadcastWith() {
+    public function broadcastWith()
+    {
         return DatapointResource::make($this->datapoint)->resolve();
     }
 }

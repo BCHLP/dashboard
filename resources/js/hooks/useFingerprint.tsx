@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import type { FingerprintData, FingerprintOptions, FingerprintHookReturn, FingerprintResponse } from '../types/fingerprint';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { FingerprintData, FingerprintHookReturn, FingerprintOptions, FingerprintResponse } from '../types/fingerprint';
 
 export const useFingerprint = (options: FingerprintOptions = {}): FingerprintHookReturn => {
     const [isCollecting, setIsCollecting] = useState<boolean>(false);
@@ -8,11 +8,7 @@ export const useFingerprint = (options: FingerprintOptions = {}): FingerprintHoo
 
     const fingerprintDataRef = useRef<FingerprintData>({});
     const lastCollectionTimeRef = useRef<number>(0);
-    const {
-        endpoint = '/api/fingerprint',
-        autoCollectOnMount = true,
-        csrfToken = null
-    } = options;
+    const { endpoint = '/api/fingerprint', autoCollectOnMount = true, csrfToken = null } = options;
 
     // Cache fingerprint for 5 minutes to prevent excessive resource usage
     const FINGERPRINT_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
@@ -59,11 +55,13 @@ export const useFingerprint = (options: FingerprintOptions = {}): FingerprintHoo
             canvas.width = 1;
             canvas.height = 1;
 
-            const gl = canvas.getContext('webgl', {
-                failIfMajorPerformanceCaveat: true
-            }) || canvas.getContext('experimental-webgl', {
-                failIfMajorPerformanceCaveat: true
-            });
+            const gl =
+                canvas.getContext('webgl', {
+                    failIfMajorPerformanceCaveat: true,
+                }) ||
+                canvas.getContext('experimental-webgl', {
+                    failIfMajorPerformanceCaveat: true,
+                });
 
             if (gl) {
                 try {
@@ -159,10 +157,25 @@ export const useFingerprint = (options: FingerprintOptions = {}): FingerprintHoo
     const collectFontInfo = useCallback((): void => {
         try {
             const testFonts = [
-                'Arial', 'Arial Black', 'Arial Narrow', 'Arial Unicode MS',
-                'Calibri', 'Cambria', 'Comic Sans MS', 'Courier', 'Courier New',
-                'Garamond', 'Georgia', 'Helvetica', 'Impact', 'Lucida Console',
-                'Tahoma', 'Times', 'Times New Roman', 'Trebuchet MS', 'Verdana'
+                'Arial',
+                'Arial Black',
+                'Arial Narrow',
+                'Arial Unicode MS',
+                'Calibri',
+                'Cambria',
+                'Comic Sans MS',
+                'Courier',
+                'Courier New',
+                'Garamond',
+                'Georgia',
+                'Helvetica',
+                'Impact',
+                'Lucida Console',
+                'Tahoma',
+                'Times',
+                'Times New Roman',
+                'Trebuchet MS',
+                'Verdana',
             ];
 
             const canvas = document.createElement('canvas');
@@ -176,13 +189,13 @@ export const useFingerprint = (options: FingerprintOptions = {}): FingerprintHoo
                 const metrics = context.measureText(text);
                 return {
                     width: metrics.width,
-                    height: (metrics.actualBoundingBoxAscent || 0) + (metrics.actualBoundingBoxDescent || 0)
+                    height: (metrics.actualBoundingBoxAscent || 0) + (metrics.actualBoundingBoxDescent || 0),
                 };
             };
 
             const baselineSize = measureText('72px monospace');
 
-            const availableFonts = testFonts.filter(font => {
+            const availableFonts = testFonts.filter((font) => {
                 const size = measureText(`72px ${font}, monospace`);
                 return size.width !== baselineSize.width || size.height !== baselineSize.height;
             });
@@ -256,9 +269,9 @@ export const useFingerprint = (options: FingerprintOptions = {}): FingerprintHoo
     // Plugin Information
     const collectPluginInfo = useCallback((): void => {
         try {
-            const plugins = Array.from(navigator.plugins).map(plugin => ({
+            const plugins = Array.from(navigator.plugins).map((plugin) => ({
                 name: plugin.name,
-                filename: plugin.filename
+                filename: plugin.filename,
             }));
             fingerprintDataRef.current.plugins = JSON.stringify(plugins);
         } catch (e) {
@@ -271,12 +284,12 @@ export const useFingerprint = (options: FingerprintOptions = {}): FingerprintHoo
         return new Promise<void>((resolve) => {
             try {
                 const rtc = new RTCPeerConnection({
-                    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+                    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
                 });
 
                 rtc.createDataChannel('');
                 rtc.createOffer()
-                    .then(offer => rtc.setLocalDescription(offer))
+                    .then((offer) => rtc.setLocalDescription(offer))
                     .catch(() => resolve());
 
                 rtc.onicecandidate = (event: RTCPeerConnectionIceEvent) => {
@@ -306,7 +319,7 @@ export const useFingerprint = (options: FingerprintOptions = {}): FingerprintHoo
     const collectFingerprint = useCallback(async (): Promise<FingerprintData> => {
         // Check if we have a recent cached fingerprint
         const now = Date.now();
-        if (lastFingerprint && (now - lastCollectionTimeRef.current) < FINGERPRINT_CACHE_DURATION) {
+        if (lastFingerprint && now - lastCollectionTimeRef.current < FINGERPRINT_CACHE_DURATION) {
             return lastFingerprint;
         }
 
@@ -331,27 +344,22 @@ export const useFingerprint = (options: FingerprintOptions = {}): FingerprintHoo
             fingerprintDataRef.current = {};
 
             // Run collections in smaller batches to reduce resource usage
-            await Promise.all([
-                collectScreenInfo(),
-                collectTimezoneInfo(),
-                collectStorageInfo(),
-                collectPluginInfo()
-            ]);
+            await Promise.all([collectScreenInfo(), collectTimezoneInfo(), collectStorageInfo(), collectPluginInfo()]);
 
             // Run resource-intensive collections separately with small delays
             await collectCanvasFingerprint();
-            await new Promise(resolve => setTimeout(resolve, 10)); // Small delay
+            await new Promise((resolve) => setTimeout(resolve, 10)); // Small delay
 
             await collectWebGLInfo();
-            await new Promise(resolve => setTimeout(resolve, 10));
+            await new Promise((resolve) => setTimeout(resolve, 10));
 
             await collectFontInfo();
             await collectHardwareInfo();
-            await new Promise(resolve => setTimeout(resolve, 10));
+            await new Promise((resolve) => setTimeout(resolve, 10));
 
             // Run the most resource-intensive ones last
             // await collectAudioFingerprint();
-            await new Promise(resolve => setTimeout(resolve, 10));
+            await new Promise((resolve) => setTimeout(resolve, 10));
 
             await collectWebRTCInfo();
 
@@ -359,7 +367,6 @@ export const useFingerprint = (options: FingerprintOptions = {}): FingerprintHoo
             setLastFingerprint(fingerprint);
             lastCollectionTimeRef.current = now;
             return fingerprint;
-
         } catch (err) {
             const error = err instanceof Error ? err : new Error('Unknown error occurred');
             setError(error);
@@ -367,42 +374,55 @@ export const useFingerprint = (options: FingerprintOptions = {}): FingerprintHoo
         } finally {
             setIsCollecting(false);
         }
-    }, [isCollecting, lastFingerprint, collectScreenInfo, collectCanvasFingerprint,
-        collectWebGLInfo, collectFontInfo, collectTimezoneInfo,
-        collectStorageInfo, collectHardwareInfo, collectPluginInfo, collectWebRTCInfo,
-        FINGERPRINT_CACHE_DURATION]);
+    }, [
+        isCollecting,
+        lastFingerprint,
+        collectScreenInfo,
+        collectCanvasFingerprint,
+        collectWebGLInfo,
+        collectFontInfo,
+        collectTimezoneInfo,
+        collectStorageInfo,
+        collectHardwareInfo,
+        collectPluginInfo,
+        collectWebRTCInfo,
+        FINGERPRINT_CACHE_DURATION,
+    ]);
 
     // Send fingerprint to server
-    const sendFingerprint = useCallback(async (customEndpoint?: string): Promise<FingerprintResponse> => {
-        try {
-            const fingerprintData = await collectFingerprint();
-            const url = customEndpoint || endpoint;
+    const sendFingerprint = useCallback(
+        async (customEndpoint?: string): Promise<FingerprintResponse> => {
+            try {
+                const fingerprintData = await collectFingerprint();
+                const url = customEndpoint || endpoint;
 
-            const headers: Record<string, string> = {
-                'Content-Type': 'application/json',
-            };
+                const headers: Record<string, string> = {
+                    'Content-Type': 'application/json',
+                };
 
-            if (csrfToken) {
-                headers['X-CSRF-TOKEN'] = csrfToken;
+                if (csrfToken) {
+                    headers['X-CSRF-TOKEN'] = csrfToken;
+                }
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify(fingerprintData),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                return await response.json();
+            } catch (err) {
+                const error = err instanceof Error ? err : new Error('Failed to send fingerprint');
+                setError(error);
+                throw error;
             }
-
-            const response = await fetch(url, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify(fingerprintData)
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            return await response.json();
-        } catch (err) {
-            const error = err instanceof Error ? err : new Error('Failed to send fingerprint');
-            setError(error);
-            throw error;
-        }
-    }, [collectFingerprint, endpoint, csrfToken]);
+        },
+        [collectFingerprint, endpoint, csrfToken],
+    );
 
     // Auto-collect on mount (with proper cleanup)
     useEffect(() => {
@@ -420,6 +440,6 @@ export const useFingerprint = (options: FingerprintOptions = {}): FingerprintHoo
         lastFingerprint,
         error,
         collectFingerprint,
-        sendFingerprint
+        sendFingerprint,
     };
 };

@@ -1,21 +1,16 @@
 <?php
 
-
 use App\Enums\MetricAliasEnum;
-use App\Enums\NodeTypeEnum;
 use App\Models\Datapoint;
-use App\Models\Metric;
 use App\Models\Node;
 use App\Services\MetricService;
 
-test('non authenticated servers cannot connect', function () {
-
-});
+test('non authenticated servers cannot connect', function () {});
 
 test('a server can store one or more datapoints', function () {
 
     $createServer = app(\App\Actions\CreateServer::class);
-    $create = $createServer("server");
+    $create = $createServer('server');
     $token = $create['token'];
     $server = $create['server'];
 
@@ -37,12 +32,12 @@ test('a server can store one or more datapoints', function () {
                 'time' => $time,
                 'metric' => MetricAliasEnum::NETWORK_BYTES_IN->value,
                 'value' => 100,
-            ],[
+            ], [
                 'time' => $time,
                 'metric' => MetricAliasEnum::PH_LEVEL->value,
                 'value' => 75,
-            ]
-        ]
+            ],
+        ],
     ]);
 
     expect(Datapoint::count())->toBe(2);

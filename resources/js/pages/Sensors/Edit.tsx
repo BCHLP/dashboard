@@ -1,44 +1,45 @@
-import Layout from '@/layouts/app-layout'
-import { Head, useForm } from '@inertiajs/react'
-import type { BreadcrumbItem } from '@/types'
-import React, { FormEventHandler } from 'react'
-import { Separator } from '@/components/ui/separator'
-import HeadingSmall from '@/components/heading-small'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
-import InputError from '@/components/input-error'
-import { Button } from '@/components/ui/button'
-import { Transition } from '@headlessui/react'
+import HeadingSmall from '@/components/heading-small';
+import InputError from '@/components/input-error';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import Layout from '@/layouts/app-layout';
+import type { BreadcrumbItem } from '@/types';
+import { Transition } from '@headlessui/react';
+import { Head, useForm } from '@inertiajs/react';
+import { FormEventHandler } from 'react';
 
 type Sensor = {
     id: number;
-    name:string;
-}
+    name: string;
+};
 
-type Props = {sensor: Sensor};
+type Props = { sensor: Sensor };
 
 type SensorForm = {
-    name: string
-}
+    name: string;
+};
 
-export default function Create({sensor}:Props) {
+export default function Create({ sensor }: Props) {
     const { data, setData, put, errors, processing, recentlySuccessful } = useForm<Required<SensorForm>>({
-        name: sensor.name
-    })
+        name: sensor.name,
+    });
 
     const submit: FormEventHandler = (e) => {
-        e.preventDefault()
+        e.preventDefault();
 
-        put('/sensors/'+sensor.id, {
+        put('/sensors/' + sensor.id, {
             preserveScroll: true,
-        })
-    }
+        });
+    };
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Sensors',
             href: '/sensors',
-        },{
+        },
+        {
             title: sensor.name,
             href: '/sensors/create',
         },
@@ -46,12 +47,11 @@ export default function Create({sensor}:Props) {
 
     return (
         <Layout breadcrumbs={breadcrumbs}>
-            <Head title="Update Sensor"/>
+            <Head title="Update Sensor" />
 
             <div className="flex flex-col space-y-8 lg:flex-row lg:space-y-0 lg:space-x-12">
                 <aside className="w-full max-w-xl lg:w-48">
-                    <nav className="flex flex-col space-y-1 space-x-0">
-                    </nav>
+                    <nav className="flex flex-col space-y-1 space-x-0"></nav>
                 </aside>
 
                 <Separator className="my-6 md:hidden" />
@@ -77,9 +77,7 @@ export default function Create({sensor}:Props) {
                                 </div>
 
                                 <div className="flex items-center gap-4">
-                                    <Button disabled={processing}>
-                                        {processing ? 'Updating...' : 'Update Sensor'}
-                                    </Button>
+                                    <Button disabled={processing}>{processing ? 'Updating...' : 'Update Sensor'}</Button>
 
                                     <Transition
                                         show={recentlySuccessful}
@@ -97,5 +95,5 @@ export default function Create({sensor}:Props) {
                 </div>
             </div>
         </Layout>
-    )
+    );
 }

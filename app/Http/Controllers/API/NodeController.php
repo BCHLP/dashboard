@@ -11,10 +11,7 @@ use Illuminate\Http\Request;
 
 class NodeController extends Controller
 {
-    public function index()
-    {
-
-    }
+    public function index() {}
 
     public function store(Request $request)
     {
@@ -27,24 +24,20 @@ class NodeController extends Controller
         switch ($nodeType) {
             case NodeTypeEnum::SERVER:
                 $action = app(CreateServer::class);
+
                 return $action($data['name']);
             case NodeTypeEnum::ROUTER:
                 $action = app(CreateRouter::class);
+
                 return $action($data['name']);
         }
 
         return response()->json([]);
     }
 
-    public function show(Node $node)
-    {
-    }
+    public function show(Node $node) {}
 
-    public function update(Request $request, Node $node)
-    {
-    }
+    public function update(Request $request, Node $node) {}
 
-    public function destroy(Node $node)
-    {
-    }
+    public function destroy(Node $node) {}
 }

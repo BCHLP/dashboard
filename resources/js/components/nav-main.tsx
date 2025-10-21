@@ -1,12 +1,12 @@
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { type NavItem, type Auth } from '@/types';
+import { type Auth, type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 
 export function NavMain({ items = [] }: { items: NavItem[] }) {
     const page = usePage<{ auth: Auth }>();
     const userPermissions = page.props.auth.permissions || [];
 
-    console.log("userPermissions", userPermissions);
+    console.log('userPermissions', userPermissions);
 
     // Filter items based on user permissions
     const visibleItems = items.filter((item) => {
@@ -18,9 +18,9 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
         return userPermissions.includes(item.permission);
     });
 
-    const isDashboard = (page.url === '/');
+    const isDashboard = page.url === '/';
 
-    console.log("page.url", page.url, isDashboard);
+    console.log('page.url', page.url, isDashboard);
 
     return (
         <SidebarGroup className="px-2 py-0">
@@ -28,10 +28,11 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
             <SidebarMenu>
                 {visibleItems.map((item) => (
                     <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton asChild
-                                           isActive={(isDashboard && item.href == "/") ||
-                                               (!isDashboard && item.href !== '/' && page.url.startsWith(item.href))}
-                                           tooltip={{ children: item.title }}>
+                        <SidebarMenuButton
+                            asChild
+                            isActive={(isDashboard && item.href == '/') || (!isDashboard && item.href !== '/' && page.url.startsWith(item.href))}
+                            tooltip={{ children: item.title }}
+                        >
                             <Link href={item.href} prefetch>
                                 {item.icon && <item.icon />}
                                 <span>{item.title}</span>

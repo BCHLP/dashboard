@@ -45,6 +45,6 @@ return [
 
     'openai' => [
         'mcp_secret' => env('OPENAI_MCP_SECRET'),
-    ]
+    ],
 
 ];

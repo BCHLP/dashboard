@@ -1,14 +1,15 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Enums;
 
 enum MetricAliasEnum: string
 {
-    CASE WATER_TEMPERATURE = 'temp';
-    CASE PH_LEVEL = 'pH';
-    CASE PRESSURE = 'MPa';
-    CASE ORB = 'mV';
+    case WATER_TEMPERATURE = 'temp';
+    case PH_LEVEL = 'pH';
+    case PRESSURE = 'MPa';
+    case ORB = 'mV';
 
     case GPS_LAT = 'lat';
     case GPS_LNG = 'lng';
@@ -26,9 +27,7 @@ enum MetricAliasEnum: string
     case MQTT_SUBSCRIBED = 'mqtt_subscribed';
     case MQTT_DISCONNECTED = 'mqtt_disconnected';
 
-
     case USER_AUTH_FAILED = 'user_auth_failed';
     case USER_AUTH_SUCCESSFUL = 'user_auth_successful';
-
 
 }

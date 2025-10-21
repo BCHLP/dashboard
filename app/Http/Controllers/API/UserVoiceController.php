@@ -6,13 +6,11 @@ use App\Actions\UserLoginAuditAction;
 use App\Facades\AdaptiveMfaFacade;
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\UserLoginAudit;
 use App\Services\VoiceRecognitionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 
-class  UserVoiceController extends Controller
+class UserVoiceController extends Controller
 {
     public function register(Request $request)
     {
@@ -22,7 +20,7 @@ class  UserVoiceController extends Controller
 
         $base64 = base64_encode($request->file('audio')->get());
 
-        $service = new VoiceRecognitionService();
+        $service = new VoiceRecognitionService;
         $success = $service->register($base64);
 
         if ($success) {
@@ -34,7 +32,8 @@ class  UserVoiceController extends Controller
         }
     }
 
-    public function compare(Request $request, UserLoginAuditAction $userLoginAudit) {
+    public function compare(Request $request, UserLoginAuditAction $userLoginAudit)
+    {
         $data = $request->validate([
             'audio' => ['required', 'file', 'mimes:webm'],
         ]);
@@ -42,17 +41,17 @@ class  UserVoiceController extends Controller
         $base64 = base64_encode($request->file('audio')->get());
 
         $event = AdaptiveMfaFacade::load();
-        ray("event", $event);
+        ray('event', $event);
         $user = User::find($event['user_id']);
-        abort_if(!$user, 404);
+        abort_if(! $user, 404);
 
-        $service = new VoiceRecognitionService();
+        $service = new VoiceRecognitionService;
         $success = $service->compare($base64, $user);
-        $voiceStillRequired = !$success;
+        $voiceStillRequired = ! $success;
 
         if ($success) {
 
-            ray("VOICE RECOGNITION WAS SUCCESSFUL")->green();
+            ray('VOICE RECOGNITION WAS SUCCESSFUL')->green();
 
             AdaptiveMfaFacade::setVoice(false);
         }
@@ -64,6 +63,6 @@ class  UserVoiceController extends Controller
             AdaptiveMfaFacade::clear();
         }
 
-        return response()->json(['totp'=> $event['totp'], 'voice' => $voiceStillRequired]);
+        return response()->json(['totp' => $event['totp'], 'voice' => $voiceStillRequired]);
     }
 }

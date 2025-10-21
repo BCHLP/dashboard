@@ -17,8 +17,9 @@ class NodeSetting extends Model
         return $this->belongsTo(Node::class);
     }
 
-    public function value() : string|bool|int|float {
-        switch($this->cast) {
+    public function value(): string|bool|int|float
+    {
+        switch ($this->cast) {
             case 'boolean':
             case 'bool':
                 return $this->value === 'true';
@@ -29,6 +30,7 @@ class NodeSetting extends Model
             case 'double':
                 return (float) $this->value;
         }
+
         return $this->value;
     }
 }

@@ -13,14 +13,12 @@ class SendCameraCaptureJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 
     public function handle(): void
     {
-        $server   = config('scada.mqtt_broker.host');
-        $port     = config('scada.mqtt_broker.port');
+        $server = config('scada.mqtt_broker.host');
+        $port = config('scada.mqtt_broker.port');
         $clientId = 'queue';
 
         $certPath = storage_path('certs/');
@@ -29,9 +27,9 @@ class SendCameraCaptureJob implements ShouldQueue
             ->setUseTls(true)
             ->setTlsVerifyPeer(true)
             ->setTlsVerifyPeerName(false)
-            ->setTlsCertificateAuthorityFile($certPath . "ca-chain.crt")
-            ->setTlsClientCertificateFile($certPath . "bchklp.crt")  // PEM format
-            ->setTlsClientCertificateKeyFile($certPath . "bchklp.key")  // PEM format
+            ->setTlsCertificateAuthorityFile($certPath.'ca-chain.crt')
+            ->setTlsClientCertificateFile($certPath.'bchklp.crt')  // PEM format
+            ->setTlsClientCertificateKeyFile($certPath.'bchklp.key')  // PEM format
             ->setTlsSelfSignedAllowed(false);
 
         $mqtt = new MqttClient($server, $port, $clientId);

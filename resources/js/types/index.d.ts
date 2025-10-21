@@ -55,7 +55,7 @@ export interface User {
 // }
 
 export type MfaDecision = {
-    success:boolean;
-    error:string;
-    voice:boolean;
-}
+    success: boolean;
+    error: string;
+    voice: boolean;
+};

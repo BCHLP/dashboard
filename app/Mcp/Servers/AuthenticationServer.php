@@ -7,8 +7,8 @@ use App\Mcp\Prompts\ExplainMFADecisionPrompt;
 use App\Mcp\Resources\KnownThreatPatternsResource;
 use App\Mcp\Resources\MFACapabilitiesResource;
 use App\Mcp\Resources\RiskAssessmentGuidelines;
-use App\Mcp\Tools\GetUserLoginHistory;
 use App\Mcp\Tools\GetRecentFailedAttempts;
+use App\Mcp\Tools\GetUserLoginHistory;
 use App\Mcp\Tools\RecordMFADecision;
 use Laravel\Mcp\Server;
 

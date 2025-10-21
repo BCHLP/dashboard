@@ -1,17 +1,18 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Services;
 
 use GeoIp2\Database\Reader;
 use GeoIp2\Exception\AddressNotFoundException;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class GeoIpService
 {
     protected $reader;
+
     protected $databasePath;
 
     public function __construct()
@@ -29,7 +30,7 @@ class GeoIpService
             try {
                 $this->reader = new Reader($this->databasePath);
             } catch (\Exception $e) {
-                Log::error('Failed to initialize GeoIP reader: ' . $e->getMessage());
+                Log::error('Failed to initialize GeoIP reader: '.$e->getMessage());
             }
         }
     }
@@ -44,7 +45,7 @@ class GeoIpService
             return null;
         }
 
-        if (!$this->reader) {
+        if (! $this->reader) {
             return $this->fallbackToFreeAPI($ip);
         }
 
@@ -62,12 +63,13 @@ class GeoIpService
                 'longitude' => $record->location->longitude,
                 'timezone' => $record->location->timeZone,
                 'accuracy_radius' => $record->location->accuracyRadius,
-                'source' => 'local_database'
+                'source' => 'local_database',
             ];
         } catch (AddressNotFoundException $e) {
             return $this->fallbackToFreeAPI($ip);
         } catch (\Exception $e) {
-            Log::error('GeoIP lookup failed: ' . $e->getMessage(), ['ip' => $ip]);
+            Log::error('GeoIP lookup failed: '.$e->getMessage(), ['ip' => $ip]);
+
             return null;
         }
     }
@@ -83,6 +85,7 @@ class GeoIpService
 
             if ($response->successful() && $response->json('status') === 'success') {
                 $data = $response->json();
+
                 return [
                     'country' => $data['country'] ?? null,
                     'country_code' => $data['countryCode'] ?? null,
@@ -94,11 +97,11 @@ class GeoIpService
                     'longitude' => $data['lon'] ?? null,
                     'timezone' => $data['timezone'] ?? null,
                     'isp' => $data['isp'] ?? null,
-                    'source' => 'ip-api'
+                    'source' => 'ip-api',
                 ];
             }
         } catch (\Exception $e) {
-            Log::warning('Free API fallback failed: ' . $e->getMessage());
+            Log::warning('Free API fallback failed: '.$e->getMessage());
         }
 
         return null;
@@ -109,21 +112,22 @@ class GeoIpService
      */
     protected function isPrivateIP(string $ip): bool
     {
-        return !filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE);
+        return ! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE);
     }
 
     /**
      * Download and update the GeoLite2 database
      */
-    public function updateDatabase($force=true): bool
+    public function updateDatabase($force = true): bool
     {
-        ray("update database");
+        ray('update database');
         try {
             // You need to register for a free MaxMind account to get a license key
             $licenseKey = config('services.maxmind.license_key');
 
-            if (!$licenseKey) {
+            if (! $licenseKey) {
                 Log::error('MaxMind license key not configured');
+
                 return false;
             }
 
@@ -131,22 +135,22 @@ class GeoIpService
 
             ray(" tar path = $tarPath");
 
-            if (!file_exists($tarPath) || $force) {
+            if (! file_exists($tarPath) || $force) {
 
                 $url = "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key={$licenseKey}&suffix=tar.gz";
 
                 // Download the database
                 $response = Http::timeout(120)->get($url);
 
-                if (!$response->successful()) {
+                if (! $response->successful()) {
                     Log::error('Failed to download GeoIP database');
+
                     return false;
                 }
 
-
                 // Create directory if it doesn't exist
                 $geoipDir = storage_path('app/geoip');
-                if (!is_dir($geoipDir)) {
+                if (! is_dir($geoipDir)) {
                     mkdir($geoipDir, 0755, true);
                 }
 
@@ -154,20 +158,22 @@ class GeoIpService
 
                 file_put_contents($tarPath, $response->body());
 
-                ray("i put contents");
+                ray('i put contents');
             }
 
-            ray("start extracing");
+            ray('start extracing');
 
             // Extract the database file
             $this->extractDatabase($tarPath);
 
             Log::info('GeoIP database updated successfully');
+
             return true;
 
         } catch (\Exception $e) {
             ray($e);
-            Log::error('Failed to update GeoIP database: ' . $e->getMessage());
+            Log::error('Failed to update GeoIP database: '.$e->getMessage());
+
             return false;
         }
     }
@@ -178,9 +184,9 @@ class GeoIpService
     protected function extractDatabase(string $tarPath): void
     {
 
-        ray("create phar data");
+        ray('create phar data');
         $phar = new \PharData($tarPath);
-        ray("generate storage path");
+        ray('generate storage path');
         $extractPath = storage_path('app/geoip/temp');
 
         ray("extractDatabase to $extractPath");
@@ -193,17 +199,17 @@ class GeoIpService
             new \RecursiveDirectoryIterator($extractPath)
         );
 
-        ray("about to iterate over files");
+        ray('about to iterate over files');
         foreach ($iterator as $file) {
-            ray('Extracting ' . $file->getFilename());
+            ray('Extracting '.$file->getFilename());
             if ($file->getExtension() === 'mmdb') {
-                ray("found mmdb file");
+                ray('found mmdb file');
                 // Move the .mmdb file to the final location
                 rename($file->getPathname(), $this->databasePath);
                 break;
             }
         }
-        ray("finished");
+        ray('finished');
 
         // Clean up
         $this->deleteDirectory($extractPath);
@@ -221,11 +227,11 @@ class GeoIpService
         if (is_dir($dir)) {
             $objects = scandir($dir);
             foreach ($objects as $object) {
-                if ($object != "." && $object != "..") {
-                    if (is_dir($dir . "/" . $object)) {
-                        $this->deleteDirectory($dir . "/" . $object);
+                if ($object != '.' && $object != '..') {
+                    if (is_dir($dir.'/'.$object)) {
+                        $this->deleteDirectory($dir.'/'.$object);
                     } else {
-                        unlink($dir . "/" . $object);
+                        unlink($dir.'/'.$object);
                     }
                 }
             }
@@ -238,12 +244,13 @@ class GeoIpService
      */
     public function isDatabaseCurrent(): bool
     {
-        if (!file_exists($this->databasePath)) {
+        if (! file_exists($this->databasePath)) {
             return false;
         }
 
         // Check if database is older than 30 days
         $fileAge = time() - filemtime($this->databasePath);
+
         return $fileAge < (30 * 24 * 60 * 60); // 30 days in seconds
     }
 
@@ -252,7 +259,7 @@ class GeoIpService
      */
     public function getDatabaseInfo(): array
     {
-        if (!file_exists($this->databasePath)) {
+        if (! file_exists($this->databasePath)) {
             return ['exists' => false];
         }
 
@@ -260,7 +267,7 @@ class GeoIpService
             'exists' => true,
             'size' => filesize($this->databasePath),
             'last_modified' => filemtime($this->databasePath),
-            'age_days' => (time() - filemtime($this->databasePath)) / (24 * 60 * 60)
+            'age_days' => (time() - filemtime($this->databasePath)) / (24 * 60 * 60),
         ];
     }
 }

@@ -23,7 +23,7 @@ class Datapoint extends Model
         'source_type',
         'metric_id',
         'value',
-        'time'
+        'time',
     ];
 
     protected $casts = [
@@ -35,7 +35,8 @@ class Datapoint extends Model
         return $this->belongsTo(Metric::class);
     }
 
-    public function source(): MorphTo {
+    public function source(): MorphTo
+    {
         return $this->morphTo();
     }
 }

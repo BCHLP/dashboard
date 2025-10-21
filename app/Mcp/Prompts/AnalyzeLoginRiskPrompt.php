@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Mcp\Prompts;
@@ -14,8 +15,6 @@ class AnalyzeLoginRiskPrompt extends Prompt
 
     /**
      * Get the prompt's arguments.
-     *
-     * @return Arguments
      */
     public function arguments(): Arguments
     {
@@ -47,7 +46,7 @@ class AnalyzeLoginRiskPrompt extends Prompt
         $fingerprint = $arguments['current_fingerprint'];
         $eventId = $arguments['event_id'];
 
-        $systemPrompt = <<<PROMPT
+        $systemPrompt = <<<'PROMPT'
 You are a security analyst specializing in adaptive authentication. Your role is to assess login risk and recommend appropriate MFA requirements.
 
 **Available Tools:**

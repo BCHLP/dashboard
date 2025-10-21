@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\UserLoginAudit;
 use App\Models\User;
 use App\Models\UserFingerprint;
+use App\Models\UserLoginAudit;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 

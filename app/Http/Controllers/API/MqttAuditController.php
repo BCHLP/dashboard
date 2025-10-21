@@ -11,12 +11,12 @@ class MqttAuditController extends Controller
     public function __invoke(Request $request)
     {
         $json = json_decode($request->getContent(), true);
-        foreach($json as $audit) {
+        foreach ($json as $audit) {
             MqttAudit::create([
-                'client_id' => $audit["clientId"],
-                'when' => $audit["when"],
-                'unusual' => $audit["unusual"],
-                'message' => $audit["message"],
+                'client_id' => $audit['clientId'],
+                'when' => $audit['when'],
+                'unusual' => $audit['unusual'],
+                'message' => $audit['message'],
             ]);
         }
     }

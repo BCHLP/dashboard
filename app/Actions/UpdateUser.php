@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Actions;
@@ -8,7 +9,8 @@ use App\Models\User;
 
 class UpdateUser
 {
-    public function __invoke(User $user, string $name, string $role) {
+    public function __invoke(User $user, string $name, string $role)
+    {
         $user->update([
             'name' => $name,
         ]);

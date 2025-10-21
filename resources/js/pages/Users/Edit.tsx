@@ -1,25 +1,25 @@
-import AppLayout from '@/layouts/app-layout'
-import { Head, useForm } from '@inertiajs/react'
-import type { BreadcrumbItem, Role, User } from '@/types'
-import React, { FormEventHandler } from 'react'
-import { Separator } from '@/components/ui/separator'
-import HeadingSmall from '@/components/heading-small'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
-import InputError from '@/components/input-error'
-import { Button } from '@/components/ui/button'
-import { Transition } from '@headlessui/react'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import HeadingSmall from '@/components/heading-small';
+import InputError from '@/components/input-error';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import AppLayout from '@/layouts/app-layout';
+import type { BreadcrumbItem, Role, User } from '@/types';
+import { Transition } from '@headlessui/react';
+import { Head, useForm } from '@inertiajs/react';
+import { FormEventHandler } from 'react';
 
 type UserForm = {
-    name: string
-    role: string
-}
+    name: string;
+    role: string;
+};
 
 type Props = {
-    user: User
-    roles: Role[]
-}
+    user: User;
+    roles: Role[];
+};
 
 export default function Edit({ user, roles }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
@@ -31,20 +31,20 @@ export default function Edit({ user, roles }: Props) {
             title: user.name,
             href: `/users/${user.id}/edit`,
         },
-    ]
+    ];
 
     const { data, setData, put, errors, processing, recentlySuccessful } = useForm<Required<UserForm>>({
         name: user.name || '',
-        role: user.role || ''
-    })
+        role: user.role || '',
+    });
 
     const submit: FormEventHandler = (e) => {
-        e.preventDefault()
+        e.preventDefault();
 
         put(`/users/${user.id}`, {
             preserveScroll: true,
-        })
-    }
+        });
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -52,8 +52,7 @@ export default function Edit({ user, roles }: Props) {
 
             <div className="flex flex-col space-y-8 lg:flex-row lg:space-y-0 lg:space-x-12">
                 <aside className="w-full max-w-xl lg:w-48">
-                    <nav className="flex flex-col space-y-1 space-x-0">
-                    </nav>
+                    <nav className="flex flex-col space-y-1 space-x-0"></nav>
                 </aside>
 
                 <Separator className="my-6 md:hidden" />
@@ -96,9 +95,7 @@ export default function Edit({ user, roles }: Props) {
                                 </div>
 
                                 <div className="flex items-center gap-4">
-                                    <Button disabled={processing}>
-                                        {processing ? 'Updating...' : 'Update User'}
-                                    </Button>
+                                    <Button disabled={processing}>{processing ? 'Updating...' : 'Update User'}</Button>
 
                                     <Transition
                                         show={recentlySuccessful}
@@ -116,5 +113,5 @@ export default function Edit({ user, roles }: Props) {
                 </div>
             </div>
         </AppLayout>
-    )
+    );
 }

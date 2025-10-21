@@ -11,8 +11,8 @@ use App\Services\ChatGptMfaService;
 use App\Services\ClaudeAgentService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class AiReportCommand extends Command
 {
@@ -26,26 +26,26 @@ class AiReportCommand extends Command
     {
         $claudeAgent = new ClaudeAgentService(AnthropicModelEnum::HAIKU);
         $claudeSonnetAgent = new ClaudeAgentService(AnthropicModelEnum::SONNET);
-        $chatGptAgent = new ChatGptMfaService();
+        $chatGptAgent = new ChatGptMfaService;
 
         Event::fake();
 
         // setup csv
         $csv = fopen(Storage::path('ai-report-'.Str::uuid()->toString().'.csv'), 'w+');
-        fputcsv($csv, ["Task",
-            "Haiku TOTP", "Haiku Voice", "Haiku Response (secs)", "Haiku Reasoning",
-            "Sonnet TOTP", "Sonnet Voice", "Sonnet Response (secs)", "Haiku Reasoning",
-            "ChatGPT TOTP", "ChatGPT Voice", "ChatGPT Response (secs)", "Haiku Reasoning"]);
+        fputcsv($csv, ['Task',
+            'Haiku TOTP', 'Haiku Voice', 'Haiku Response (secs)', 'Haiku Reasoning',
+            'Sonnet TOTP', 'Sonnet Voice', 'Sonnet Response (secs)', 'Haiku Reasoning',
+            'ChatGPT TOTP', 'ChatGPT Voice', 'ChatGPT Response (secs)', 'Haiku Reasoning']);
 
         // create our test user
         $user = User::factory()->create();
         $fingerprint = UserFingerprint::factory()->create([
             'user_id' => $user->id,
-            'browser' => "Edge",
-            'platform' => "Win11",
-            'device' => "Windows",
+            'browser' => 'Edge',
+            'platform' => 'Win11',
+            'device' => 'Windows',
             'is_mobile' => false,
-            'user_agent' => "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36 Edg/118.0.2088.46"
+            'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36 Edg/118.0.2088.46',
         ]);
 
         // display progress bar
@@ -56,7 +56,7 @@ class AiReportCommand extends Command
         $claude = $this->test($claudeAgent, $user, $fingerprint);
         $claudeSonnet = $this->test($claudeSonnetAgent, $user, $fingerprint);
         $chatgpt = $this->test($chatGptAgent, $user, $fingerprint);
-        $this->save($csv, "No history", $claude, $claudeSonnet, $chatgpt);
+        $this->save($csv, 'No history', $claude, $claudeSonnet, $chatgpt);
 
         $defaultHistoryCount = 20;
 
@@ -65,12 +65,12 @@ class AiReportCommand extends Command
             'user_id' => $user->id,
             'user_fingerprint_id' => $fingerprint->id,
             'email' => $user->email,
-            'successful' => true
+            'successful' => true,
         ]);
         $claude = $this->test($claudeAgent, $user, $fingerprint);
         $claudeSonnet = $this->test($claudeSonnetAgent, $user, $fingerprint);
         $chatgpt = $this->test($chatGptAgent, $user, $fingerprint);
-        $this->save($csv, "$defaultHistoryCount successful, same fingerprint", $claude,  $claudeSonnet,$chatgpt);
+        $this->save($csv, "$defaultHistoryCount successful, same fingerprint", $claude, $claudeSonnet, $chatgpt);
 
         // task 3 - user with successful logins with different fingerprints
         $this->cleanUser($user, $fingerprint);
@@ -86,7 +86,6 @@ class AiReportCommand extends Command
         $claudeSonnet = $this->test($claudeSonnetAgent, $user, $fingerprint);
         $chatgpt = $this->test($chatGptAgent, $user, $fingerprint);
         $this->save($csv, "$defaultHistoryCount successful, different fingerprints", $claude, $claudeSonnet, $chatgpt);
-
 
         // task 4 - user with successful and unsuccessful logins with different fingerprints
         $this->cleanUser($user, $fingerprint);
@@ -109,11 +108,11 @@ class AiReportCommand extends Command
         $claude = $this->test($claudeAgent, $user, $fingerprint);
         $claudeSonnet = $this->test($claudeSonnetAgent, $user, $fingerprint);
         $chatgpt = $this->test($chatGptAgent, $user, $fingerprint);
-        $this->save($csv, "$defaultHistoryCount successful, $defaultHistoryCount unsuccessful, different fingerprints", $claude,  $claudeSonnet, $chatgpt);
+        $this->save($csv, "$defaultHistoryCount successful, $defaultHistoryCount unsuccessful, different fingerprints", $claude, $claudeSonnet, $chatgpt);
 
         // task 5 - only unsuccessful attempts
         $this->cleanUser($user, $fingerprint);
-        UserFingerprint::factory()->count($defaultHistoryCount)->create(['user_id' => $user->id])->each(function (UserFingerprint $ufp) use ($user,$defaultHistoryCount) {
+        UserFingerprint::factory()->count($defaultHistoryCount)->create(['user_id' => $user->id])->each(function (UserFingerprint $ufp) use ($user, $defaultHistoryCount) {
             UserLoginAudit::factory()->count($defaultHistoryCount)->create([
                 'user_id' => $user->id,
                 'user_fingerprint_id' => $ufp->id,
@@ -134,7 +133,7 @@ class AiReportCommand extends Command
             'country' => 'New Zealand',
             'timezone' => 'Pacific/Auckland',
             'timezone_offset' => 780,
-        ])->each(function (UserFingerprint $ufp) use ($user,$defaultHistoryCount) {
+        ])->each(function (UserFingerprint $ufp) use ($user, $defaultHistoryCount) {
             UserLoginAudit::factory()->count($defaultHistoryCount)->create([
                 'user_id' => $user->id,
                 'user_fingerprint_id' => $ufp->id,
@@ -147,11 +146,9 @@ class AiReportCommand extends Command
         $chatgpt = $this->test($chatGptAgent, $user, $fingerprint);
         $this->save($csv, "$defaultHistoryCount successful but different geo-location", $claude, $claudeSonnet, $chatgpt);
 
-
-
         // task 7 - no unsuccessful attempts, but different time
         $this->cleanUser($user, $fingerprint);
-        UserFingerprint::factory()->count($defaultHistoryCount)->create(['user_id' => $user->id])->each(function (UserFingerprint $ufp) use ($user,$defaultHistoryCount) {
+        UserFingerprint::factory()->count($defaultHistoryCount)->create(['user_id' => $user->id])->each(function (UserFingerprint $ufp) use ($user, $defaultHistoryCount) {
             UserLoginAudit::factory()->count($defaultHistoryCount)->create([
                 'user_id' => $user->id,
                 'user_fingerprint_id' => $ufp->id,
@@ -167,7 +164,6 @@ class AiReportCommand extends Command
         $claudeSonnet = $this->test($claudeSonnetAgent, $user, $fingerprint);
         $chatgpt = $this->test($chatGptAgent, $user, $fingerprint);
         $this->save($csv, "$defaultHistoryCount successful but random time to login", $claude, $claudeSonnet, $chatgpt);
-
 
         // task 8 - only a small amount of authentication history
         $this->cleanUser($user, $fingerprint);
@@ -188,43 +184,45 @@ class AiReportCommand extends Command
         $claude = $this->test($claudeAgent, $user, $fingerprint);
         $claudeSonnet = $this->test($claudeSonnetAgent, $user, $fingerprint);
         $chatgpt = $this->test($chatGptAgent, $user, $fingerprint);
-        $this->save($csv, "Small amount of authentication history", $claude, $claudeSonnet, $chatgpt);
-
+        $this->save($csv, 'Small amount of authentication history', $claude, $claudeSonnet, $chatgpt);
 
         fclose($csv);
 
         $this->bar->finish();
     }
 
-    private function cleanUser($user, $excludeFingerprint) {
+    private function cleanUser($user, $excludeFingerprint)
+    {
         UserLoginAudit::where('user_id', $user->id)->delete();
         UserFingerprint::where('user_id', $user->id)
             ->whereNot('id', $excludeFingerprint->id)
             ->delete();
     }
 
-    private function save($csv, $task, $claude, $claudeSonnet, $chatgpt) : void {
+    private function save($csv, $task, $claude, $claudeSonnet, $chatgpt): void
+    {
         fputcsv($csv, [
             $task,
-            $claude['totp'] ? 1 :0,
-            $claude['voice'] ? 1 :0,
+            $claude['totp'] ? 1 : 0,
+            $claude['voice'] ? 1 : 0,
             $claude['time'],
             $claude['reasoning'],
-            $claudeSonnet['totp'] ? 1 :0,
-            $claudeSonnet['voice'] ? 1 :0,
+            $claudeSonnet['totp'] ? 1 : 0,
+            $claudeSonnet['voice'] ? 1 : 0,
             $claudeSonnet['time'],
             $claudeSonnet['reasoning'],
-            $chatgpt['totp'] ? 1 :0,
-            $chatgpt['voice'] ? 1 :0,
+            $chatgpt['totp'] ? 1 : 0,
+            $chatgpt['voice'] ? 1 : 0,
             $chatgpt['time'],
             $chatgpt['reasoning'],
         ]);
-        $this->line("Sleeping for 1 minute");
+        $this->line('Sleeping for 1 minute');
         sleep(60);
-        $this->line("Awake");
+        $this->line('Awake');
     }
 
-    private function test(AgentAiInterface $agent, $user, $fingerprint) : array {
+    private function test(AgentAiInterface $agent, $user, $fingerprint): array
+    {
 
         $eventId = Str::uuid()->toString();
 

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\CreateRouter;
 use App\Actions\CreateServer;
 use App\Enums\NodeTypeEnum;
 use App\Http\Resources\NodeResource;
@@ -15,9 +14,10 @@ class ServerController extends Controller
     public function index()
     {
         $servers = Node::where('node_type', NodeTypeEnum::SERVER)->get();
+
         return Inertia::render('servers', [
             'servers' => NodeResource::collection($servers),
-            ]);
+        ]);
     }
 
     public function create()
@@ -32,23 +32,15 @@ class ServerController extends Controller
         ]);
 
         $action = app(CreateServer::class);
+
         return back()->with(['response' => $action($data['name'])]);
     }
 
+    public function show(Node $server) {}
 
-    public function show(Node $server)
-    {
-    }
+    public function edit(Node $server) {}
 
-    public function edit(Node $server)
-    {
-    }
+    public function update(Request $request, Node $server) {}
 
-    public function update(Request $request, Node $server)
-    {
-    }
-
-    public function destroy(Node $server)
-    {
-    }
+    public function destroy(Node $server) {}
 }

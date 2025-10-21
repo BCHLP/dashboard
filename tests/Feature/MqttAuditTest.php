@@ -1,14 +1,11 @@
 <?php
 
-
-use App\Enums\NodeTypeEnum;
 use App\Models\MqttAudit;
-use App\Models\Node;
 
 it('can store mqtt audits', function () {
 
     $createServer = app(\App\Actions\CreateServer::class);
-    $result = $createServer("broker");
+    $result = $createServer('broker');
     $mqttBroker = $result['server'];
     $token = $result['token'];
 
@@ -18,11 +15,11 @@ it('can store mqtt audits', function () {
 
     $this->postJson(route('api.mqtt.audits'), [
         [
-            'clientId' => "Client",
-            "when" => now()->toIso8601String(),
-            "unusual" => false,
-            "message" => "testing"
-        ]
+            'clientId' => 'Client',
+            'when' => now()->toIso8601String(),
+            'unusual' => false,
+            'message' => 'testing',
+        ],
     ])->assertStatus(200);
 
     expect(MqttAudit::query()->count())->toBe(1);

@@ -1,13 +1,12 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import React, { useState, useEffect } from 'react';
-import Tank from '../components/tank';
-import '@patternfly/react-core/dist/styles/base-no-reset.css';
 import { useEcho } from '@laravel/echo-react';
-import { Camera, Droplets, MapPin } from 'lucide-react';
-import { Map, AdvancedMarker, MapCameraChangedEvent, useMap } from '@vis.gl/react-google-maps';
+import '@patternfly/react-core/dist/styles/base-no-reset.css';
+import { AdvancedMarker, Map, MapCameraChangedEvent } from '@vis.gl/react-google-maps';
 import axios from 'axios';
+import { Camera, Droplets, MapPin } from 'lucide-react';
+import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -42,8 +41,8 @@ type Photo = {
 };
 
 const GaugeChart = ({ value, min, max, label, unit, color }) => {
-    const percentage = (value === min ? 0.01 : ((value - min) / (max - min)) * 100);
-    const angle = (percentage == 0 ? 0 : (percentage / 100) * 180 - 90);
+    const percentage = value === min ? 0.01 : ((value - min) / (max - min)) * 100;
+    const angle = percentage == 0 ? 0 : (percentage / 100) * 180 - 90;
 
     return (
         <div className="flex h-full flex-col items-center justify-center overflow-hidden rounded-lg bg-white p-4 shadow-lg dark:bg-gray-900">
@@ -116,12 +115,11 @@ const LocationMap = ({ lat, lng }) => {
     );
 };
 
-const SecurityCamera = ({ photo, handleCapture, disableCapture }:
-                        { photo?: Photo; handleCapture: () => void, disableCapture:boolean }) => {
-    console.log("photo", photo);
+const SecurityCamera = ({ photo, handleCapture, disableCapture }: { photo?: Photo; handleCapture: () => void; disableCapture: boolean }) => {
+    console.log('photo', photo);
 
     const date = new Date(photo?.created_at ?? new Date());
-// Format as day of month, Hour:minute:second
+    // Format as day of month, Hour:minute:second
     const day = date.getDate();
     const month = date.toLocaleString('en-US', { month: 'short' });
     const year = date.getFullYear();
@@ -130,8 +128,6 @@ const SecurityCamera = ({ photo, handleCapture, disableCapture }:
     const seconds = String(date.getSeconds()).padStart(2, '0');
 
     const formatted = `${day} ${month} ${year}, ${hours}:${minutes}:${seconds}`;
-
-
 
     return (
         <div className="flex h-full flex-col rounded-lg bg-white p-6 shadow-lg dark:bg-gray-900">
@@ -143,7 +139,7 @@ const SecurityCamera = ({ photo, handleCapture, disableCapture }:
                 <button
                     onClick={handleCapture}
                     disabled={disableCapture}
-                    className="flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-gray-900"
                 >
                     <Camera className="h-4 w-4" />
                     Capture
@@ -152,7 +148,7 @@ const SecurityCamera = ({ photo, handleCapture, disableCapture }:
             <div className="relative flex-1 overflow-hidden rounded-lg bg-gray-800">
                 <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900">
                     {photo ? (
-                        <img src={photo.path} alt={"Capture"} className="max-h-full max-w-full object-contain" />
+                        <img src={photo.path} alt={'Capture'} className="max-h-full max-w-full object-contain" />
                     ) : (
                         <svg className="h-full w-full opacity-20" viewBox="0 0 400 300">
                             <rect x="50" y="80" width="120" height="140" fill="#4b5563" />
@@ -163,14 +159,12 @@ const SecurityCamera = ({ photo, handleCapture, disableCapture }:
                     )}
                 </div>
                 {photo?.face_detected && (
-                <div className="absolute top-2 left-2 flex items-center gap-1 rounded bg-red-600 px-2 py-1 text-xs text-white">
-                    <div className="h-2 w-2 animate-pulse rounded-full bg-white"></div>
-                    PERSON DETECTED
-                </div>
-                    )}
-                <div className="bg-opacity-60 absolute top-2 right-2 rounded bg-black px-2 py-1 font-mono text-xs text-white">
-                    {formatted}
-                </div>
+                    <div className="absolute top-2 left-2 flex items-center gap-1 rounded bg-red-600 px-2 py-1 text-xs text-white">
+                        <div className="h-2 w-2 animate-pulse rounded-full bg-white"></div>
+                        PERSON DETECTED
+                    </div>
+                )}
+                <div className="bg-opacity-60 absolute top-2 right-2 rounded bg-black px-2 py-1 font-mono text-xs text-white">{formatted}</div>
                 <div className="absolute inset-0 border-2 border-green-500 opacity-30"></div>
             </div>
         </div>
@@ -211,27 +205,27 @@ const Dashboard = (props: Props) => {
         })?.y ?? 0,
     );
 
-    const [photo, setPhoto] = useState(
-        props.photo,
-    );
+    const [photo, setPhoto] = useState(props.photo);
 
     const [disableCapture, setDisableCapture] = useState(false);
 
     const handleCapture = () => {
         // Add your capture logic here
-        console.log("Capture button clicked");
+        console.log('Capture button clicked');
         setDisableCapture(true);
 
         // send axios post request to /dashboard/capture/image
-        axios.post('/api/dashboard/capture/image', {
-            node_id: props.node.id
-        }).then(response => {
-            console.log("Capture successful", response.data);
-        }).catch(error => {
-            console.error("Capture failed", error);
-            setDisableCapture(false);
-        });
-
+        axios
+            .post('/api/dashboard/capture/image', {
+                node_id: props.node.id,
+            })
+            .then((response) => {
+                console.log('Capture successful', response.data);
+            })
+            .catch((error) => {
+                console.error('Capture failed', error);
+                setDisableCapture(false);
+            });
     };
 
     useEcho(`NewDatapointEvent.${props.node.id}`, ['DatapointCreatedEvent'], (e: Datapoint) => {
@@ -277,11 +271,10 @@ const Dashboard = (props: Props) => {
                     <div className="mb-4 grid flex-1 grid-cols-2 gap-6">
                         <GaugeChart value={pressure} min={0} max={1.6} label="Water Pressure" unit="MPa" color="#06b6d4" />
                         <GaugeChart value={orb} min={-1100} max={1100} label="Oxidation-Reduction Potential" unit="mV" color="#ec4899" />
-
                     </div>
 
                     <div className="mb-4 grid flex-1 grid-cols-2 gap-6">
-                        <SecurityCamera photo={photo}  handleCapture={handleCapture} disableCapture={disableCapture} />
+                        <SecurityCamera photo={photo} handleCapture={handleCapture} disableCapture={disableCapture} />
                         <LocationMap lat={lat} lng={lng} />
                     </div>
                 </div>

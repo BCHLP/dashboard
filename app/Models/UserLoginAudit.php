@@ -16,7 +16,7 @@ class UserLoginAudit extends Model
         'user_id',
         'user_fingerprint_id',
         'email',
-        'successful'
+        'successful',
     ];
 
     public function user(): BelongsTo

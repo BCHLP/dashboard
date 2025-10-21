@@ -11,9 +11,9 @@ use App\Http\Middleware\MfaMiddleware;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-//Route::get('/', function () {
+// Route::get('/', function () {
 //    return Inertia::render('welcome');
-//})->name('home');
+// })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
@@ -26,7 +26,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('voice.register')
         ->withoutMiddleware([MfaMiddleware::class]);
 
-    Route::resource('users', UserController::class)->middleware('can:'. PermissionEnum::USERS->value);
+    Route::resource('users', UserController::class)->middleware('can:'.PermissionEnum::USERS->value);
 
 });
 

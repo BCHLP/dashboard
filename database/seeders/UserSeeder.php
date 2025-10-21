@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
 use App\Models\User;
 use App\Models\UserVoice;
@@ -17,7 +16,7 @@ class UserSeeder extends Seeder
             'email' => 'djbelle@our.ecu.edu.au',
             'password' => '909aJq1NS|1H',
             'totp_secret' => 'MN6O75VRYRZ4OBV7',
-            'totp_activated_at' => date('Y-m-d H:i:s')
+            'totp_activated_at' => date('Y-m-d H:i:s'),
         ]);
 
         UserVoice::create([
@@ -26,7 +25,6 @@ class UserSeeder extends Seeder
         ]);
 
         $admin->assignRole(RoleEnum::ADMIN);
-
 
         $rohan = User::create([
             'name' => 'Rohan',

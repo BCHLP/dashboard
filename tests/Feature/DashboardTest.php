@@ -1,8 +1,5 @@
 <?php
 
-use App\Models\User;
-use function DI\create;
-
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 test('guests are redirected to the login page', function () {

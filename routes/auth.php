@@ -8,7 +8,6 @@ use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\VerifyEmailController;
-use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\SetupController;
 use App\Http\Middleware\MfaMiddleware;
 use Illuminate\Support\Facades\Route;
@@ -48,12 +47,9 @@ Route::middleware('guest')->group(function () {
         ->middleware(['signed', 'throttle:6,1'])
         ->name('verification.verify');
 
-
 });
 
 Route::middleware('auth')->withoutMiddleware(MfaMiddleware::class)->group(function () {
-
-
 
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');
@@ -79,4 +75,3 @@ Route::middleware('auth')->withoutMiddleware(MfaMiddleware::class)->group(functi
         ->name('voice.store');
 
 });
-

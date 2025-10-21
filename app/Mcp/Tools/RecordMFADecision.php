@@ -2,10 +2,8 @@
 
 namespace App\Mcp\Tools;
 
-use App\Events\MfaDecisionEvent;
 use App\Facades\AdaptiveMfaFacade;
 use Generator;
-use Illuminate\Support\Facades\Cache;
 use Laravel\Mcp\Server\Tool;
 use Laravel\Mcp\Server\Tools\Annotations\Title;
 use Laravel\Mcp\Server\Tools\ToolInputSchema;
@@ -48,8 +46,6 @@ class RecordMFADecision extends Tool
 
     /**
      * Execute the tool call.
-     *
-     * @return ToolResult|Generator
      */
     public function handle(array $arguments): ToolResult|Generator
     {
@@ -58,7 +54,7 @@ class RecordMFADecision extends Tool
         $totp = $arguments['totp'];
         $voice = $arguments['voice'];
 
-        AdaptiveMfaFacade::setBoth( $totp, $voice, $eventId, $userId);
+        AdaptiveMfaFacade::setBoth($totp, $voice, $eventId, $userId);
 
         return ToolResult::text('Tool executed successfully.');
     }

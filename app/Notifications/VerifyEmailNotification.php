@@ -2,8 +2,6 @@
 
 namespace App\Notifications;
 
-use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Notifications\Notification;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
@@ -12,7 +10,9 @@ use Illuminate\Support\Facades\URL;
 class VerifyEmailNotification extends VerifyEmail
 {
     private $token = '';
-    public function setToken(string $token) {
+
+    public function setToken(string $token)
+    {
         $this->token = $token;
     }
 

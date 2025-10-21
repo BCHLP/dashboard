@@ -9,10 +9,7 @@ use Illuminate\Http\Request;
 
 class DatapointController extends Controller
 {
-    public function index()
-    {
-
-    }
+    public function index() {}
 
     public function store(Request $request)
     {
@@ -21,11 +18,12 @@ class DatapointController extends Controller
         ]);
         $server = $request->user();
 
-            ray($server);
+        ray($server);
         foreach ($data['points'] as $point) {
             $metric = $server->metrics->where('alias', $point['metric'] ?? '')->first();
             if (blank($metric)) {
-                ray("No metric for " . $point['metric']);
+                ray('No metric for '.$point['metric']);
+
                 continue;
             }
 
@@ -41,15 +39,9 @@ class DatapointController extends Controller
         return response()->noContent();
     }
 
-    public function show(Datapoint $datapoint)
-    {
-    }
+    public function show(Datapoint $datapoint) {}
 
-    public function update(Request $request, Datapoint $datapoint)
-    {
-    }
+    public function update(Request $request, Datapoint $datapoint) {}
 
-    public function destroy(Datapoint $datapoint)
-    {
-    }
+    public function destroy(Datapoint $datapoint) {}
 }

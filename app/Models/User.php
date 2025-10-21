@@ -7,15 +7,15 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Collection;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
+    use HasApiTokens, HasRoles;
+
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
-    use HasRoles, HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -28,7 +28,7 @@ class User extends Authenticatable
         'password',
         'uuid',
         'totp_secret',
-        'totp_activated_at'
+        'totp_activated_at',
     ];
 
     /**
@@ -58,11 +58,13 @@ class User extends Authenticatable
         ];
     }
 
-    public function voice(): HasOne {
+    public function voice(): HasOne
+    {
         return $this->hasOne(UserVoice::class);
     }
 
-    public function datapoints(): MorphMany {
+    public function datapoints(): MorphMany
+    {
         return $this->morphMany(Datapoint::class, 'source');
     }
 }

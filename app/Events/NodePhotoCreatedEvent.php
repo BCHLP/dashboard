@@ -14,18 +14,17 @@ class NodePhotoCreatedEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(public NodePhoto $nodePhoto)
-    {
-    }
+    public function __construct(public NodePhoto $nodePhoto) {}
 
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('NewNodePhoto.'.$this->nodePhoto->node_id)
+            new PrivateChannel('NewNodePhoto.'.$this->nodePhoto->node_id),
         ];
     }
 
-    public function broadcastWith() {
+    public function broadcastWith()
+    {
         return NodePhotoResource::make($this->nodePhoto)->resolve();
     }
 }

@@ -1,11 +1,10 @@
 <?php
 
-use App\Http\Middleware\MfaMiddleware;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\MfaMiddleware;
 use App\Http\Middleware\OpenAiMiddleware;
 use App\Http\Middleware\RedirectIfUnauthenticatedMiddleware;
-use App\Http\Middleware\VerifyVoiceAuthenticatedMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;

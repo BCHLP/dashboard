@@ -1,15 +1,15 @@
-import AppLayout from '@/layouts/app-layout'
-import { Head, useForm } from '@inertiajs/react'
-import type { BreadcrumbItem, Role } from '@/types'
-import React, { FormEventHandler } from 'react'
-import { Separator } from '@/components/ui/separator'
-import HeadingSmall from '@/components/heading-small'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
-import InputError from '@/components/input-error'
-import { Button } from '@/components/ui/button'
-import { Transition } from '@headlessui/react'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import HeadingSmall from '@/components/heading-small';
+import InputError from '@/components/input-error';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import AppLayout from '@/layouts/app-layout';
+import type { BreadcrumbItem, Role } from '@/types';
+import { Transition } from '@headlessui/react';
+import { Head, useForm } from '@inertiajs/react';
+import { FormEventHandler } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -20,34 +20,34 @@ const breadcrumbs: BreadcrumbItem[] = [
         title: 'Create',
         href: '/users/create',
     },
-]
+];
 
 type UserForm = {
-    name: string
-    email: string
-    role: string
-}
+    name: string;
+    email: string;
+    role: string;
+};
 
 type Props = {
     roles: Role[];
-}
+};
 
-export default function Create({roles}:Props) {
+export default function Create({ roles }: Props) {
     const { data, setData, post, errors, processing, recentlySuccessful } = useForm<Required<UserForm>>({
         name: '',
         email: '',
-        role: ''
-    })
+        role: '',
+    });
 
-    console.log("roles", roles);
+    console.log('roles', roles);
 
     const submit: FormEventHandler = (e) => {
-        e.preventDefault()
+        e.preventDefault();
 
         post('/users', {
             preserveScroll: true,
-        })
-    }
+        });
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -55,8 +55,7 @@ export default function Create({roles}:Props) {
 
             <div className="flex flex-col space-y-8 lg:flex-row lg:space-y-0 lg:space-x-12">
                 <aside className="w-full max-w-xl lg:w-48">
-                    <nav className="flex flex-col space-y-1 space-x-0">
-                    </nav>
+                    <nav className="flex flex-col space-y-1 space-x-0"></nav>
                 </aside>
 
                 <Separator className="my-6 md:hidden" />
@@ -114,9 +113,7 @@ export default function Create({roles}:Props) {
                                 </div>
 
                                 <div className="flex items-center gap-4">
-                                    <Button disabled={processing}>
-                                        {processing ? 'Creating...' : 'Create User'}
-                                    </Button>
+                                    <Button disabled={processing}>{processing ? 'Creating...' : 'Create User'}</Button>
 
                                     <Transition
                                         show={recentlySuccessful}
@@ -134,5 +131,5 @@ export default function Create({roles}:Props) {
                 </div>
             </div>
         </AppLayout>
-    )
+    );
 }

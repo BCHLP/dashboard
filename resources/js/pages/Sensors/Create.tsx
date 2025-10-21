@@ -1,83 +1,77 @@
-import Layout from '@/layouts/app-layout'
-import { Head, useForm } from '@inertiajs/react'
-import type { BreadcrumbItem } from '@/types'
-import React, { FormEventHandler, useState } from 'react'
-import { Separator } from '@/components/ui/separator'
-import HeadingSmall from '@/components/heading-small'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
-import InputError from '@/components/input-error'
-import { Button } from '@/components/ui/button'
-import { Transition } from '@headlessui/react'
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog'
+import HeadingSmall from '@/components/heading-small';
+import InputError from '@/components/input-error';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import Layout from '@/layouts/app-layout';
+import type { BreadcrumbItem } from '@/types';
+import { Transition } from '@headlessui/react';
+import { Head, useForm } from '@inertiajs/react';
+import { FormEventHandler, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Sensors',
         href: '/sensors',
-    },{
+    },
+    {
         title: 'Create',
         href: '/sensors/create',
     },
 ];
 
 type SensorForm = {
-    name: string
-}
+    name: string;
+};
 
 export default function Create() {
     const { data, setData, post, errors, processing, recentlySuccessful } = useForm<Required<SensorForm>>({
-        name: ''
-    })
-    const [showDownloadModal, setShowDownloadModal] = useState(false)
+        name: '',
+    });
+    const [showDownloadModal, setShowDownloadModal] = useState(false);
 
     const submit: FormEventHandler = (e) => {
-        e.preventDefault()
-        setShowDownloadModal(true)
-    }
+        e.preventDefault();
+        setShowDownloadModal(true);
+    };
 
     const handleDownload = () => {
         // Create a form and submit it to trigger file download
-        const form = document.createElement('form')
-        form.method = 'POST'
-        form.action = '/sensors'
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/sensors';
 
         // Add CSRF token
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
         if (csrfToken) {
-            const csrfInput = document.createElement('input')
-            csrfInput.type = 'hidden'
-            csrfInput.name = '_token'
-            csrfInput.value = csrfToken
-            form.appendChild(csrfInput)
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = csrfToken;
+            form.appendChild(csrfInput);
         }
 
         // Add form data
-        const nameInput = document.createElement('input')
-        nameInput.type = 'hidden'
-        nameInput.name = 'name'
-        nameInput.value = data.name
-        form.appendChild(nameInput)
+        const nameInput = document.createElement('input');
+        nameInput.type = 'hidden';
+        nameInput.name = 'name';
+        nameInput.value = data.name;
+        form.appendChild(nameInput);
 
-        document.body.appendChild(form)
-        form.submit()
-        document.body.removeChild(form)
-    }
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+    };
 
     return (
         <Layout breadcrumbs={breadcrumbs}>
-            <Head title="Create Sensor"/>
+            <Head title="Create Sensor" />
 
             <div className="flex flex-col space-y-8 lg:flex-row lg:space-y-0 lg:space-x-12">
                 <aside className="w-full max-w-xl lg:w-48">
-                    <nav className="flex flex-col space-y-1 space-x-0">
-                    </nav>
+                    <nav className="flex flex-col space-y-1 space-x-0"></nav>
                 </aside>
 
                 <Separator className="my-6 md:hidden" />
@@ -103,9 +97,7 @@ export default function Create() {
                                 </div>
 
                                 <div className="flex items-center gap-4">
-                                    <Button disabled={processing}>
-                                        {processing ? 'Creating...' : 'Create Sensor'}
-                                    </Button>
+                                    <Button disabled={processing}>{processing ? 'Creating...' : 'Create Sensor'}</Button>
 
                                     <Transition
                                         show={recentlySuccessful}
@@ -128,7 +120,8 @@ export default function Create() {
                     <DialogHeader>
                         <DialogTitle>Sensor Created Successfully</DialogTitle>
                         <DialogDescription>
-                            Your sensor configuration file is ready to download. This file will only be available here and cannot be re-downloaded once you leave this page.
+                            Your sensor configuration file is ready to download. This file will only be available here and cannot be re-downloaded
+                            once you leave this page.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="flex flex-col gap-4 py-4">
@@ -142,5 +135,5 @@ export default function Create() {
                 </DialogContent>
             </Dialog>
         </Layout>
-    )
+    );
 }

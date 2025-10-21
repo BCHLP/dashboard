@@ -15,21 +15,26 @@ use Illuminate\Support\Facades\DB;
 class BaselineService
 {
     private Carbon $startDate;
+
     private Carbon $endDate;
 
     private bool $quietly = false;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->startDate = Carbon::now()->subHours(2)->setMinutes(0)->setSeconds(0);
         $this->endDate = Carbon::now()->subHours()->setMinutes(0)->setSeconds(0);
     }
 
-    public function quietly() : self {
+    public function quietly(): self
+    {
         $this->quietly = true;
+
         return $this;
     }
 
-    public function createLoginAuditDatapoints() : self {
+    public function createLoginAuditDatapoints(): self
+    {
 
         $failedMetric = Metric::where('alias', MetricAliasEnum::USER_AUTH_FAILED)->first();
         $successfulmetric = Metric::where('alias', MetricAliasEnum::USER_AUTH_SUCCESSFUL)->first();
@@ -42,8 +47,8 @@ class BaselineService
                 ->where('user_id', $user->id)
                 ->groupBy('successful')->get();
 
-            $successful = $counts->where('successful',true)->first()->counts ?? 0;
-            $failed = $counts->where('successful',false)->first()->counts ?? 0;
+            $successful = $counts->where('successful', true)->first()->counts ?? 0;
+            $failed = $counts->where('successful', false)->first()->counts ?? 0;
 
             if ($this->quietly) {
                 Datapoint::createQuietly([
@@ -59,6 +64,7 @@ class BaselineService
                     'metric_id' => $successfulmetric->id,
                     'time' => $this->startDate->timestamp,
                     'value' => $successful]);
+
                 continue;
             }
 
@@ -80,7 +86,7 @@ class BaselineService
         return $this;
     }
 
-    public function execute() : void
+    public function execute(): void
     {
         $metrics = Metric::all();
         $users = User::all();
@@ -89,22 +95,23 @@ class BaselineService
 
             if ($metric->alias === MetricAliasEnum::USER_AUTH_FAILED->value
                 || $metric->alias === MetricAliasEnum::USER_AUTH_SUCCESSFUL->value) {
-                foreach($users as $user) {
+                foreach ($users as $user) {
 
                     $this->create($metric, $user, User::class);
                 }
+
                 continue;
 
             }
 
-
-            foreach($metric->nodes as $node) {
+            foreach ($metric->nodes as $node) {
                 $this->create($metric, $node, Node::class);
             }
         }
     }
 
-    private function create(Metric $metric, Node|User $source, string $sourceClass) : MetricBaseline {
+    private function create(Metric $metric, Node|User $source, string $sourceClass): MetricBaseline
+    {
 
         $datapoints = Datapoint::where('metric_id', $metric->id)
             ->where('source_id', $source->id)
@@ -118,7 +125,7 @@ class BaselineService
             'source_type' => $sourceClass,
             'dow' => $this->startDate->dayOfWeek(),
             'hour' => $this->startDate->hour,
-        ],[
+        ], [
             'mean' => $datapoints->avg() ?? 0,
             'median' => $datapoints->median() ?? 0,
             'sd' => $datapoints->sd() ?? 0,

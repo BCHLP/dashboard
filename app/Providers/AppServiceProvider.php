@@ -3,8 +3,9 @@
 namespace App\Providers;
 
 use App\Services\AdaptiveMfaService;
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Collection;
+use Illuminate\Support\ServiceProvider;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -13,7 +14,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind('amfa', function ($app) {
-            return new AdaptiveMfaService();
+            return new AdaptiveMfaService;
         });
     }
 
@@ -30,12 +31,12 @@ class AppServiceProvider extends ServiceProvider
 
             $mean = $this->avg();
             $distance_sum = 0;
-            $this->each(function($value) use (&$distance_sum, $mean) {
+            $this->each(function ($value) use (&$distance_sum, $mean) {
                 $distance_sum += ($value - $mean) ** 2;
             });
             $variance = $distance_sum / $this->count();
 
-           return sqrt($variance);
+            return sqrt($variance);
         });
     }
 }

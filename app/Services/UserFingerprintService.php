@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Services;
@@ -13,7 +14,7 @@ class UserFingerprintService
 
     public function __construct()
     {
-        $this->agent = new Agent();
+        $this->agent = new Agent;
     }
 
     /**
@@ -150,6 +151,7 @@ class UserFingerprintService
     protected function getLocationFromIP(string $ip): ?array
     {
         $geoipService = app(GeoIpService::class);
+
         return $geoipService->getLocation($ip);
     }
 
@@ -230,7 +232,7 @@ class UserFingerprintService
             'typical_ip' => $fingerprint['ip_address'] ?? null,
             'typical_user_agent' => $fingerprint['user_agent'] ?? null,
             'typical_canvas' => $fingerprint['canvas_fingerprint'] ?? null,
-            'typical_screen_resolution' => ($fingerprint['screen_width'] ?? '') . 'x' . ($fingerprint['screen_height'] ?? ''),
+            'typical_screen_resolution' => ($fingerprint['screen_width'] ?? '').'x'.($fingerprint['screen_height'] ?? ''),
             'last_updated' => now()->toISOString(),
         ]);
 

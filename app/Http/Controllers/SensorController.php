@@ -13,6 +13,7 @@ class SensorController extends Controller
     public function index()
     {
         $sensors = Node::where('node_type', NodeTypeEnum::SENSOR)->get();
+
         return Inertia::render('Sensors/Index', ['sensors' => $sensors]);
     }
 
@@ -27,15 +28,13 @@ class SensorController extends Controller
         $data['node_type'] = NodeTypeEnum::SENSOR;
         $sensor = Node::create($data);
         $zipFileName = $createSensorConfig($sensor);
-        abort_if(!$zipFileName, 500);
+        abort_if(! $zipFileName, 500);
 
         return response()->download($zipFileName, 'sensor-config.zip')->deleteFileAfterSend();
 
     }
 
-    public function show(Node $sensor)
-    {
-    }
+    public function show(Node $sensor) {}
 
     public function edit(Node $sensor)
     {
@@ -46,12 +45,14 @@ class SensorController extends Controller
     {
         $data = $request->validate(['name' => 'required|string']);
         $sensor->update($data);
+
         return redirect()->route('sensors.index');
     }
 
     public function destroy(Node $sensor)
     {
         $sensor->delete();
+
         return redirect()->route('sensors.index');
     }
 }

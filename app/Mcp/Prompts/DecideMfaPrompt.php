@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Mcp\Prompts;
@@ -54,10 +55,11 @@ Output strictly in JSON format:
 }';
 
         $userPrompt = json_encode([
-                    'event_id' => $arguments['event_id'],
-                    'user' => $arguments['user'],
-                    'context' => $arguments['context'],
-                ]);
+            'event_id' => $arguments['event_id'],
+            'user' => $arguments['user'],
+            'context' => $arguments['context'],
+        ]);
+
         return new PromptResult($systemPrompt, $userPrompt);
     }
 }

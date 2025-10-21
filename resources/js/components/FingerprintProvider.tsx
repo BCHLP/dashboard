@@ -1,6 +1,6 @@
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, ReactNode, useContext } from 'react';
 import { useFingerprint } from '../hooks/useFingerprint';
-import type { FingerprintOptions, FingerprintHookReturn } from '../types/fingerprint';
+import type { FingerprintHookReturn, FingerprintOptions } from '../types/fingerprint';
 
 const FingerprintContext = createContext<FingerprintHookReturn | undefined>(undefined);
 
@@ -9,22 +9,18 @@ interface FingerprintProviderProps extends FingerprintOptions {
 }
 
 export const FingerprintProvider: React.FC<FingerprintProviderProps> = ({
-                                                                            children,
-                                                                            endpoint = '/api/fingerprint',
-                                                                            csrfToken = null,
-                                                                            autoCollectOnMount = true
-                                                                        }) => {
+    children,
+    endpoint = '/api/fingerprint',
+    csrfToken = null,
+    autoCollectOnMount = true,
+}) => {
     const fingerprint = useFingerprint({
         endpoint,
         csrfToken,
-        autoCollectOnMount
+        autoCollectOnMount,
     });
 
-    return (
-        <FingerprintContext.Provider value={fingerprint}>
-            {children}
-        </FingerprintContext.Provider>
-    );
+    return <FingerprintContext.Provider value={fingerprint}>{children}</FingerprintContext.Provider>;
 };
 
 export const useContextFingerprint = (): FingerprintHookReturn => {

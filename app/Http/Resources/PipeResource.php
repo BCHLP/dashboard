@@ -12,18 +12,19 @@ class PipeResource extends JsonResource
     public function toArray(Request $request): array
     {
         $points = $this->path->getPoints();
+
         return [
             'id' => $this->id,
             'name' => $this->name,
             'path' => [
                 [
                     'lat' => $points[0]->getX(),
-                    'lng' => $points[0]->getY()
-                ],[
+                    'lng' => $points[0]->getY(),
+                ], [
                     'lat' => $points[1]->getX(),
-                    'lng' => $points[1]->getY()
+                    'lng' => $points[1]->getY(),
                 ],
-            ]
+            ],
         ];
     }
 }

@@ -24,13 +24,15 @@ class TotpController extends Controller
      * @throws SecretKeyTooShortException
      * @throws InvalidCharactersException
      */
-    public function update(Request $request) {
+    public function update(Request $request)
+    {
         $data = $request->validate(['token' => 'required|string']);
 
-        $google2fa = new Google2FA();
+        $google2fa = new Google2FA;
         $valid = $google2fa->verifyKey(auth()->user()->totp_secret, $data['token']);
         if ($valid) {
             auth()->user()->update(['totp_activated_at' => Carbon::now()]);
+
             return back();
         }
 

@@ -9,7 +9,7 @@ interface AppLayoutProps {
 }
 
 export default ({ children, breadcrumbs, rightContent, ...props }: AppLayoutProps) => (
-        <AppLayoutTemplate breadcrumbs={breadcrumbs} rightContent={rightContent} {...props}>
-            {children}
-        </AppLayoutTemplate>
+    <AppLayoutTemplate breadcrumbs={breadcrumbs} rightContent={rightContent} {...props}>
+        {children}
+    </AppLayoutTemplate>
 );

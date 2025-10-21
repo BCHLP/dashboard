@@ -15,7 +15,7 @@ class MediaController extends Controller
 
         $filePath = Storage::path($photo->location);
 
-        abort_if(!file_exists($filePath), 404);
+        abort_if(! file_exists($filePath), 404);
 
         return response()->file($filePath);
     }

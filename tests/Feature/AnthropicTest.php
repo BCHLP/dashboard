@@ -1,6 +1,5 @@
 <?php
 
-
 use App\Models\User;
 use App\Models\UserFingerprint;
 use App\Services\ClaudeAgentService;
@@ -14,10 +13,10 @@ test('real Anthropic agentic ai decision', function () {
 
     $eventId = Str::uuid()->toString();
 
-    $service = new ClaudeAgentService();
+    $service = new ClaudeAgentService;
     $decision = $service->decide($user->id, $fingerprint, $eventId);
 
-    ray("Claude Decision", $decision);
+    ray('Claude Decision', $decision);
 
     expect($decision)
         ->toBeArray()

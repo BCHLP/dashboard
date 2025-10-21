@@ -1,23 +1,21 @@
-import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
-import { useForm, router } from '@inertiajs/react';
-import { FormEventHandler, useRef } from 'react';
-import axios from 'axios';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import InputError from '@/components/input-error';
+import { Label } from '@/components/ui/label';
 import { MfaDecision } from '@/types';
+import { useForm } from '@inertiajs/react';
+import axios from 'axios';
+import React, { createContext, FormEventHandler, ReactNode, useCallback, useContext, useRef, useState } from 'react';
 
 interface MfaChallenge {
     action: string; // The route or action that triggered MFA
-    onSuccess?: (decision:MfaDecision) => void; // Callback for successful MFA
+    onSuccess?: (decision: MfaDecision) => void; // Callback for successful MFA
     onCancel?: () => void; // Callback for cancelled MFA
     message?: string; // Custom message for the modal
     endpoint?: string;
-    email?:string;
-    password?:string;
-
+    email?: string;
+    password?: string;
 }
 
 interface MfaContextType {
@@ -58,23 +56,21 @@ export const MfaProvider: React.FC<MfaProviderProps> = ({ children }) => {
         setIsOpen(false);
     }, [challenge]);
 
-    const handleMfaSuccess = useCallback((decision:MfaDecision) => {
-        if (challenge?.onSuccess) {
-            challenge.onSuccess(decision);
-        }
-        setChallenge(null);
-        setIsOpen(false);
-    }, [challenge]);
+    const handleMfaSuccess = useCallback(
+        (decision: MfaDecision) => {
+            if (challenge?.onSuccess) {
+                challenge.onSuccess(decision);
+            }
+            setChallenge(null);
+            setIsOpen(false);
+        },
+        [challenge],
+    );
 
     return (
         <MfaContext.Provider value={{ requireMfa, dismissMfa, isActive: isOpen }}>
             {children}
-            <MfaModal
-                open={isOpen}
-                challenge={challenge}
-                onSuccess={handleMfaSuccess}
-                onCancel={dismissMfa}
-            />
+            <MfaModal open={isOpen} challenge={challenge} onSuccess={handleMfaSuccess} onCancel={dismissMfa} />
         </MfaContext.Provider>
     );
 };
@@ -83,17 +79,17 @@ export const MfaProvider: React.FC<MfaProviderProps> = ({ children }) => {
 interface MfaModalProps {
     open: boolean;
     challenge: MfaChallenge | null;
-    onSuccess: (decision:MfaDecision) => void;
+    onSuccess: (decision: MfaDecision) => void;
     onCancel: () => void;
     endpoint?: string;
-    email?:string;
-    password?:string;
+    email?: string;
+    password?: string;
 }
 
 const MfaModal: React.FC<MfaModalProps> = ({ open, challenge, onSuccess, onCancel }) => {
     const tokenInput = useRef<HTMLInputElement>(null);
     const { data, setData, post, processing, reset, errors, clearErrors } = useForm<{ token: string }>({
-        token: ''
+        token: '',
     });
     const [tokenError, setTokenError] = useState<string>('');
 
@@ -120,7 +116,7 @@ const MfaModal: React.FC<MfaModalProps> = ({ open, challenge, onSuccess, onCance
             clearErrors();
             onSuccess(response.data);
         } catch (error) {
-            console.log("an error occurred", error);
+            console.log('an error occurred', error);
             tokenInput.current?.focus();
         }
     };
@@ -135,9 +131,7 @@ const MfaModal: React.FC<MfaModalProps> = ({ open, challenge, onSuccess, onCance
         <Dialog open={open} onOpenChange={(open) => !open && closeModal()}>
             <DialogContent>
                 <DialogTitle>Authentication required</DialogTitle>
-                <DialogDescription>
-                    {challenge?.message || 'Please enter your MFA code to continue'}
-                </DialogDescription>
+                <DialogDescription>{challenge?.message || 'Please enter your MFA code to continue'}</DialogDescription>
                 <form className="space-y-6" onSubmit={sendToken}>
                     <div className="grid gap-2">
                         <Label htmlFor="token" className="sr-only">

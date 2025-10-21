@@ -1,7 +1,7 @@
+import { useMfa } from '@/MfaProvider';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 import { FormEventHandler } from 'react';
-import { useMfa } from '@/MfaProvider';
 
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
@@ -34,9 +34,8 @@ export default function Login({ status }: LoginProps) {
         e.preventDefault();
         post(route('login.store'), {
             onSuccess: (page) => {
-                console.log("success");
+                console.log('success');
                 console.log(page);
-
             },
             onFinish: () => reset('password'),
         });
@@ -68,10 +67,9 @@ export default function Login({ status }: LoginProps) {
                         <div className="flex items-center">
                             <Label htmlFor="password">Password</Label>
 
-                                <TextLink href={route('password.request')} className="ml-auto text-sm" tabIndex={5}>
-                                    Forgot password?
-                                </TextLink>
-
+                            <TextLink href={route('password.request')} className="ml-auto text-sm" tabIndex={5}>
+                                Forgot password?
+                            </TextLink>
                         </div>
                         <Input
                             id="password"

@@ -10,9 +10,7 @@ use Illuminate\Support\Str;
 
 class FingerprintController extends Controller
 {
-    public function __construct(private UserFingerprintService $fingerprintService) {
-
-    }
+    public function __construct(private UserFingerprintService $fingerprintService) {}
 
     public function __invoke(Request $request)
     {
@@ -43,7 +41,7 @@ class FingerprintController extends Controller
             $fingerprint = $this->fingerprintService->generateFingerprint($request, $clientData);
             $userFingerprint = UserFingerprint::where('user_id', auth()->id())->where('hash', $fingerprint['hash'])->first();
 
-            if (!$userFingerprint) {
+            if (! $userFingerprint) {
                 // Store in database
                 $userFingerprint = UserFingerprint::create([
                     'id' => Str::uuid()->toString(),
@@ -68,7 +66,7 @@ class FingerprintController extends Controller
             $this->fingerprintService->updateUserBaseline(auth()->id() ?? 0, $fingerprint);
 
             // Check for suspicious activity
-            $userBaseline = cache("user_baseline_" . auth()->id(), []);
+            $userBaseline = cache('user_baseline_'.auth()->id(), []);
             $isSuspicious = $this->fingerprintService->isSuspicious($fingerprint, $userBaseline);
 
             if ($isSuspicious) {
@@ -77,7 +75,7 @@ class FingerprintController extends Controller
                     'user_id' => auth()->id(),
                     'fingerprint_id' => $userFingerprint->id,
                     'current_ip' => $request->ip(),
-                    'baseline_ip' => $userBaseline['typical_ip'] ?? 'unknown'
+                    'baseline_ip' => $userBaseline['typical_ip'] ?? 'unknown',
                 ]);
             }
 
@@ -85,18 +83,18 @@ class FingerprintController extends Controller
 
             return response()->json([
                 'success' => true,
-                'fingerprint_id' => $userFingerprint->id
+                'fingerprint_id' => $userFingerprint->id,
             ]);
 
         } catch (\Exception $e) {
             \Log::error('Fingerprint storage failed', [
                 'error' => $e->getMessage(),
-                'user_id' => auth()->id()
+                'user_id' => auth()->id(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to store fingerprint'
+                'message' => 'Failed to store fingerprint',
             ], 500);
         }
     }

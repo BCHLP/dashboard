@@ -9,8 +9,5 @@ class NodeCreatedEvent
 {
     use Dispatchable;
 
-    public function __construct(public Node $node)
-    {
-
-    }
+    public function __construct(public Node $node) {}
 }

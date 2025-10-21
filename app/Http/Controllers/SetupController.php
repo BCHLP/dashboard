@@ -9,6 +9,7 @@ use Inertia\Inertia;
 use Laravel\Sanctum\PersonalAccessToken;
 use PragmaRX\Google2FAQRCode\Exceptions\MissingQrCodeServiceException;
 use PragmaRX\Google2FAQRCode\Google2FA;
+
 class SetupController extends Controller
 {
     /**
@@ -16,7 +17,7 @@ class SetupController extends Controller
      */
     public function totp()
     {
-        $google2fa = new Google2FA();
+        $google2fa = new Google2FA;
         $secretKey = $google2fa->generateSecretKey();
         $qrCode = $google2fa->getQRCodeInline(
             config('app.name'),
@@ -29,7 +30,8 @@ class SetupController extends Controller
         return Inertia::render('auth/totp', ['qrCode' => $qrCode]);
     }
 
-    public function password() {
+    public function password()
+    {
 
         if (filled(auth()->user()->password)) {
             return response()->redirectToRoute('password.edit');
@@ -38,7 +40,8 @@ class SetupController extends Controller
         return Inertia::render('auth/SetPassword');
     }
 
-    public function storePassword(Request $request) {
+    public function storePassword(Request $request)
+    {
         $rules = ['password' => ['required', Password::defaults(), 'confirmed']];
         $redirect = route('home');
 
@@ -53,13 +56,14 @@ class SetupController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        PersonalAccessToken::where('name','registration')->where('tokenable_id', $request->user()->id)->delete();
+        PersonalAccessToken::where('name', 'registration')->where('tokenable_id', $request->user()->id)->delete();
 
         return response()->redirectToRoute('home');
 
     }
 
-    public function voice() {
+    public function voice()
+    {
         return Inertia::render('RegisterVoice');
     }
 }

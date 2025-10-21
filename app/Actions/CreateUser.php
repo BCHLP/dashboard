@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Actions;
@@ -6,12 +7,12 @@ namespace App\Actions;
 use App\Models\Role;
 use App\Models\User;
 use App\Notifications\VerifyEmailNotification;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class CreateUser
 {
-    public function __invoke(string $name, string $email, string $role) : User {
+    public function __invoke(string $name, string $email, string $role): User
+    {
 
         $user = User::create(['name' => $name, 'email' => $email, 'uuid' => Str::uuid()]);
 
@@ -20,7 +21,7 @@ class CreateUser
         }
 
         $token = $user->createToken('registration');
-        $notification = new VerifyEmailNotification();
+        $notification = new VerifyEmailNotification;
         $notification->setToken($token->plainTextToken);
 
         $user->notify($notification);

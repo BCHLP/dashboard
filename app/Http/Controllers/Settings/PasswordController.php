@@ -39,8 +39,7 @@ class PasswordController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        if (filled($redirect))
-        {
+        if (filled($redirect)) {
             return redirect($redirect);
         }
 

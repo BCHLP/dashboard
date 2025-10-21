@@ -34,13 +34,12 @@ class GetRecentFailedAttempts extends Tool
 
         $schema->integer('days_back')
             ->description('How many days of history to retrieve');
+
         return $schema;
     }
 
     /**
      * Execute the tool call.
-     *
-     * @return ToolResult|Generator
      */
     public function handle(array $arguments): ToolResult|Generator
     {
@@ -51,7 +50,7 @@ class GetRecentFailedAttempts extends Tool
             ->latest()
             ->limit($arguments['limit'] ?? 25)
             ->get()
-            ->map(fn($audit) => [
+            ->map(fn ($audit) => [
                 'successful' => $audit->successful,
                 'timestamp' => $audit->created_at->toIso8601String(),
                 'ip_address' => $audit->fingerprint['ip_address'] ?? '',
@@ -65,7 +64,6 @@ class GetRecentFailedAttempts extends Tool
                 'is_mobile' => $audit->fingerprint['is_mobile'] ?? '',
                 'fingerprint_hash' => $audit->fingerprint['hash'] ?? '',
             ]);
-
 
         yield ToolResult::json([
             'user_id' => $arguments['user_id'],

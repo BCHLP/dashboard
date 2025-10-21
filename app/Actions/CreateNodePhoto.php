@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Actions;
@@ -10,7 +11,8 @@ use Illuminate\Support\Str;
 
 class CreateNodePhoto
 {
-    public function __invoke(string $base64String, Node $node, bool $faceDetected) : bool {
+    public function __invoke(string $base64String, Node $node, bool $faceDetected): bool
+    {
         // Remove the data URI scheme if present (e.g., "data:image/png;base64,")
         if (preg_match('/^data:image\/(\w+);base64,/', $base64String, $matches)) {
             $imageType = $matches[1];
@@ -32,7 +34,7 @@ class CreateNodePhoto
             return false;
         }
 
-        $outputPath = "photos/".Str::uuid()->toString() . ".png";
+        $outputPath = 'photos/'.Str::uuid()->toString().'.png';
 
         // Save the image to disk
         $result = Storage::put($outputPath, $imageData);
@@ -48,6 +50,6 @@ class CreateNodePhoto
         ]);
 
         // return true if photo record was created
-        return !(is_null($photo));
+        return ! (is_null($photo));
     }
 }

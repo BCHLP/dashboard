@@ -1,7 +1,9 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Services;
+
 use App\Models\User;
 use App\Models\UserVoice;
 use Illuminate\Support\Facades\Http;
@@ -9,7 +11,8 @@ use Illuminate\Support\Facades\Log;
 
 class VoiceRecognitionService
 {
-    public function register(string $base64audio) : bool {
+    public function register(string $base64audio): bool
+    {
         $endpoint = config('scada.services.voice.register');
 
         $response = Http::timeout(30)
@@ -20,11 +23,11 @@ class VoiceRecognitionService
                 'audio' => $base64audio,
             ])->json() ?? [];
 
-        if (filled($response["embeddings"])) {
+        if (filled($response['embeddings'])) {
 
             $voice = UserVoice::create([
-                 'user_id' => auth()->user()->id,
-                'embeddings' => $response["embeddings"]
+                'user_id' => auth()->user()->id,
+                'embeddings' => $response['embeddings'],
             ]);
 
             return true;
@@ -33,7 +36,8 @@ class VoiceRecognitionService
         return false;
     }
 
-    public function compare(string $base64audio, User $user) : bool {
+    public function compare(string $base64audio, User $user): bool
+    {
         $endpoint = config('scada.services.voice.compare');
 
         $embeddings = $user->voice->embeddings;
@@ -50,14 +54,15 @@ class VoiceRecognitionService
                 'embeddings' => $embeddings,
             ])->json() ?? [];
 
-        Log::debug("response from server:" . print_r($response,true));
+        Log::debug('response from server:'.print_r($response, true));
 
         $authenticated = $response['authenticated'] ?? false;
 
         return $authenticated;
     }
 
-    public static function isVoiceAuthenticated() : bool {
-        return (auth()->check() && session()->has('voice'));
+    public static function isVoiceAuthenticated(): bool
+    {
+        return auth()->check() && session()->has('voice');
     }
 }

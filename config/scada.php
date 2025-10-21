@@ -1,4 +1,5 @@
 <?php
+
 return [
     'services' => [
         'voice' => [
@@ -14,5 +15,5 @@ return [
     ],
     'amfa' => [
         'enabled' => env('AMFA_ENABLED', true),
-    ]
+    ],
 ];

@@ -23,5 +23,4 @@ enum NodeTypeEnum: int
 
     case INVISIBLE = 13;
 
-
 }

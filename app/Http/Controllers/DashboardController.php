@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\NodeTypeEnum;
 use App\Http\Resources\NodePhotoResource;
-use App\Http\Resources\NodeResource;
 use App\Models\Datapoint;
 use App\Models\Node;
 use App\Models\NodePhoto;
 use Inertia\Inertia;
+
 class DashboardController extends Controller
 {
     public function __invoke()

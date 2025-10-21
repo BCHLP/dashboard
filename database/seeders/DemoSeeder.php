@@ -24,7 +24,7 @@ class DemoSeeder extends Seeder
         $metrics[] = Metric::create(['name' => 'Longitude', 'alias' => MetricAliasEnum::GPS_LNG]);
         $metrics[] = Metric::create(['name' => 'Camera', 'alias' => MetricAliasEnum::CAMERA]);
 
-        foreach($metrics as $metric) {
+        foreach ($metrics as $metric) {
             $sensor->metrics()->attach($metric);
         }
 
@@ -45,7 +45,8 @@ class DemoSeeder extends Seeder
         Cache::clear();
     }
 
-    private function createHistory(Node $node, Metric $metric, int $min, int $max) : void {
+    private function createHistory(Node $node, Metric $metric, int $min, int $max): void
+    {
         $startDate = Carbon::now()->subHours(72)->setMinutes(0)->setSeconds(0);
         $endDate = Carbon::now();
         $totalMinutes = round($startDate->diffInMinutes($endDate));
@@ -53,17 +54,17 @@ class DemoSeeder extends Seeder
         $value = $min;
         $direction = 'up';
 
-        for($minute = 0; $minute <= $totalMinutes; $minute++) {
+        for ($minute = 0; $minute <= $totalMinutes; $minute++) {
             $startDate->addMinute();
 
             if ($value < $max && $direction === 'up') {
                 $value++;
-            } else if ($value > $min && $direction === 'down') {
+            } elseif ($value > $min && $direction === 'down') {
                 $value--;
-            } else if ($value === $max && $direction === 'up') {
+            } elseif ($value === $max && $direction === 'up') {
                 $value--;
                 $direction = 'down';
-            } else if ($value === $min && $direction === 'down') {
+            } elseif ($value === $min && $direction === 'down') {
                 $value++;
                 $direction = 'up';
             }

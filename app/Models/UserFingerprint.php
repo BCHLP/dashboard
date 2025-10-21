@@ -8,10 +8,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UserFingerprint extends Model
 {
-
     use HasFactory;
 
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
@@ -31,12 +31,12 @@ class UserFingerprint extends Model
         'user_agent',
         'session_id',
         'is_suspicious',
-        'created_at'
+        'created_at',
     ];
 
     protected $casts = [
         'fingerprint_data' => 'json',
-        'is_suspicious' => 'boolean'
+        'is_suspicious' => 'boolean',
     ];
 
     public function user(): BelongsTo

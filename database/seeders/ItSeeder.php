@@ -3,14 +3,9 @@
 namespace Database\Seeders;
 
 use App\Enums\NodeTypeEnum;
-use App\Models\DeviceMetric;
-use App\Models\Metric;
-use App\Models\Router;
-use App\Models\Server;
-use Illuminate\Database\Seeder;
 use App\Models\Node;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Laravel\Sanctum\PersonalAccessToken;
 
 class ItSeeder extends Seeder
 {

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Mcp\Prompts;
@@ -34,7 +35,7 @@ class ExplainMFADecisionPrompt extends Prompt
         $riskFactors = $arguments['risk_factors'];
         $requiredMfa = $arguments['required_mfa'];
 
-        $systemPrompt = <<<PROMPT
+        $systemPrompt = <<<'PROMPT'
 You are a customer support specialist explaining security decisions. Create a brief, reassuring message for users explaining why additional verification is needed.
 
 **Tone:** Professional but friendly, security-conscious but not alarming

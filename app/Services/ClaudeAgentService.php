@@ -1,22 +1,25 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Services;
 
 use Anthropic\Client;
 use App\Enums\AnthropicModelEnum;
+use App\Facades\AdaptiveMfaFacade;
 use App\Interfaces\AgentAiInterface;
 use App\Mcp\Tools\GetRecentFailedAttempts;
 use App\Mcp\Tools\GetUserLoginHistory;
 use App\Models\User;
 use App\Models\UserFingerprint;
 use Illuminate\Support\Facades\Log;
-use \App\Facades\AdaptiveMfaFacade;
 
 class ClaudeAgentService implements AgentAiInterface
 {
     private array $tools;
+
     private int $maxIterations = 10;
+
     private $client;
 
     private string $model;
@@ -33,7 +36,7 @@ class ClaudeAgentService implements AgentAiInterface
 
         $user = User::find($userId);
 
-        $systemPrompt = <<<PROMPT
+        $systemPrompt = <<<'PROMPT'
 You are a security analyst specializing in adaptive authentication. Your role is to assess login risk and recommend appropriate MFA requirements.
 
 **Available Tools:**
@@ -78,7 +81,7 @@ PROMPT;
         $return = [
             'voice' => null,
             'totp' => null,
-            'reasoning' => ''
+            'reasoning' => '',
         ];
 
         $iterations = 0;
@@ -98,6 +101,7 @@ PROMPT;
                 // If Claude is done, return the text response
                 if ($response->stopReason === 'end_turn') {
                     $return['reasoning'] = $response->content[0]['text'] ?? '';
+
                     return $return;
                 }
 
@@ -106,7 +110,7 @@ PROMPT;
                     // Add Claude's response to messages
                     $messages[] = [
                         'role' => 'assistant',
-                        'content' => $response->content
+                        'content' => $response->content,
                     ];
 
                     // Execute tools and get results
@@ -116,8 +120,9 @@ PROMPT;
                     if (is_null($return['totp']) || is_null($return['voice'])) {
                         foreach ($response->content as $responseForTool) {
                             if ($responseForTool['type'] === 'tool_use' && $responseForTool['name'] === 'record_mfa_decision') {
-                                if (!isset($responseForTool['input']['totp']) || !isset($responseForTool['input']['voice'])) {
+                                if (! isset($responseForTool['input']['totp']) || ! isset($responseForTool['input']['voice'])) {
                                     ray($responseForTool)->red();
+
                                     continue;
                                 }
                                 $return['totp'] = $responseForTool['input']['totp'];
@@ -130,7 +135,7 @@ PROMPT;
                     // Add tool results to messages
                     $messages[] = [
                         'role' => 'user',
-                        'content' => $toolResults
+                        'content' => $toolResults,
                     ];
 
                     // Continue the loop to get Claude's next response
@@ -139,18 +144,20 @@ PROMPT;
 
                 // If max_tokens reached, return what we have
                 if ($response->stopReason === 'max_tokens') {
-                    return $return; //$this->extractTextContent($response->content) . "\n\n[Response truncated - max tokens reached]";
+                    return $return; // $this->extractTextContent($response->content) . "\n\n[Response truncated - max tokens reached]";
                 }
 
                 // Unknown stop reason
-                Log::warning('Unknown stop reason: ' . $response->stopReason);
+                Log::warning('Unknown stop reason: '.$response->stopReason);
+
                 return $return; // $this->extractTextContent($response->content);
 
             } catch (\Exception $e) {
-                Log::error('Claude API Error: ' . $e->getMessage());
+                Log::error('Claude API Error: '.$e->getMessage());
                 throw $e;
             }
         }
+
         return $return;
     }
 
@@ -173,7 +180,7 @@ PROMPT;
                     $results[] = [
                         'type' => 'tool_result',
                         'tool_use_id' => $toolUseId,
-                        'content' => json_encode($result)
+                        'content' => json_encode($result),
                     ];
 
                     Log::info("Tool executed: {$toolName}", ['input' => $toolInput, 'result' => $result]);
@@ -184,14 +191,14 @@ PROMPT;
                         'type' => 'tool_result',
                         'tool_use_id' => $toolUseId,
                         'content' => json_encode([
-                            'error' => $e->getMessage()
+                            'error' => $e->getMessage(),
                         ]),
-                        'is_error' => true
+                        'is_error' => true,
                     ];
 
                     Log::error("Tool execution failed: {$toolName}", [
                         'input' => $toolInput,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
                 }
             }
@@ -205,7 +212,7 @@ PROMPT;
      */
     private function executeTool(string $toolName, array $input): array
     {
-        return match($toolName) {
+        return match ($toolName) {
             'get_user_login_history' => $this->getUserLoginHistory($input),
             'get_recent_failed_attempts' => $this->getRecentFailedAttempts($input),
             'record_mfa_decision' => $this->recordMFADecision($input),
@@ -218,10 +225,11 @@ PROMPT;
      */
     private function getUserLoginHistory(array $input): array
     {
-        $tool = new GetUserLoginHistory();
+        $tool = new GetUserLoginHistory;
         $results = $tool->handle($input);
-        foreach($results as $result) {
+        foreach ($results as $result) {
             $json = json_decode($result->content[0]->text, true);
+
             return $json;
 
         }
@@ -238,10 +246,11 @@ PROMPT;
         $daysBack = $input['days_back'] ?? 7;
         $limit = $input['limit'] ?? 50;
 
-        $tool = new GetRecentFailedAttempts();
+        $tool = new GetRecentFailedAttempts;
         $results = $tool->handle($input);
-        foreach($results as $result) {
+        foreach ($results as $result) {
             $json = json_decode($result->content[0]->text, true);
+
             return $json;
 
         }
@@ -259,14 +268,14 @@ PROMPT;
         $totp = $input['totp'];
         $voice = $input['voice'];
 
-        ray("record mfa decision", $input);
+        ray('record mfa decision', $input);
 
-        AdaptiveMfaFacade::setBoth( $totp, $voice, $eventId, $userId);
+        AdaptiveMfaFacade::setBoth($totp, $voice, $eventId, $userId);
 
         return [
             'success' => true,
             'user_id' => $userId,
-            'recorded_at' => now()->toIso8601String()
+            'recorded_at' => now()->toIso8601String(),
         ];
     }
 
@@ -284,19 +293,19 @@ PROMPT;
                     'properties' => [
                         'user_id' => [
                             'type' => 'integer',
-                            'description' => 'The ID of the user'
+                            'description' => 'The ID of the user',
                         ],
                         'days_back' => [
                             'type' => 'integer',
-                            'description' => 'How many days of history to retrieve (default: 30)'
+                            'description' => 'How many days of history to retrieve (default: 30)',
                         ],
                         'limit' => [
                             'type' => 'integer',
-                            'description' => 'Maximum number of records to return (default: 100)'
-                        ]
+                            'description' => 'Maximum number of records to return (default: 100)',
+                        ],
                     ],
-                    'required' => ['user_id']
-                ]
+                    'required' => ['user_id'],
+                ],
             ],
             [
                 'name' => 'get_recent_failed_attempts',
@@ -306,19 +315,19 @@ PROMPT;
                     'properties' => [
                         'user_id' => [
                             'type' => 'integer',
-                            'description' => 'The ID of the user'
+                            'description' => 'The ID of the user',
                         ],
                         'days_back' => [
                             'type' => 'integer',
-                            'description' => 'How many days of history to retrieve (default: 7)'
+                            'description' => 'How many days of history to retrieve (default: 7)',
                         ],
                         'limit' => [
                             'type' => 'integer',
-                            'description' => 'Maximum number of records to return (default: 50)'
-                        ]
+                            'description' => 'Maximum number of records to return (default: 50)',
+                        ],
                     ],
-                    'required' => ['user_id']
-                ]
+                    'required' => ['user_id'],
+                ],
             ],
             [
                 'name' => 'record_mfa_decision',
@@ -328,23 +337,23 @@ PROMPT;
                     'properties' => [
                         'user_id' => [
                             'type' => 'integer',
-                            'description' => 'The ID of the user'
-                        ],'event_id' => [
+                            'description' => 'The ID of the user',
+                        ], 'event_id' => [
                             'type' => 'string',
-                            'description' => 'A UUID of the event'
+                            'description' => 'A UUID of the event',
                         ],
                         'totp' => [
                             'type' => 'boolean',
-                            'description' => 'Is TOTP required for this user?'
+                            'description' => 'Is TOTP required for this user?',
                         ],
                         'voice' => [
                             'type' => 'boolean',
-                            'description' => 'Is Voice Recognition required for this user?'
-                        ]
+                            'description' => 'Is Voice Recognition required for this user?',
+                        ],
                     ],
-                    'required' => ['user_id', 'event_id', 'totp_mfa', 'voice_mfa']
-                ]
-            ]
+                    'required' => ['user_id', 'event_id', 'totp_mfa', 'voice_mfa'],
+                ],
+            ],
         ];
     }
 
@@ -370,6 +379,7 @@ PROMPT;
     public function setMaxIterations(int $max): self
     {
         $this->maxIterations = $max;
+
         return $this;
     }
 }

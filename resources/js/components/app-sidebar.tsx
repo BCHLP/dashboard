@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, MapPin, Server, User } from 'lucide-react';
+import { LayoutGrid, Server, User } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -12,18 +12,20 @@ const mainNavItems: NavItem[] = [
         title: 'Dashboard',
         href: '/',
         icon: LayoutGrid,
-        permission: ''
-    },{
+        permission: '',
+    },
+    {
         title: 'Servers',
         href: '/servers',
         icon: Server,
-        permission: 'manage-servers'
-    },{
+        permission: 'manage-servers',
+    },
+    {
         title: 'Users',
         href: '/users',
         icon: User,
-        permission: 'manage-users'
-    }
+        permission: 'manage-users',
+    },
 ];
 
 const footerNavItems: NavItem[] = [
