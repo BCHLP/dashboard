@@ -264,17 +264,16 @@ const Dashboard = (props: Props) => {
                     {/* Top Row - Large Gauges - 1/3 height */}
                     <div className="mb-4 grid flex-1 grid-cols-2 gap-6">
                         <GaugeChart value={temperature} min={0} max={100} label="Water Temperature" unit="°C" color="#f59e0b" />
-                        <GaugeChart value={phLevel} min={0} max={14} label="pH Level" unit="" color="#8b5cf6" />
+                        <GaugeChart value={pressure} min={0} max={1.6} label="Water Pressure" unit="MPa" color="#06b6d4" />
                     </div>
 
                     {/* Middle Row - Tank and Camera - 1/3 height */}
                     <div className="mb-4 grid flex-1 grid-cols-2 gap-6">
-                        <GaugeChart value={pressure} min={0} max={1.6} label="Water Pressure" unit="MPa" color="#06b6d4" />
                         <GaugeChart value={orb} min={-1100} max={1100} label="Oxidation-Reduction Potential" unit="mV" color="#ec4899" />
+                        <SecurityCamera photo={photo} handleCapture={handleCapture} disableCapture={disableCapture} />
                     </div>
 
-                    <div className="mb-4 grid flex-1 grid-cols-2 gap-6">
-                        <SecurityCamera photo={photo} handleCapture={handleCapture} disableCapture={disableCapture} />
+                    <div className="mb-4 grid flex-1 grid-cols-1 gap-6">
                         <LocationMap lat={lat} lng={lng} />
                     </div>
                 </div>
