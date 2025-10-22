@@ -15,12 +15,6 @@ const mainNavItems: NavItem[] = [
         permission: '',
     },
     {
-        title: 'Servers',
-        href: '/servers',
-        icon: Server,
-        permission: 'manage-servers',
-    },
-    {
         title: 'Users',
         href: '/users',
         icon: User,

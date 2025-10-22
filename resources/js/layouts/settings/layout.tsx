@@ -20,12 +20,6 @@ const sidebarNavItems: NavItem[] = [
         permission: '',
     },
     {
-        title: 'TOTP',
-        href: '/settings/totp',
-        icon: null,
-        permission: '',
-    },
-    {
         title: 'Appearance',
         href: '/settings/appearance',
         icon: null,
