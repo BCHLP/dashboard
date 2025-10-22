@@ -230,9 +230,6 @@ const Dashboard = (props: Props) => {
 
     useEcho(`NewDatapointEvent.${props.node.id}`, ['DatapointCreatedEvent'], (e: Datapoint) => {
         switch (e.alias) {
-            case 'pH':
-                setPhLevel(e.y);
-                break;
             case 'temp':
                 setTemperature(e.y);
                 break;
@@ -269,7 +266,7 @@ const Dashboard = (props: Props) => {
 
                     {/* Middle Row - Tank and Camera - 1/3 height */}
                     <div className="mb-4 grid flex-1 grid-cols-2 gap-6">
-                        <GaugeChart value={orb} min={-1100} max={1100} label="Oxidation-Reduction Potential" unit="mV" color="#ec4899" />
+                        <GaugeChart value={orb} min={-1400} max={1400} label="Oxidation-Reduction Potential" unit="mV" color="#ec4899" />
                         <SecurityCamera photo={photo} handleCapture={handleCapture} disableCapture={disableCapture} />
                     </div>
 
